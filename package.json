@@ -24,6 +24,7 @@
   "files": [
     "dist"
   ],
+  "types": "dist/index.d.ts",
   "dependencies": {
     "uuid-random": "^1.3.2"
   }
