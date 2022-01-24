@@ -2,7 +2,7 @@
   "name": "yug-entity-system",
   "version": "1.0.10",
   "description": "Entity System",
-  "main": ".dist/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "start": "npx webpack && node dist/index.js",
     "dev": "nodemon src/index.ts",
