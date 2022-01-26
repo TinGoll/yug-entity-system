@@ -6,34 +6,59 @@ import { Component, EntityComponents, EntityOptions } from "../types/entity-type
 
 import uuid from 'uuid-random';
 import { getProperty } from "../utils/object-utils";
+import { EntityFasade } from "../Models/product/EntityFasade";
+import { EntityPanel } from "../Models/product/EntityPanel";
+import { EntityShield } from "../Models/product/EntityShield";
+import { EntityType } from "../utils/entity-units";
+import Order from "../Models/Order";
 
 class Engine {
-  private static instance: Engine;
+  private static instance?: Engine;
+  private _order?: Order;
+
   constructor() {
-    if (Engine.instance) {
-      return Engine.instance;
-    }
+    if (Engine.instance) {return Engine.instance;}
     Engine.instance = this;
   }
-  /** Дезинтегрирует объект Engine */
-  destroy() {}
+ 
 
+  newOrder(): Order {
+    const order = new Order();
+    this._order = order;
+    return order;
+  }
+
+  get order (): Order |null {
+    return this._order || null;
+  }
+
+  /** Дезинтегрирует объект Engine */
+  destroy() {
+    this._order = undefined;
+    Engine.instance = undefined;
+  }
   /** Описывать здесь все расширяемые классы */
   public static create(options: EntityOptions): Entity {
     /** Присваиваем уникальный ключь созданному обекту */
     if (!options.key) options.key = uuid();
     switch (options?.entity?.typeId) {
-      case 1:
+      case EntityType.ENTITY_HEADER:
         return new EntityHeader(options);
-      case 2:
+      case EntityType.ENTITY_BODY:
         return new EntityBody(options);
+      case EntityType.ENTITY_FASADE:
+        return new EntityFasade(options);
+      case EntityType.ENTITY_PANEL:
+        return new EntityPanel(options);
+      case EntityType.ENTITY_SHIELD:
+        return new EntityShield(options);
       default:
         return new EntityUncertain(options);
     }
   }
   /** Метод слияния параметров одного объекта с другим */
   public static integration(recipient: EntityOptions, donor: EntityOptions): EntityOptions {
-    console.time('FirstWay');
+    //console.time('FirstWay');
     const options = { ...recipient };
     for (const componentKey in options.components) {
       if (Object.prototype.hasOwnProperty.call(options.components, componentKey) && donor.components?.hasOwnProperty(componentKey)) {
@@ -48,7 +73,7 @@ class Engine {
         }
       }
     }
-    console.timeEnd('FirstWay');
+    //console.timeEnd('FirstWay');
     return recipient = {...options};
   }
 }

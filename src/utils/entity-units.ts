@@ -8,3 +8,12 @@ export enum Unit {
     /** Измеряется в погонных метрах */
     LINEAR_METER = 'п/м'
 }
+
+export enum EntityType {
+    ENTITY_HEADER = 1,
+    ENTITY_BODY = 2,
+    ENTITY_FASADE = 3,
+    ENTITY_PANEL = 4,
+    ENTITY_SHIELD = 5,
+
+}

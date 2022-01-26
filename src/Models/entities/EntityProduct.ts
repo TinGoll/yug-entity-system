@@ -63,6 +63,15 @@ export abstract class EntityProduct extends Entity {
     /** @returns погонные метры сущности. */
     abstract getLinearMeters(): number| null;
 
+    /** Установка высоты сущности. */
+    abstract setHeight(value: number): Entity;
+    /** Установка ширины сущности. */
+    abstract setWidth(value: number): Entity;
+    /** Установка глубины сущности. */
+    abstract setDepth(value: number): Entity;
+    /** Установка кол-ва сущности. */
+    abstract setAmount(value: number): Entity;
+
     /** Компонено Цена */
 
     /** @returns цена сущности. */
@@ -70,13 +79,24 @@ export abstract class EntityProduct extends Entity {
     /** @returns стоимость сущности. */
     abstract getCost(): number | null;
 
+    /** Установка цены сущности. */
+    abstract setPrice(value: number): Entity;
+
+
     /** Компонент отделка */
 
     /** @returns копонент отделка - цвет сущности. */
-    abstract getColor (): string | null;
+    abstract getColorId(): number | null;
     /** @returns копонент отделка - патина сущности. */
-    abstract getPatina(): string | null;
+    abstract getPatinaId(): number | null;
     /** @returns копонент отделка - лак сущности. */
-    abstract getVarnish(): string | null;
+    abstract getVarnishId(): number | null;
+
+    /** Установка высоты сущности. */
+    abstract setColorId(value: number): Entity;
+    /** Установка высоты сущности. */
+    abstract setPatinaId(value: number): Entity;
+    /** Установка высоты сущности. */
+    abstract setVarnishId(value: number): Entity;
 
 }

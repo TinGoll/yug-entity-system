@@ -1,3 +1,4 @@
+import { EntityType } from "../utils/entity-units";
 
 export interface IterableObject {
 
@@ -25,7 +26,7 @@ export type ComponentKeys = keyof GeometryComponent | keyof FinishingComponent |
 /** Модель сущность */
 export interface APIEntity {
   id?: number;
-  typeId?: number;
+  typeId?: EntityType;
   parentId?: number;
   sampleId?: number;
   name?: string;
@@ -67,17 +68,6 @@ export interface APIPriceComponent {
   price?: number;
 }
 
-/** Модель сущность */
-export interface APIEntity {
-  id?: number;
-  typeId?: number;
-  parentId?: number;
-  sampleId?: number;
-  name?: string;
-  note?: string;
-  dateCreation?: Date;
-  dateUpdate?: Date;
-}
 /** Модель Связь сущность - отделка */
 export interface APIEntityFinishingLink {
   id?: number;

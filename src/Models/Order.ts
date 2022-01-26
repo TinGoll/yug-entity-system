@@ -1,11 +1,20 @@
-import { OrderListElement, OrderOptions } from "../types/order-types";
+
+import Engine from "../engine/Engine";
+import { getOrderOptions, OrderType } from "../utils/order-utils";
+import Entity from "./entities/Entity";
 
 class Order {
-  private options: OrderOptions;
-  private elements: OrderListElement[] = []
-  constructor(options: OrderOptions) {this.options = {...options};}
-  getOptions(): OrderOptions {return this.options;}
-  setOptions(options: OrderOptions): Order {this.options = { ...this.options, ...options}; return this;}
+  private _header: Entity;
+  private _body: Entity;
+  
+  constructor (type: OrderType = OrderType.STANDART) {
+    const {header, body, prototypes} = getOrderOptions(type);
+    this._header = Engine.create(header);
+    this._body = Engine.create(body);
+    
+  }
 }
+
+
 
 export default Order;

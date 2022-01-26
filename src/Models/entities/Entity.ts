@@ -16,7 +16,7 @@ abstract class Entity {
    * @returns Новая сущность.*/
   produce(options: EntityOptions): Entity {
     const entity = Engine.create(Engine.integration(options, this.options));
-    this.add(entity.getOptions());
+    this.add(entity);
     return entity;
   }
   /** Принимает существующую сущность передавая ей свои параметры компонентов,
@@ -76,11 +76,15 @@ abstract class Entity {
 
 
   /** Добавление существующей сущности, как дочерний объект. */
-  add(options: EntityOptions): EntityOptions {
+  add(entity: Entity): Entity {
     if (!this.key) throw getError(EntityErrors.UNSPECIFIED);
-    options.parentKey = this.key;
-    this.elements.push(options);
-    return options;
+    entity.parentKey = this.key;
+    this.elements.push(entity.getOptions());
+    return entity;
+  }
+
+  addAll(arr: EntityOptions[]) {
+
   }
   
   /** @returns - Возвращает dto сущности. */

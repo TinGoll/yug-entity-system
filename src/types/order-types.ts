@@ -1,4 +1,5 @@
 import Entity from "../Models/entities/Entity";
+import { EntityOptions } from "./entity-types";
 /** Элемент массива заказа, состоящий из шапки и тела */
 export interface OrderListElement {
     header: Entity;
@@ -10,4 +11,10 @@ export interface OrderOptions {
     clientId?: number;
     userId?: number;
     note?: string;
+}
+
+export interface OrderOptions {
+    header: EntityOptions;
+    body: EntityOptions;
+    prototypes: EntityOptions[];
 }
