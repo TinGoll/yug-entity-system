@@ -1,7 +1,15 @@
-import { EntityType } from "../utils/entity-units";
+import { EntityProduct } from "../Models/entities/EntityProduct";
+import { DefaultSample } from "../utils/default-sample";
+import { EntityType, Unit } from "../utils/entity-units";
 
 export interface IterableObject {
 
+}
+
+export interface NomenclatureCreatorOptions {
+  sample?: DefaultSample;
+  prototype?: EntityProduct;
+  unit?: Unit;
 }
 
 export interface EntityState {
