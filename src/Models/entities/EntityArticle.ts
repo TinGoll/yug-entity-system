@@ -11,8 +11,8 @@ export abstract class EntityArticle extends Entity {
     }
 
     /** @returns имя сущности. */
-    getName(): string | null { 
-        return this.options.entity.name || null;
+    getName(): string { 
+        return this.options.entity.name || 'Нет названия';
     }
     /** @returns комментарий сущности. */
     getComment(): string | null {
