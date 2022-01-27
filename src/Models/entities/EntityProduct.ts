@@ -1,7 +1,6 @@
 import { EntityOptions } from "../../types/entity-types";
 import { getError } from "../../utils/api-error";
 import { Unit } from "../../utils/entity-units";
-import Entity from "./Entity";
 import { EntityArticle } from "./EntityArticle";
 
 
@@ -65,108 +64,85 @@ export class EntityProduct extends EntityArticle {
     }
 
     /** Установка свойст */
-    setHeight(value: number): Entity {
+    setHeight(value: number): EntityArticle {
         if (this.propertyBlackList.has('height')) {
             if (!this.propertyBlackList.get('height')) throw getError(2);
         }
-        if (typeof this.options.components?.geometryComponent?.height === 'undefined') {
-            throw getError(3);
-        }
-        return this.setComponents({
+        return <EntityArticle> this.setComponents({
             geometryComponent: {
                 height: value
             }
         });
     }
 
-    setWidth(value: number): Entity {
+    setWidth(value: number): EntityArticle {
         if (this.propertyBlackList.has('width')) {
             if (!this.propertyBlackList.get('width')) throw getError(2);
         }
-        if (typeof this.options.components?.geometryComponent?.height === 'undefined') {
-            throw getError(3);
-        }
-        return this.setComponents({
+        return <EntityArticle> this.setComponents({
             geometryComponent: {
                 width: value
             }
         });
     }
-    setDepth(value: number): Entity {
+    setDepth(value: number): EntityArticle {
         if (this.propertyBlackList.has('depth')) {
             if (!this.propertyBlackList.get('depth')) throw getError(2);
         }
-        if (typeof this.options.components?.geometryComponent?.height === 'undefined') {
-            throw getError(3);
-        }
-        return this.setComponents({
+        return <EntityArticle> this.setComponents({
             geometryComponent: {
                 depth: value
             }
         });
     }
-    setAmount(value: number): Entity {
+    setAmount(value: number): EntityArticle {
         if (this.propertyBlackList.has('amount')) {
             if (!this.propertyBlackList.get('amount')) throw getError(2);
         }
-        if (typeof this.options.components?.geometryComponent?.height === 'undefined') {
-            throw getError(3);
-        }
-        return this.setComponents({
+        return <EntityArticle> this.setComponents({
             geometryComponent: {
                 amount: value
             }
         });
     }
 
-    setPrice(value: number): Entity {
+    setPrice(value: number): EntityArticle {
         if (this.propertyBlackList.has('price')) {
             if (!this.propertyBlackList.get('price')) throw getError(2);
         }
-        if (typeof this.options.components?.geometryComponent?.height === 'undefined') {
-            throw getError(3);
-        }
-        return this.setComponents({
+        return <EntityArticle> this.setComponents({
             priceComponent: {
                 price: value
             }
         });
     }
 
-    setColorId(value: number): Entity {
+    setColorId(value: number): EntityArticle {
         if (this.propertyBlackList.has('colorId')) {
             if (!this.propertyBlackList.get('colorId')) throw getError(2);
         }
-        if (typeof this.options.components?.geometryComponent?.height === 'undefined') {
-            throw getError(3);
-        }
-        return this.setComponents({
+       
+        return <EntityArticle> this.setComponents({
             finishingComponent: {
                 colorId: value
             }
         });
     }
-    setPatinaId(value: number): Entity {
+    setPatinaId(value: number): EntityArticle {
         if (this.propertyBlackList.has('patinaId')) {
             if (!this.propertyBlackList.get('patinaId')) throw getError(2);
         }
-        if (typeof this.options.components?.geometryComponent?.height === 'undefined') {
-            throw getError(3);
-        }
-        return this.setComponents({
+        return <EntityArticle> this.setComponents({
             finishingComponent: {
                 patinaId: value
             }
         });
     }
-    setVarnishId(value: number): Entity {
+    setVarnishId(value: number): EntityArticle {
         if (this.propertyBlackList.has('varnishId')) {
             if (!this.propertyBlackList.get('varnishId')) throw getError(2);
         }
-        if (typeof this.options.components?.geometryComponent?.height === 'undefined') {
-            throw getError(3);
-        }
-        return this.setComponents({
+        return <EntityArticle> this.setComponents({
             finishingComponent: {
                 varnishId: value
             }

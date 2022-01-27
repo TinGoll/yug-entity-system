@@ -30,6 +30,12 @@ export abstract class EntityArticle extends Entity {
     getUnit(): Unit {
         return this.unit;
     }
+    /** Присваеивает еденицу измерения */
+    setUnit(unit: Unit): EntityArticle {
+        this.unit = unit;
+        return this;
+    }
+
 
     /** @returns вес сущности. зависит от еденици измерения. */
     getWeight(): number | null {
@@ -65,13 +71,13 @@ export abstract class EntityArticle extends Entity {
     abstract getLinearMeters(): number| null;
 
     /** Установка высоты сущности. */
-    abstract setHeight(value: number): Entity;
+    abstract setHeight(value: number): EntityArticle;
     /** Установка ширины сущности. */
-    abstract setWidth(value: number): Entity;
+    abstract setWidth(value: number): EntityArticle;
     /** Установка глубины сущности. */
-    abstract setDepth(value: number): Entity;
+    abstract setDepth(value: number): EntityArticle;
     /** Установка кол-ва сущности. */
-    abstract setAmount(value: number): Entity;
+    abstract setAmount(value: number): EntityArticle;
 
     /** Компонено Цена */
 
@@ -81,7 +87,7 @@ export abstract class EntityArticle extends Entity {
     abstract getCost(): number | null;
 
     /** Установка цены сущности. */
-    abstract setPrice(value: number): Entity;
+    abstract setPrice(value: number): EntityArticle;
 
 
     /** Компонент отделка */
@@ -94,10 +100,10 @@ export abstract class EntityArticle extends Entity {
     abstract getVarnishId(): number | null;
 
     /** Установка высоты сущности. */
-    abstract setColorId(value: number): Entity;
+    abstract setColorId(value: number): EntityArticle;
     /** Установка высоты сущности. */
-    abstract setPatinaId(value: number): Entity;
+    abstract setPatinaId(value: number): EntityArticle;
     /** Установка высоты сущности. */
-    abstract setVarnishId(value: number): Entity;
+    abstract setVarnishId(value: number): EntityArticle;
 
 }

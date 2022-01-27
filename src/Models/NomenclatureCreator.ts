@@ -1,11 +1,14 @@
 import Engine from "../engine/Engine";
 import { EntityOptions } from "../types/entity-types";
-import { EntityType } from "../utils/entity-units";
+import { DefaultSample, samples } from "../utils/default-sample";
+import { EntityType, Unit } from "../utils/entity-units";
 
 import { EntityProduct } from "./entities/EntityProduct";
 
 interface NomenclatureCreatorOptions {
-    sample?: EntityProduct;
+    sample?: DefaultSample;
+    prototype?: EntityProduct;
+    unit?: Unit;
 }
 
 export default class NomenclatureCreator {
@@ -15,15 +18,20 @@ export default class NomenclatureCreator {
     private _defaultName: string = 'Новая номенклатура';
     constructor() {}
     public newNomenclature(name: string, opt?: NomenclatureCreatorOptions): EntityProduct {
+
         const entity = <EntityProduct> Engine.create(this.createEmpty(name));
-        if (opt?.sample) {
-            const entityOptions = entity.getOptions();
-            const sampleState = opt?.sample.build();
+        const entityOptions = entity.getOptions();
+
+        if (opt?.prototype) {
+            const sampleState = opt?.prototype.build();
             sampleState.options.key = entityOptions.key;
             sampleState.options.parentKey = undefined;
             sampleState.options.entity.name = name;
             entity.setState(sampleState);
+        } else if (opt?.sample) {
+            entity.setState(samples.get(opt.sample));
         }
+        if (opt?.unit) entity.setUnit(opt.unit)
         this._nomenclature = entity;
         return entity;
     }

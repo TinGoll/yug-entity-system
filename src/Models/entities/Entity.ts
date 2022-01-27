@@ -1,13 +1,8 @@
 
 import Engine from "../../engine/Engine";
-import { EntityComponents, EntityOptions, ValidateObject } from "../../types/entity-types";
+import { EntityComponents, EntityOptions, EntityState, ValidateObject } from "../../types/entity-types";
 import { EntityErrors, getError } from "../../utils/api-error";
 import { getKeyValue } from "../../utils/object-utils";
-
-interface EntityState {
-  options: EntityOptions;
-  elements: EntityState[];
-}
 
 /** Создает новую сущность, на основе передаваемых опций */
 abstract class Entity {
@@ -28,6 +23,7 @@ abstract class Entity {
   /** Установка состояния родительской сущности и всех дочерних. */
   public setState(state: EntityState): Entity {
     this.options = {
+      ...{key: this.options.key},
       ... Engine.create(state.options).getOptions()
     }
     this.elements = [...state.elements.map(e => Engine.create(e.options).setState(e))];

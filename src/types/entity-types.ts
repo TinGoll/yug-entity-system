@@ -4,6 +4,11 @@ export interface IterableObject {
 
 }
 
+export interface EntityState {
+  options: EntityOptions;
+  elements: EntityState[];
+}
+
 export interface EntityOptions {
   entity: APIEntity;
   key?: string;
