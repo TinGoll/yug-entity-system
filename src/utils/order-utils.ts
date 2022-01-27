@@ -1,6 +1,5 @@
 
 import { OrderOptions } from "../types/order-types";
-import { defaultEntities } from "./default-entities";
 import { EntityType } from "./entity-units";
 
 export enum StageType {
@@ -31,5 +30,5 @@ const standartOptions: OrderOptions = {
             typeId: EntityType.ENTITY_BODY
         }
     },
-    prototypes: [defaultEntities.defaultFasade, defaultEntities.defaultPanel]
+    prototypes: []
 }
