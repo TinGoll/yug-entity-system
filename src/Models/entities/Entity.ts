@@ -56,6 +56,16 @@ abstract class Entity {
   set parentKey(key: string|null) {
     this.options.parentKey = key||undefined
   }
+
+  getName(): string {
+    return this.options.entity.name||'Без имени';
+  }
+
+  public setName(name: string): Entity {
+    this.options.entity.name = name;
+    return this;
+  }
+
   /** Определить родительский объект  @returns - Возвращает контекст this; */
   setParent(parent: Entity): Entity {
     if (!parent.key) throw getError(EntityErrors.UNSPECIFIED);

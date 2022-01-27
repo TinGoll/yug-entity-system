@@ -15,7 +15,6 @@ export default class NomenclatureCreator {
     private _key?: string;
     private _nomenclature?: EntityProduct;
     private _nomenclatureList: EntityProduct[] = [];
-    private _defaultName: string = 'Новая номенклатура';
     constructor() {}
     public newNomenclature(name: string, opt?: NomenclatureCreatorOptions): EntityProduct {
 
@@ -26,14 +25,19 @@ export default class NomenclatureCreator {
             const sampleState = opt?.prototype.build();
             sampleState.options.key = entityOptions.key;
             sampleState.options.parentKey = undefined;
-            sampleState.options.entity.name = name;
-            entity.setState(sampleState);
+            entity.setState(sampleState).setName(name);
         } else if (opt?.sample) {
-            entity.setState(samples.get(opt.sample));
+            entity.setState(samples.get(opt.sample)).setName(name);
         }
         if (opt?.unit) entity.setUnit(opt.unit)
         this._nomenclature = entity;
         return entity;
+    }
+
+    public save(): EntityProduct | null {
+        if (!this._nomenclature) return null;
+        this._nomenclatureList.push(this._nomenclature)
+        return this._nomenclature;
     }
 
     public nomenclatureNames (): string[] {
