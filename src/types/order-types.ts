@@ -14,7 +14,7 @@ export interface OrderOptions {
 }
 
 export interface OrderOptions {
-    header: EntityOptions;
-    body: EntityOptions;
+    headerOptions: EntityOptions;
+    bodyOptions: EntityOptions;
     prototypes: EntityOptions[];
 }

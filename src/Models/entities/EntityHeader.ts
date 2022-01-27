@@ -7,7 +7,6 @@ class EntityHeader extends Entity {
   constructor(options: EntityOptions) {
     super(options);
   }
-
 }
 
 export default EntityHeader;

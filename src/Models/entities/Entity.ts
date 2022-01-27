@@ -3,31 +3,52 @@ import Engine from "../../engine/Engine";
 import { EntityComponents, EntityOptions, ValidateObject } from "../../types/entity-types";
 import { EntityErrors, getError } from "../../utils/api-error";
 import { getKeyValue } from "../../utils/object-utils";
+
+interface EntityState {
+  options: EntityOptions;
+  elements: EntityState[];
+}
+
 /** Создает новую сущность, на основе передаваемых опций */
 abstract class Entity {
   protected options: EntityOptions;
-  protected elements: EntityOptions[] = [];
-  constructor(options: EntityOptions) {
+  protected elements: Entity[] = [];
+  constructor(options: EntityOptions, children: EntityOptions[] = []) {
     this.options = { ...options };
+    this.setChildrenToOptions(children);
+  }
+  /** Построение состояния родительской сущности и всех дочерних. */
+  public build(): EntityState{
+    return {
+      options: this.options,
+      elements: this.elements.map(e => e.build())
+    };
+  }
+
+  /** Установка состояния родительской сущности и всех дочерних. */
+  public setState(state: EntityState): Entity {
+    this.options = {
+      ... Engine.create(state.options).getOptions()
+    }
+    this.elements = [...state.elements.map(e => Engine.create(e.options).setState(e))];
+    return this;
   }
 
   /** Производит новую сущность, на основе передаваемых опций, передавая ей свои параметры компонентов, 
    * если таковые определены в передаваемой сущности. Так же новоя сущность становиться дочерней сущностью текущей.
    * @returns Новая сущность.*/
-  produce(options: EntityOptions): Entity {
+  produce (options: EntityOptions) {
     const entity = Engine.create(Engine.integration(options, this.options));
     this.add(entity);
     return entity;
   }
   /** Принимает существующую сущность передавая ей свои параметры компонентов,
    * если таковые определены в передаваемой сущности. 
-   * @returns rhis*/
+   * @returns Возвращает модифицированную сущность, с интегированными компонентами*/
   override(entity: Entity): Entity {
     return entity.setOption(Engine.integration(entity.getOptions(), this.options));
   }
-
   /** ------------------------------Отношение сущностей------------------------------ */
-
   /** Уникальный ключь */
   get key(): string | null {
     return this.options.key || null;
@@ -43,6 +64,12 @@ abstract class Entity {
   setParent(parent: Entity): Entity {
     if (!parent.key) throw getError(EntityErrors.UNSPECIFIED);
     this.options.parentKey = parent.key;
+    return this;
+  }
+
+  setChildrenToOptions(children: EntityOptions[]): Entity {
+    const entities = children.map(v => Engine.create(v));
+    this.elements.push(...entities);
     return this;
   }
 
@@ -74,24 +101,22 @@ abstract class Entity {
     return this;
   }
 
-
   /** Добавление существующей сущности, как дочерний объект. */
   add(entity: Entity): Entity {
     if (!this.key) throw getError(EntityErrors.UNSPECIFIED);
     entity.parentKey = this.key;
-    this.elements.push(entity.getOptions());
+    this.elements.push(entity);
     return entity;
   }
-
-  addAll(arr: EntityOptions[]) {
-
+  /** Добавляет дочерние сущности списком. */
+  addAll(arr: Entity[]) {
+    this.elements.push(...arr);
   }
-  
+
   /** @returns - Возвращает dto сущности. */
   getOptions(): EntityOptions {
     return this.options;
   }
-
   /** Определяет новые опции для сущности
    * @returns this;
    */
@@ -113,15 +138,12 @@ abstract class Entity {
     this.options.parentKey = parentKey;
     return this;
   }
- 
   /** ------------------------------------------------------------------------------- */
-
   /** Вовращает массив объектов сущностей. */
   getElements(): Entity[] {
-    return this.elements.map((e) => Engine.create(e));
+    return this.elements;
   }
   /** ------------------------------------------------------------------------------- */
-
   /** Метод проврки данных сущьности, переопределить в дочерних классах, при необходимости. */
   validate(): ValidateObject {
     const valid: ValidateObject = {

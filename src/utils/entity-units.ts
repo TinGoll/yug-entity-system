@@ -12,8 +12,5 @@ export enum Unit {
 export enum EntityType {
     ENTITY_HEADER = 1,
     ENTITY_BODY = 2,
-    ENTITY_FASADE = 3,
-    ENTITY_PANEL = 4,
-    ENTITY_SHIELD = 5,
-
+    ENTITY_PRODUCT = 3,
 }

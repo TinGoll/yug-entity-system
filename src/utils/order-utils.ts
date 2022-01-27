@@ -3,13 +3,13 @@ import { OrderOptions } from "../types/order-types";
 import { defaultEntities } from "./default-entities";
 import { EntityType } from "./entity-units";
 
-export enum OrderType {
+export enum StageType {
     STANDART = 'standart'
 }
 
-export const getOrderOptions = (type: OrderType): OrderOptions => {
+export const getOrderOptions = (type: StageType): OrderOptions => {
     switch (type) {
-        case OrderType.STANDART:
+        case StageType.STANDART:
             return standartOptions;
         default:
             return standartOptions;
@@ -18,14 +18,14 @@ export const getOrderOptions = (type: OrderType): OrderOptions => {
 
 /** Стандартные предустановки */
 const standartOptions: OrderOptions = {
-    header: {
+    headerOptions: {
         entity: {
             name: 'Заказ Фасады',
             note: '',
             typeId: EntityType.ENTITY_HEADER
         }
     },
-    body: {
+    bodyOptions: {
         entity: {
             name: 'Список элементов заказа',
             typeId: EntityType.ENTITY_BODY
