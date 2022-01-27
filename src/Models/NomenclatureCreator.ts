@@ -1,11 +1,9 @@
 import Engine from "../engine/Engine";
 import { EntityOptions, NomenclatureCreatorOptions } from "../types/entity-types";
-import { DefaultSample, samples } from "../utils/default-sample";
-import { EntityType, Unit } from "../utils/entity-units";
+import { samples } from "../utils/default-sample";
+import { EntityType } from "../utils/entity-units";
 
 import { EntityProduct } from "./entities/EntityProduct";
-
-
 
 export default class NomenclatureCreator {
     private _key?: string;
