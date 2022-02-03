@@ -8,6 +8,7 @@ import { getKeyValue } from "../../utils/object-utils";
 abstract class Entity {
   protected options: EntityOptions;
   protected elements: Entity[] = [];
+
   constructor(options: EntityOptions, children: EntityOptions[] = []) {
     this.options = { ...options };
     this.setChildrenToOptions(children);
@@ -85,23 +86,24 @@ abstract class Entity {
   getComponents(): EntityComponents | null {
     return this.options.components || null;
   }
-  
+
+
   /** Устанавливает компоненты для сущности, заменяет новыми, не указанные остаются неизмененными.
    * @returns this
    */
-  setComponents(conponents: EntityComponents): Entity {
+  setComponents(components: EntityComponents): Entity {
     this.options.components = {
       finishingComponent: {
         ...this.options.components?.finishingComponent,
-        ...conponents.finishingComponent
+        ...components.finishingComponent
       },
       geometryComponent: {
         ...this.options.components?.geometryComponent,
-        ...conponents.geometryComponent,
+        ...components.geometryComponent,
       },
       priceComponent: {
         ...this.options.components?.priceComponent,
-        ...conponents.priceComponent
+        ...components.priceComponent
       }
     }
     return this;

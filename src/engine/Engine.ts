@@ -1,7 +1,7 @@
 import Entity from "../Models/entities/Entity";
 import EntityBody from "../Models/entities/EntityBody";
 import EntityHeader from "../Models/entities/EntityHeader";
-import { Component, EntityComponents, EntityOptions } from "../types/entity-types";
+import { ApiComponent, Components, EntityComponents, EntityOptions } from "../types/entity-types";
 
 import uuid from 'uuid-random';
 import { getProperty } from "../utils/object-utils";
@@ -14,6 +14,7 @@ import NomenclatureCreator from "../Models/NomenclatureCreator";
 
 class Engine {
   private static instance?: Engine;
+
   private static entities: Map<string, EntityOptions> = new Map <string, EntityOptions>()
   private _order?: Order;
   private _creator?: NomenclatureCreator;
@@ -24,50 +25,76 @@ class Engine {
   }
 
   /*** ----------------------------------- */
-
+  /** Создает пустую номенклатуру */
   public nomenclatureCreator() {
     if (!this._creator) this._creator = new NomenclatureCreator();
     return this._creator
   }
 
   /*** ----------------------------------- */
-
  /** * Создание нового заказа. */
   newOrder(type: StageType = StageType.STANDART): Order {
-    Engine.clear();
     const order = new Order(type);
     this._order = order;
     return order;
   }
-
   get order (): Order |null {return this._order || null;}
-
-  public onChange(listener: any) {
-
-  }
+  public onChange(listener: any) {}
 
   /** Дезинтегрирует объект Engine */
   destroy() {
     this._order = undefined;
-    Engine.clear();
     Engine.instance = undefined;
   }
 
-  public static getEntity(key: string): Entity | null {
-    if (!this.entities.has(key)) return null;
-    const options = this.entities.get(key)!;
-    return Engine.create(options);
+  
+
+  /** Статические методы */
+  /** Конвертирует объект компонентов в массив */
+  public static componentConverterObjectToArray(components: Components): ApiComponent[] {
+    try {
+      return Object.entries(components).reduce((accumulator: ApiComponent[], value): ApiComponent[] => {
+        const { componentDescription, ...otherProperties } = value[1];
+        const componentProperties: ApiComponent[] = Object.entries(otherProperties).map(prob => {
+          const component: ApiComponent = {
+            componentName: value[0],
+            componentDescription: componentDescription,
+            propertyName: prob[0],
+            ...prob[1] as any,
+          }
+          return component
+        });
+        accumulator.push(...componentProperties)
+        return accumulator;
+      }, [] as ApiComponent[])
+    } catch (e) {
+      throw e
+    }
+  }
+  /** Конвертирует массив комопнентов в объект. */
+  public static componentConverterArrayToObject(components: ApiComponent[]): Components {
+    try {
+      return Object.fromEntries(Object.entries(
+        Engine.groupBy<ApiComponent>(components, (it) => {
+          return it.componentName; // Выбираем поле, по которому производим групировку
+        })
+      ).map(componentEntry => {
+        return [componentEntry[0],
+        Object.fromEntries([
+          ['componentDescription', componentEntry[1][0]?.componentDescription,],
+          ...componentEntry[1].map(componentEntry => {
+            return [componentEntry.propertyName, Engine.componentDestructuring(componentEntry)]
+          })
+        ])
+        ]
+      })
+      )
+    } catch (e) {
+      throw e;
+    }
   }
 
-  public static clear () {
-    Engine.entities.clear();
-  }
-  public static removeEntity(key: string) {
-
-  }  
-  public static generateKey (): string {
-    return uuid();
-  }
+  public static generateKey (): string {return uuid();}
   public static entityRegistration (options: EntityOptions): EntityOptions {
     if (options.key && Engine.entities.has(options.key)) return options;
     options.key = this.generateKey();
@@ -99,8 +126,8 @@ class Engine {
         const donorComponent = getProperty<EntityComponents, keyof EntityComponents>(donor.components, componentKey as keyof EntityComponents); 
         for (const key in component) {
           if (Object.prototype.hasOwnProperty.call(component, key) && Object.prototype.hasOwnProperty.call(donorComponent, key)) {
-            const comp = component as Component
-            const donorComp = donorComponent as Component;
+            const comp = component as any
+            const donorComp = donorComponent as any ;
             comp[key] = donorComp[key];
           }
         }
@@ -109,6 +136,24 @@ class Engine {
     //console.timeEnd('FirstWay');
     return recipient = {...options};
   }
+
+  /***----------------------------------------------------------------------------------- */
+  /***----------------------------------------------------------------------------------- */
+  /** служебная функция для групировки комопнентов по определенному полю. */
+  private static groupBy<T>(array: T[], predicate: (compEntry: T) => string) {
+    return array.reduce((acc, value, index, arr) => {
+      (acc[predicate(value)] ||= []).push(value);
+      return acc;
+    }, {} as { [key: string]: T[] }
+    );
+  }
+  /** Деструкруризация компонента на свойства */
+  private static componentDestructuring(component: ApiComponent) {
+    const { propertyDescription, propertyValue, propertyType, propertyFormula, attributes, bindingToList, entityId, id } = component;
+    return { id, entityId, propertyDescription, propertyValue, propertyType, propertyFormula, attributes, bindingToList }
+  }
+  /***----------------------------------------------------------------------------------- */
 }
 
 export default Engine;
+

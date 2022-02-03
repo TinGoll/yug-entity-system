@@ -23,7 +23,6 @@ export default class NomenclatureCreator {
         } else if (opt?.sample) {
             entity.setState(samples.get(opt.sample)).setName(name);
         }
-        if (opt?.unit) entity.setUnit(opt.unit)
         this._nomenclature = entity;
         return entity;
     }
