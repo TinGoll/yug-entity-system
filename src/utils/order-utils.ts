@@ -18,17 +18,19 @@ export const getOrderOptions = (type: StageType): OrderOptions => {
 /** Стандартные предустановки */
 const standartOptions: OrderOptions = {
     headerOptions: {
-        entity: {
+        signature: {
             name: 'Заказ Фасады',
             note: '',
             typeId: EntityType.ENTITY_HEADER
-        }
+        },
+        components: []
     },
     bodyOptions: {
-        entity: {
+        signature: {
             name: 'Список элементов заказа',
             typeId: EntityType.ENTITY_BODY
-        }
+        },
+        components: []
     },
     prototypes: []
 }

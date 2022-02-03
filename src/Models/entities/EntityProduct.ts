@@ -1,9 +1,7 @@
-import { EntityOptions, Unit } from "../../types/entity-types";
-import { getError } from "../../utils/api-error";
-import { EntityArticle } from "./EntityArticle";
+import { EntityOptions } from "../../types/entity-types";
+import Entity from "./Entity";
 
-
-export class EntityProduct extends EntityArticle {
+export class EntityProduct extends Entity {
     constructor(options: EntityOptions) {
         super(options);
     }

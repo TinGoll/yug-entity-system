@@ -1,10 +1,9 @@
 import Entity from "../Models/entities/Entity";
 import EntityBody from "../Models/entities/EntityBody";
 import EntityHeader from "../Models/entities/EntityHeader";
-import { ApiComponent, Components, EntityComponents, EntityOptions } from "../types/entity-types";
+import { ApiComponent, Components, CreateOptions, EntityOptions } from "../types/entity-types";
 
 import uuid from 'uuid-random';
-import { getProperty } from "../utils/object-utils";
 import { EntityType } from "../utils/entity-units";
 import Order from "../Models/Order";
 import { EntityProduct } from "../Models/entities/EntityProduct";
@@ -16,6 +15,7 @@ class Engine {
   private static instance?: Engine;
 
   private static entities: Map<string, EntityOptions> = new Map <string, EntityOptions>()
+
   private _order?: Order;
   private _creator?: NomenclatureCreator;
 
@@ -50,6 +50,18 @@ class Engine {
   
 
   /** Статические методы */
+
+  /** Получаем сущьность по ключу. */
+  public static getEntityOptionsToKey(key: string): EntityOptions | null {
+    if (!Engine.entities.has(key)) return null;
+    return Engine.entities.get(key) || null;
+  }
+
+  /** Получаем все дочерние сущьности. */
+  public static getChildrenOptionsToParentKey(key: string): EntityOptions[] {
+    return [...Engine.entities].map(e => e[1]).filter(e => e.parentKey == key);
+  }
+
   /** Конвертирует объект компонентов в массив */
   public static componentConverterObjectToArray(components: Components): ApiComponent[] {
     try {
@@ -95,6 +107,7 @@ class Engine {
   }
 
   public static generateKey (): string {return uuid();}
+
   public static entityRegistration (options: EntityOptions): EntityOptions {
     if (options.key && Engine.entities.has(options.key)) return options;
     options.key = this.generateKey();
@@ -102,39 +115,40 @@ class Engine {
     return options;
   }
   /** Описывать здесь все расширяемые классы */
-  public static create(options: EntityOptions): Entity {
+  public static create(options: CreateOptions): Entity {
     /** Присваиваем уникальный ключь созданному обекту */
-    this.entityRegistration(options);
-    switch (options?.entity?.typeId) {
+    if (!options.components) options.components = [];
+    const opt = options as EntityOptions;
+    this.entityRegistration(opt);
+    switch (options?.signature?.typeId) {
       case EntityType.ENTITY_HEADER:
-        return new EntityHeader(options);
+        return new EntityHeader(opt);
       case EntityType.ENTITY_BODY:
-        return new EntityBody(options);
+        return new EntityBody(opt);
       case EntityType.ENTITY_PRODUCT:
-        return new EntityProduct(options);
+        return new EntityProduct(opt);
       default:
-        return new EntityProduct(options);
+        return new EntityProduct(opt);
     }
   }
   /** Метод слияния параметров одного объекта с другим */
   public static integration(recipient: EntityOptions, donor: EntityOptions): EntityOptions {
     //console.time('FirstWay');
-    const options = { ...recipient };
-    for (const componentKey in options.components) {
-      if (Object.prototype.hasOwnProperty.call(options.components, componentKey) && donor.components?.hasOwnProperty(componentKey)) {
-        const component = getProperty<EntityComponents, keyof EntityComponents>(options.components, componentKey as keyof EntityComponents);
-        const donorComponent = getProperty<EntityComponents, keyof EntityComponents>(donor.components, componentKey as keyof EntityComponents); 
-        for (const key in component) {
-          if (Object.prototype.hasOwnProperty.call(component, key) && Object.prototype.hasOwnProperty.call(donorComponent, key)) {
-            const comp = component as any
-            const donorComp = donorComponent as any ;
-            comp[key] = donorComp[key];
-          }
-        }
-      }
+
+    const recipientComponents =  [ ...recipient.components ] ;
+    const donorComponents =  [ ...donor.components ];
+
+    for (const component of recipientComponents) {
+      // Если свойство у принимающего обекта не задано, пропускаем
+      if (typeof component.propertyValue === "undefined" || component.propertyValue == '') continue;
+      const donorComponent = donorComponents.find(
+          c => c.componentName === component.componentName 
+              && c.propertyName === component.propertyName
+          && (typeof c.propertyValue !== "undefined" && c.propertyValue != ''));
+      if (donorComponent) component.propertyValue = donorComponent.propertyValue;
     }
-    //console.timeEnd('FirstWay');
-    return recipient = {...options};
+    recipient.components = [...recipientComponents];
+    return recipient;
   }
 
   /***----------------------------------------------------------------------------------- */

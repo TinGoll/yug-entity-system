@@ -3,11 +3,13 @@ import { DefaultSample } from "../utils/default-sample";
 import { EntityType } from "../utils/entity-units";
 
 
+export interface CreateOptions extends Omit<Partial<EntityOptions>, 'key' | 'parentKey' | 'components' > {
+  components?: ApiComponent[]
+}
 
 export interface EntityOptions {
   signature: ApiEntity;
-  components: ApiComponent[];
-  сhildEntities: EntityOptions[];
+  components: ApiComponent[]
   key?: string;
   parentKey?: string;
 }
@@ -22,13 +24,11 @@ export interface EntityComponentDescription {
   componentDescription: string;
 }
 
-export interface EntityComponentDescription {
-  componentDescription: string;
-}
+export type PropertyValue = string | number | Date;
 
 export interface EntityComponentProperty {
   propertyDescription: string;
-  propertyValue: number | string | Date;
+  propertyValue: PropertyValue;
   propertyType: 'number' | 'string' | 'date'
   propertyFormula: string;
   attributes: string;
@@ -37,7 +37,9 @@ export interface EntityComponentProperty {
 
 /**------------------------------Api Types-------------------------------------------------- */
 /** Api объект определения сущности. */
-export interface EntityOptionsApi extends Omit<EntityOptions, 'key' | 'parentKey'> { }
+export interface EntityOptionsApi extends EntityOptions {
+  сhildEntities: EntityOptionsApi[];
+}
 
 /** Модель сущность */
 export interface ApiEntity {
@@ -66,6 +68,9 @@ export interface ApiComponent {
 }
 
 /**----------------------------------------------------------------------------------------- */
+
+export type PropertyAttributes = 'readonly' | 'required';
+
 export interface NomenclatureCreatorOptions {
   sample?: DefaultSample;
   prototype?: EntityProduct;
@@ -76,27 +81,26 @@ export interface EntityState {
   options: EntityOptions;
   elements: EntityState[];
 }
-export interface EntityComponents {
-  geometryComponent?: GeometryComponent;
-  finishingComponent?: FinishingComponent;
-  priceComponent?: PriceComponent;
-}
+
 
 /**----------------------------------------------------------------------------------------- */
+/** Тут определить компоненты, для которых нужен автокомплит и стандартизация */
+export interface GeometryComponent { geometry: Omit<APIGeometryComponent, 'id'> }
+export interface FinishingComponent { geometry: Omit<APIPriceComponent, "id"> }
+export interface PriceComponent { geometry: Omit<APIPriceComponent, "id"> }
 
-export interface GeometryComponent extends Omit<APIGeometryComponent, 'id'>{}
-export interface FinishingComponent extends Omit<APIFinishingComponent, "id"> {}
-export interface PriceComponent extends Omit<APIPriceComponent, "id"> {}
+//export interface GeometryComponent extends Omit<APIGeometryComponent, 'id'>{}
+//export interface FinishingComponent extends Omit<APIFinishingComponent, "id"> {}
+//export interface PriceComponent extends Omit<APIPriceComponent, "id"> {}
+
 export type DefaultComponents = 'geometry' | 'finishing' | 'price' | 'entityId';
 export type ComponentKeys = keyof GeometryComponent | keyof FinishingComponent | keyof PriceComponent;
-
 export type Unit = 'шт.' | 'м. кв.' | 'м. куб.' | 'п/м';
 
 export interface ValidateObject {
   isValid: boolean;
   errors: string[];
 }
-
 
 /** Модель Компонент отделка */
 export interface APIFinishingComponent {

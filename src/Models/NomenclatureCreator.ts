@@ -1,6 +1,5 @@
 import Engine from "../engine/Engine";
 import { EntityOptions, NomenclatureCreatorOptions } from "../types/entity-types";
-import { samples } from "../utils/default-sample";
 import { EntityType } from "../utils/entity-units";
 
 import { EntityProduct } from "./entities/EntityProduct";
@@ -10,11 +9,12 @@ export default class NomenclatureCreator {
     private _nomenclature?: EntityProduct;
     private _nomenclatureList: EntityProduct[] = [];
     constructor() {}
+
     public newNomenclature(name: string, opt?: NomenclatureCreatorOptions): EntityProduct {
 
         const entity = <EntityProduct> Engine.create(this.createEmpty(name));
         const entityOptions = entity.getOptions();
-
+        /*
         if (opt?.prototype) {
             const sampleState = opt?.prototype.build();
             sampleState.options.key = entityOptions.key;
@@ -24,6 +24,7 @@ export default class NomenclatureCreator {
             entity.setState(samples.get(opt.sample)).setName(name);
         }
         this._nomenclature = entity;
+        */
         return entity;
     }
 
@@ -43,11 +44,11 @@ export default class NomenclatureCreator {
 
     private createEmpty(name: string): EntityOptions {
         return {
-            entity: {
+            signature: {
                 name: name,
                 typeId: EntityType.ENTITY_PRODUCT
             },
-            components: {},
+            components: [],
         }
     }
 }

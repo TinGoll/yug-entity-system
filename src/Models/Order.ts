@@ -20,7 +20,7 @@ class Order {
   private _index: number = 0;
   
   constructor(type: StageType = StageType.STANDART) {
-    this.newStage(type);    
+   // this.newStage(type);    
   }
 
   /** Для смены текущего этапа, необходимо передать ключь нужного бандла. */
@@ -31,11 +31,12 @@ class Order {
     return this;
   }
   
-  /** Создаем новый этап */
+  /** Создаем новый этап 
   public newStage(type: StageType = StageType.STANDART): Bundle {
     const { headerOptions, bodyOptions, prototypes } = getOrderOptions(type);
     return this.addBundle({ headerOptions, bodyOptions, prototypes})
   }
+  */
  /** Получам доступ к текущему этапу. Смена текущего этапа происходит путем передачи методу setFocus() ключа нужного этапа. */
   public getCurrentStage() {
     const bundle = this.bundles.find(b => b.key === this.key);
@@ -55,6 +56,7 @@ class Order {
 
   /**  ------------------Приватные методы------------------------------ */
 
+  /** 
   private addBundle({ headerOptions, bodyOptions, prototypes }: OrderOptions): Bundle {
     const header = Engine.create(headerOptions).setChildrenToOptions(prototypes);
     const body = Engine.create(bodyOptions);
@@ -63,6 +65,7 @@ class Order {
     this.bundles.push({header, body, key, index})
     return {header, body, key, index};
   }
+  */
   private nextIndex (): number {return ++ this._index;}
   private setCurrentKey(key: string): Order {this._key = key; return this;}
 
