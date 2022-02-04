@@ -1,3 +1,5 @@
+import Component from "../Models/components/Component";
+import Entity from "../Models/entities/Entity";
 import { EntityProduct } from "../Models/entities/EntityProduct";
 import { DefaultSample } from "../utils/default-sample";
 import { EntityType } from "../utils/entity-units";
@@ -65,6 +67,15 @@ export interface ApiComponent {
   propertyType?: 'string' | 'number' | 'date';
   attributes?: string;
   bindingToList?: boolean;
+}
+
+export declare interface EventCallback {
+  (...params: any[]): void;
+}
+
+export interface IEventable {
+  on(event: 'error', listener: (object: Entity | Component, err: Error) => void): this;
+  on(event: 'change', listener: (object: Entity | Component, code: number) => void): this;
 }
 
 /**----------------------------------------------------------------------------------------- */

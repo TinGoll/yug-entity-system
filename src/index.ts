@@ -1,4 +1,5 @@
 import Engine from "./engine/Engine";
+import Component from "./Models/components/Component";
 import { EntityOptions, GeometryComponent, FinishingComponent, PriceComponent, ApiEntity, NomenclatureCreatorOptions, ApiComponent } from "./types/entity-types";
 import { DefaultSample } from "./utils/default-sample";
 import { EntityType } from "./utils/entity-units";
@@ -120,7 +121,20 @@ const entity = Engine.create({
     components: [...a]
 })
 
-console.log(entity.setProperty('geometry', 'height', 1000).build());
+//console.log(entity.setProperty('geometry', 'height', 1000).build());
+
+const comp = new Component('geometry');
+
+const property =  comp.crateProperty({
+    propertyName: 'height',
+    propertyType: 'number'
+})
+
+property.propertyDescription = 'Высота'
+
+property.addAttributes('readonly').addAttributes('required').addAttributes('required').removeAttributes('required')
+
+console.log(comp.build());
 
 
 

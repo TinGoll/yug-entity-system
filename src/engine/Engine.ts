@@ -1,32 +1,44 @@
 import Entity from "../Models/entities/Entity";
 import EntityBody from "../Models/entities/EntityBody";
 import EntityHeader from "../Models/entities/EntityHeader";
-import { ApiComponent, Components, CreateOptions, EntityOptions } from "../types/entity-types";
+import { ApiComponent, Components, CreateOptions, EntityOptions, IEventable } from "../types/entity-types";
 
 import uuid from 'uuid-random';
+import EventEmitter from "events"
 import { EntityType } from "../utils/entity-units";
 import Order from "../Models/Order";
 import { EntityProduct } from "../Models/entities/EntityProduct";
 import { StageType } from "../utils/order-utils";
 import NomenclatureCreator from "../Models/NomenclatureCreator";
+import Component from "../Models/components/Component";
 
 
-class Engine {
+class Engine implements IEventable {
   private static instance?: Engine;
+  private static eventEmitter: EventEmitter = new EventEmitter();
 
-  private static entities: Map<string, EntityOptions> = new Map <string, EntityOptions>()
+  private static entities: Map<string, EntityOptions> = new Map <string, EntityOptions>();
+  private static componentTemplates: ApiComponent[] = [];
 
   private _order?: Order;
   private _creator?: NomenclatureCreator;
 
-  constructor() {
+  constructor(mode: 'CLIENT' | 'SERVER' = 'CLIENT') {
+
     if (Engine.instance) {return Engine.instance;}
     Engine.instance = this;
   }
 
+  on(event: any, listener: any): this {
+    throw new Error("Method not implemented.");
+  }
+
+
   /*** ----------------------------------- */
   /** Создает пустую номенклатуру */
   public nomenclatureCreator() {
+
+
     if (!this._creator) this._creator = new NomenclatureCreator();
     return this._creator
   }
@@ -50,6 +62,18 @@ class Engine {
   
 
   /** Статические методы */
+  /** Добавляем новый шаблон компонентов. */
+  public static addTemplateComponent(component: ApiComponent[]): Components {
+    this.componentTemplates = Engine.componentConverterObjectToArray({
+      ...Engine.componentConverterArrayToObject(this.componentTemplates),
+      ...Engine.componentConverterArrayToObject(component)
+    });
+    return Engine.componentConverterArrayToObject(component)
+  }
+  /** Возвращает шаблоны компонентов. */
+  public static getTemplateComponents (): Components {
+    return Engine.componentConverterArrayToObject(this.componentTemplates);
+  }
 
   /** Получаем сущьность по ключу. */
   public static getEntityOptionsToKey(key: string): EntityOptions | null {
