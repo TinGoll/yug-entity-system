@@ -1,7 +1,6 @@
 import Component from "../Models/components/Component";
 import Entity from "../Models/entities/Entity";
 import { EntityProduct } from "../Models/entities/EntityProduct";
-import { DefaultSample } from "../utils/default-sample";
 import { EntityType } from "../utils/entity-units";
 
 
@@ -18,6 +17,7 @@ export interface EntityOptions {
 
 export type Components<T extends any | EntityComponentDescription = string, J extends 'AnyComponent' | DefaultComponents = 'AnyComponent'> = {
   [key in J extends 'AnyComponent' ? string : J ]: EntityComponent<T>
+
 };
 export type EntityComponent<T extends any = string> = {
   [key in T extends string ? string : keyof T]: T extends EntityComponentDescription ? string : EntityComponentProperty;
@@ -28,10 +28,12 @@ export interface EntityComponentDescription {
 
 export type PropertyValue = string | number | Date;
 
+export type PropertyTypes = 'number' | 'string' | 'date';
+
 export interface EntityComponentProperty {
   propertyDescription: string;
   propertyValue: PropertyValue;
-  propertyType: 'number' | 'string' | 'date'
+  propertyType: PropertyTypes
   propertyFormula: string;
   attributes: string;
   bindingToList: boolean;
@@ -72,18 +74,16 @@ export interface ApiComponent {
 export declare interface EventCallback {
   (...params: any[]): void;
 }
-
 export interface IEventable {
-  on(event: 'error', listener: (object: Entity | Component, err: Error) => void): this;
-  on(event: 'change', listener: (object: Entity | Component, code: number) => void): this;
+  on(event: string | symbol, listener: EventCallback): void;
 }
+
 
 /**----------------------------------------------------------------------------------------- */
 
 export type PropertyAttributes = 'readonly' | 'required';
 
 export interface NomenclatureCreatorOptions {
-  sample?: DefaultSample;
   prototype?: EntityProduct;
   unit?: Unit;
 }

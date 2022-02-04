@@ -1,7 +1,7 @@
 import Entity from "../Models/entities/Entity";
 import EntityBody from "../Models/entities/EntityBody";
 import EntityHeader from "../Models/entities/EntityHeader";
-import { ApiComponent, Components, CreateOptions, EntityOptions, IEventable } from "../types/entity-types";
+import { ApiComponent, Components, CreateOptions, EntityComponentDescription, EntityOptions, EventCallback, IEventable, PropertyValue } from "../types/entity-types";
 
 import uuid from 'uuid-random';
 import EventEmitter from "events"
@@ -13,7 +13,7 @@ import NomenclatureCreator from "../Models/NomenclatureCreator";
 import Component from "../Models/components/Component";
 
 
-class Engine implements IEventable {
+class Engine {
   private static instance?: Engine;
   private static eventEmitter: EventEmitter = new EventEmitter();
 
@@ -29,41 +29,74 @@ class Engine implements IEventable {
     Engine.instance = this;
   }
 
-  on(event: any, listener: any): this {
-    throw new Error("Method not implemented.");
-  }
-
 
   /*** ----------------------------------- */
   /** Создает пустую номенклатуру */
   public nomenclatureCreator() {
-
-
     if (!this._creator) this._creator = new NomenclatureCreator();
     return this._creator
   }
 
   /*** ----------------------------------- */
  /** * Создание нового заказа. */
+ /*
   newOrder(type: StageType = StageType.STANDART): Order {
     const order = new Order(type);
     this._order = order;
     return order;
   }
-  get order (): Order |null {return this._order || null;}
-  public onChange(listener: any) {}
+  */
+  //get order (): Order |null {return this._order || null;}
+
 
   /** Дезинтегрирует объект Engine */
   destroy() {
     this._order = undefined;
+    Engine.clearEvents();
     Engine.instance = undefined;
   }
 
   
 
   /** Статические методы */
+  /** События */
+  public static on(event: "error", listener: (data: { message: string }) => void): void;
+  public static on(event: "on-component-error", listener: (data: { component: Component, componentName: string, propertyName?: string, err: { errors: string[], message: string } }) => void): void;
+  public static on(event: "on-component-change", listener: (data: { component: Component, componentName: string, propertyName: string, currentValue: PropertyValue, previusValue: PropertyValue}) => void): void;
+  public static on(event: string, listener: (...params: any[]) => void): void {
+    try {
+      Engine.eventEmitter.on(event, listener);
+    } catch (e) {
+      console.log('Ошибка при прослушивании события, обратитесь к уважаемому разработчику', e);
+    }
+   
+  }
+  
+  /** Инициализация событий */
+  public static emit(event: "error", data: { message: string }): void;
+  public static emit(event: "on-component-error", data: { component: Component, componentName: string, propertyName?: string, err: { errors: string[], message: string } }): void;
+  public static emit(event: "on-component-change", data: { component: Component, componentName: string, propertyName: string, currentValue: PropertyValue, previusValue: PropertyValue }): void;
+
+  public static emit(event: string, ...params: any[]) {
+    try {
+      Engine.eventEmitter.emit(event, ...params)
+    } catch (e) {
+      console.log('Ошибка при создании события, обратитесь к уважаемому разработчику', e);
+    }
+  }
+
+  public static clearEvents() {
+    try {
+      Engine.eventEmitter.removeAllListeners()
+    } catch (e) {
+    }
+  }
+
   /** Добавляем новый шаблон компонентов. */
   public static addTemplateComponent(component: ApiComponent[]): Components {
+    const nameComponent = [...new Set(component.map(c => c.componentName))]
+    const exists = this.componentTemplates.find(c => c.componentName == nameComponent[0]);
+  
     this.componentTemplates = Engine.componentConverterObjectToArray({
       ...Engine.componentConverterArrayToObject(this.componentTemplates),
       ...Engine.componentConverterArrayToObject(component)
@@ -75,13 +108,21 @@ class Engine implements IEventable {
     return Engine.componentConverterArrayToObject(this.componentTemplates);
   }
 
+  public static getTemplateComponentNames () : string [] {
+    return [...new Set(this.componentTemplates.map(c => c.componentName))]
+  }
+
+  public static getTemplateComponentsApiToName (name: string) : ApiComponent [] {
+    return this.componentTemplates.filter(c => c.componentName === name);
+  }
+
   /** Получаем сущьность по ключу. */
   public static getEntityOptionsToKey(key: string): EntityOptions | null {
     if (!Engine.entities.has(key)) return null;
     return Engine.entities.get(key) || null;
   }
 
-  /** Получаем все дочерние сущьности. */
+  /** Получаем все дочерние сущности. */
   public static getChildrenOptionsToParentKey(key: string): EntityOptions[] {
     return [...Engine.entities].map(e => e[1]).filter(e => e.parentKey == key);
   }

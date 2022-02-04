@@ -1,54 +1,54 @@
 import Engine from "../engine/Engine";
-import { EntityOptions, NomenclatureCreatorOptions } from "../types/entity-types";
-import { EntityType } from "../utils/entity-units";
+import { ApiComponent, CreateOptions} from "../types/entity-types";
+import Component from "./components/Component";
 
 import { EntityProduct } from "./entities/EntityProduct";
 
 export default class NomenclatureCreator {
     private _key?: string;
     private _nomenclature?: EntityProduct;
+    private _currentComponent?: Component;
     private _nomenclatureList: EntityProduct[] = [];
     constructor() {}
 
-    public newNomenclature(name: string, opt?: NomenclatureCreatorOptions): EntityProduct {
-
-        const entity = <EntityProduct> Engine.create(this.createEmpty(name));
-        const entityOptions = entity.getOptions();
-        /*
-        if (opt?.prototype) {
-            const sampleState = opt?.prototype.build();
-            sampleState.options.key = entityOptions.key;
-            sampleState.options.parentKey = undefined;
-            entity.setState(sampleState).setName(name);
-        } else if (opt?.sample) {
-            entity.setState(samples.get(opt.sample)).setName(name);
+    /** Сщздание номенклатуры или копонента */
+    create(type: 'nomenclature', options: CreateOptions): EntityProduct;
+    create(type: 'component', name: string): Component;
+    create(type: string, opt: CreateOptions | string): EntityProduct | Component | null{
+        switch (type) {
+            case 'nomenclature':
+                this._nomenclature = Engine.create(opt as CreateOptions);
+                return this._nomenclature;
+            case 'component':
+                this._currentComponent = new Component(opt as string);
+                return this._currentComponent
+            default:
+                Engine.emit('error', { message: 'Неверный тип обекста, введи "nomenclature" для создания Номенклатуры или "component" для создания компонента.'})
+                return null
         }
-        this._nomenclature = entity;
-        */
-        return entity;
     }
 
-    public save(): EntityProduct | null {
-        if (!this._nomenclature) return null;
-        this._nomenclatureList.push(this._nomenclature)
-        return this._nomenclature;
+    get currentComponent(): Component | null {
+        return this._currentComponent || null;
     }
 
-    public nomenclatureNames (): string[] {
-        return this._nomenclatureList.map(n => n.getName()||'Нет имени')
-    }
-
-    public get nomenclature () : EntityProduct | null {
-        return this._nomenclature||null;
-    }
-
-    private createEmpty(name: string): EntityOptions {
-        return {
-            signature: {
-                name: name,
-                typeId: EntityType.ENTITY_PRODUCT
-            },
-            components: [],
+    saveComponent (): NomenclatureCreator {
+        if (!this._currentComponent) {
+            Engine.emit('error', { message: 'Текущий компонент не создан или не выбран.' });
+            return this;
         }
+        this._currentComponent.SaveAsTemplate();
+        return this;
+    }
+    selectCurrentComponent(componentName: string): NomenclatureCreator {
+        const compApi = Engine.getTemplateComponentsApiToName(componentName);
+        if (compApi.length) {
+            this._currentComponent = Component.setComponent(compApi);
+        }
+        return this;
+    }
+
+    componentNames(): string[] {
+        return Engine.getTemplateComponentNames();
     }
 }
