@@ -168,7 +168,7 @@ export default class Component {
     private validate(): boolean {
         const errors: string [] = [];
         const component = Engine.componentConverterArrayToObject(this.componentFields)
-        if (<any>component.componentDescription == this.DEFAULT_COMPONENT_NAME) {
+        if (String(component.componentDescription) == String(this.DEFAULT_COMPONENT_NAME)) {
             errors.push('Не задано описание / название компонента на русском');
         }
         if (!this.propertyNames().length) {
