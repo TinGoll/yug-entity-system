@@ -118,10 +118,26 @@ export default class Component {
         return this.componentFields.length;
     }
     /** Получаем интерактивный объект для редактирования, по имени свойства */
-    public getPropertyToName(nameProperty: string): EntityComponentPropertyInteractive | null {
-        const component = this.componentFields.find(c => c.propertyName === nameProperty);
-        if (!component) return null;
-        return this.getInteractivProperty(component);
+    public getPropertyToName(nameProperty: string): EntityComponentPropertyInteractive {
+        const property = this.componentFields.find(c => c.propertyName === nameProperty);
+        if (property) return this.getInteractivProperty(property);
+        const emptyProperty: ApiComponent = {
+            componentName: "undefined",
+            componentDescription: "undefined",
+            propertyName: "undefined",
+            propertyDescription: "undefined",
+            propertyValue: ""
+        } 
+            Engine.emit('on-component-error', {
+                component: this,
+                componentName: this.getComponentName(),
+                propertyName: nameProperty,
+                err: {
+                    message: `В компоненте не существует свойства "${nameProperty}". Данный комопнент содержит: ${this.propertyNames().join(', ')}`,
+                    errors: []
+                }
+            })
+        return this.getInteractivProperty(emptyProperty);
     }
 
     private getInteractivProperty(component: ApiComponent): EntityComponentPropertyInteractive {

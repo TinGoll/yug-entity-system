@@ -1,6 +1,7 @@
 
 import Engine from "../../engine/Engine";
-import { Components, EntityComponent, EntityComponentProperty, EntityOptions, EntityOptionsApi, EntityState, PropertyAttributes, PropertyValue } from "../../types/entity-types";
+import { ApiComponent, Components, EntityComponent, EntityComponentProperty, EntityOptions, EntityOptionsApi, EntityState, PropertyAttributes, PropertyValue } from "../../types/entity-types";
+import Component from "../components/Component";
 
 
 /** Создает новую сущность, на основе передаваемых опций */
@@ -10,26 +11,33 @@ abstract class Entity {
     this.options = {...options};
   }
 
-  /**
-   * 
-    // Events
-    on(event: "close", listener: (this: WebSocket, code: number, reason: Buffer) => void): this;
-    on(event: "error", listener: (this: WebSocket, err: Error) => void): this;
-    on(event: "upgrade", listener: (this: WebSocket, request: IncomingMessage) => void): this;
-    on(event: "message", listener: (this: WebSocket, data: WebSocket.RawData, isBinary: boolean) => void): this;
-    on(event: "open", listener: (this: WebSocket) => void): this;
-    on(event: "ping" | "pong", listener: (this: WebSocket, data: Buffer) => void): this;
-   */
-
   /** ----------------------------------------------------------------- */
+  /**
+   * Возвращает массив объектов класса Component - независимый объект. не путать с объектом компонента сущьности.
+   * @returns Массив компонентов, каждый из которых, является instance класса Component. Который создается креатором.
+   */
+  produceComponents(): Component[] {
+    const components: Component[] = [];
+    const componentNames = [...new Set(this.options.components.map(c => c.componentName))]
+    for (const name of componentNames) {
+      const probs = this.options.components.filter(c => c.componentName === name).map(c => {
+        c.id = undefined;
+        c.entityId = undefined;
+        return c;
+      });
+      const component = Component.setComponent(probs);
+      components.push(component);
+    }
+    return [...components];
+  }
+
  /**
   * Добавляет новый компонет, со всеми полями. Если такой комопнент уже существует, новые поля заменят старые значения. 
-  * Отличие от setComponent - в том, что setComponent не создает а только меняет существующий копонент.
   * @param comps Объект с влложенными комопнентами
   * @returns Возвращает все компоненты в сущности.
   */
-  addComponent(comps: {[key: string]: EntityComponent}): Components {
-    this.saveComponent(comps);
+  addComponent(component: Component): Components {
+    this.saveComponent(component.build())
     return this.getComponents();
   }
 
@@ -38,24 +46,39 @@ abstract class Entity {
     return Engine.componentConverterArrayToObject(this.options.components);
   }
 
-  /** Устанавливает комопнент, перезаписывая прежние своства, либо создает если компонента не существует
-   * @param comps Объект с влложенными комопнентами
-   * @returns this
+  /**
+   * Перезаписывает значения всех переданных компонентов, если они существуют (Устарело). Можно передавать комопненты из других сущностей.
+   * Метод позволяем переопределить название комопнента, если есть такая необходимость
+   * (New) Изменил подход. Теперь добавляються компоненты, которых нет в текущей сущности.
+   * Метод setComponent - основной метод редактирования комопнентов для Админа.
+   * @param components - Компоненты  ввиде объекта
+   * @returns сущность
    */
-  setComponent(comps: { [key: string]: EntityComponent }): Entity {
-    const components = this.getComponents();
-    for (const key in comps) {
-      if (Object.prototype.hasOwnProperty.call(components, key)) {
-        this.saveComponent({
+  setComponent(components: { [key: string]: EntityComponent }): Entity {
+    const comps = this.getComponents();
+
+    for (const key in components) {
+      this.saveComponent(Engine.componentConverterObjectToArray(
+        {
           ...components,
-          [key]: {...comps[key]}
-        })
-      } else {
-        this.addComponent( {[key]: comps[key]})
-      }
+          [key]: { ...components[key] }
+        }
+      ))
+      // Удалена проверка на наличие компонента в сущности.
+      //if (Object.prototype.hasOwnProperty.call(comps, key)) {} else {}
     }
     return this;
   }
+  /**
+   * Установить комопнент, с помощью данных, сформированнх методом build(), или данными полученными по API
+   * @param components - Массив данных сформированных методом build();
+   * @returns Возвращает Entity;
+   */
+  setComponentToBuildData (components: ApiComponent[]): Entity {
+    this.saveComponent(components)
+    return this;
+  }
+
   /** Присваивает значение свойству определенного комопнента. В случае неудачи генерирует событие ошибки. */
   setProperty(componentName: string, propertyName: string, value: PropertyValue): Entity {
     try {
@@ -78,11 +101,20 @@ abstract class Entity {
         // * Разворачиваем копоненты, что бы избежать мутации.
         this.options.components = [...componentsApi];
         /** событие на изменение */
+      } else {
+        throw new Error(`Свойство ${propertyName} не найдено в компоненте ${componentName}`)
       }
       return this;
     } catch (e) {
       /** Реализовать событие ошибки */
       const error = e as Error;
+      Engine.emit('on-entity-error', {
+        entity: this,
+        err: {
+          message: error.message,
+          errors: []
+        }
+      })
       return this;
     }
   }
@@ -110,6 +142,13 @@ abstract class Entity {
       return compObject[componentName as string][propertyName as string];
     } catch (e) {
       const error = e as Error;
+      Engine.emit('on-entity-error', {
+        entity: this,
+        err: {
+          message: error.message,
+          errors: []
+        }
+      })
       return null;
     }
   }
@@ -124,20 +163,32 @@ abstract class Entity {
     propertyName: U extends string ? string : keyof U[keyof U]): T | null {
     try {
       const property = this.getProperty<U>(componentName, propertyName);
-      if (!property) return null;
+      if (!property) throw new Error(`Копонент "${componentName}" не содержит свойство "${propertyName}"`);
       return <T> property.propertyValue || null;
     } catch (e) {
+      const error = e as Error;
+      Engine.emit('on-entity-error', {
+        entity: this,
+        err: {
+          message: error.message,
+          errors: []
+        }
+      })
       return null;
     }
   }
 
-  /** Приватный сервисный метод, для разворачивания комопнента */
-  private saveComponent(comps: { [key: string]: EntityComponent }) {
-    const components = this.getComponents();
-    this.options.components = [...Engine.componentConverterObjectToArray({
-      ...components,
-      ...comps
-    })]
+  /** Приватный сервисный метод, для разворачивания комопнента (устарело)
+   *  Изменил принцип действия. Теперь в качестве аргумента, надо передавать массив ApiComponent[]
+   */
+  private saveComponent(components: ApiComponent[]) {
+    const comps = [...this.options.components];
+    for (const component of components) {
+      const index = comps.findIndex(c => c.componentName === component.componentName && c.propertyName === component.propertyName);
+      if (index > -1) comps[index] = {...component}
+      else comps.push({ ...component});
+    }
+    this.options.components = [...comps];
   }
 
   /** ----------------------------------------------------------------- */
@@ -211,12 +262,18 @@ abstract class Entity {
 
   /** Добавление существующей сущности, как дочерний объект. */
   add(entity: Entity): Entity {
-    
+    const options =  Engine.getEntityOptionsToKey(entity.key!)
+    if (options && this.key) {
+      options.parentKey = this.key
+    }
     return entity;
   }
   /** Добавляет дочерние сущности списком. */
-  addAll(arr: Entity[]) {
-   
+  addAll(arr: Entity[]): Entity {
+    for (const entity of arr) {
+      this.add(entity)
+    }
+    return this;
   }
 
   /** @returns - Возвращает dto сущности. */
@@ -228,12 +285,16 @@ abstract class Entity {
    * @returns this;
    */
   setOption(options: EntityOptions): Entity {
+    this.options = {...options}
     return this;
   }
   /** ------------------------------------------------------------------------------- */
   /** Вовращает массив объектов сущностей. */
-  getElements(): Entity[] {
-    return [];
+  getChildren(): Entity[] {
+    const children = Engine.getChildrenOptionsToParentKey(this.options.key!).map(opt => {
+      return Engine.create(opt);
+    });
+    return children;
   }
   /** ------------------------------------------------------------------------------- */
   /** ------------------------------------------------------------------------------- */

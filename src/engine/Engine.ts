@@ -14,6 +14,8 @@ import Component from "../Models/components/Component";
 
 
 class Engine {
+
+  private static mode: 'CLIENT' | 'SERVER';
   private static instance?: Engine;
   private static eventEmitter: EventEmitter = new EventEmitter();
 
@@ -24,8 +26,8 @@ class Engine {
   private _creator?: NomenclatureCreator;
 
   constructor(mode: 'CLIENT' | 'SERVER' = 'CLIENT') {
-
     if (Engine.instance) {return Engine.instance;}
+    Engine.mode = mode;
     Engine.instance = this;
   }
 
@@ -63,11 +65,13 @@ class Engine {
   public static on(event: "error", listener: (data: { message: string }) => void): void;
   public static on(event: "on-component-error", listener: (data: { component: Component, componentName: string, propertyName?: string, err: { errors: string[], message: string } }) => void): void;
   public static on(event: "on-component-change", listener: (data: { component: Component, componentName: string, propertyName: string, currentValue: PropertyValue, previusValue: PropertyValue}) => void): void;
+  public static on(event: "on-entity-error", listener: (data: { entity: Entity, err: { errors: string[], message: string } }) => void): void;
   public static on(event: string, listener: (...params: any[]) => void): void {
     try {
       Engine.eventEmitter.on(event, listener);
     } catch (e) {
-      console.log('Ошибка при прослушивании события, обратитесь к уважаемому разработчику', e);
+      const error = e as Error;
+      console.log('Ошибка при прослушивании события, обратитесь к уважаемому разработчику', error.message);
     }
    
   }
@@ -76,12 +80,13 @@ class Engine {
   public static emit(event: "error", data: { message: string }): void;
   public static emit(event: "on-component-error", data: { component: Component, componentName: string, propertyName?: string, err: { errors: string[], message: string } }): void;
   public static emit(event: "on-component-change", data: { component: Component, componentName: string, propertyName: string, currentValue: PropertyValue, previusValue: PropertyValue }): void;
-
+  public static emit(event: "on-entity-error", data: { entity: Entity, err: { errors: string[], message: string }}): void;
   public static emit(event: string, ...params: any[]) {
     try {
       Engine.eventEmitter.emit(event, ...params)
     } catch (e) {
-      console.log('Ошибка при создании события, обратитесь к уважаемому разработчику', e);
+      const error = e as Error;
+      console.log('Ошибка при создании события, обратитесь к уважаемому разработчику', error.message);
     }
   }
 
@@ -95,7 +100,12 @@ class Engine {
   /** Добавляем новый шаблон компонентов. */
   public static addTemplateComponent(component: ApiComponent[]): Components {
     const nameComponent = [...new Set(component.map(c => c.componentName))]
+
     const exists = this.componentTemplates.find(c => c.componentName == nameComponent[0]);
+
+    Engine.emit('error', {
+      message: `Шаблон компонента ${exists?.componentName}, был перезаписан новыми данными.`
+    })
   
     this.componentTemplates = Engine.componentConverterObjectToArray({
       ...Engine.componentConverterArrayToObject(this.componentTemplates),
@@ -167,7 +177,11 @@ class Engine {
       })
       )
     } catch (e) {
-      throw e;
+      const error = e as Error;
+      this.emit('error', {
+        message: error.message
+      });
+      return {}
     }
   }
 
@@ -176,6 +190,17 @@ class Engine {
   public static entityRegistration (options: EntityOptions): EntityOptions {
     if (options.key && Engine.entities.has(options.key)) return options;
     options.key = this.generateKey();
+    const component = new Component('serialization');
+    component.setComponentDescription('Серийный ключ');
+    component.crateProperty({
+      propertyName: 'serialKey',
+      propertyType: 'string',
+      propertyDescription:'Creator: ' + Engine.mode,
+      propertyValue: options.key
+    }).addAttributes('readonly');
+    const index = options.components.findIndex(c => c.componentName === 'serialization');
+    if (index > -1) options.components[index] = {...component.build()[0]};
+    else options.components = [...options.components, ...component.build()];
     Engine.entities.set(options.key, options);
     return options;
   }
@@ -193,6 +218,10 @@ class Engine {
       case EntityType.ENTITY_PRODUCT:
         return new EntityProduct(opt);
       default:
+        options.signature = {
+          ...options.signature,
+          typeId: EntityType.ENTITY_PRODUCT
+        }
         return new EntityProduct(opt);
     }
   }
