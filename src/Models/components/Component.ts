@@ -79,6 +79,23 @@ export default class Component {
      * @returns Интерактивный обект, позволяющий редактировать свойство не прибегая к мутации
      */
     public crateProperty(probs: ComponentProbs): EntityComponentPropertyInteractive {
+        const component = this.defineApiComponent(probs);
+        this.addPropertyToApiComponent(component);
+        return this.getInteractivProperty(component);
+    }
+
+    /**
+     * Создать новое свойство в компоненте
+     * @param probs Набор необходимых параметров для создания свойства компонента
+     * @returns Component
+     */
+    public addProperty(probs: ComponentProbs): Component {
+        const component = this.defineApiComponent(probs);
+        this.addPropertyToApiComponent(component);
+        return this;
+    }
+
+    private defineApiComponent (probs: ComponentProbs): ApiComponent {
         const defaultValue: string = probs.propertyType === 'number' ? '0' : '';
         const component: Required<ApiComponent> = {
             id: 0,
@@ -93,13 +110,10 @@ export default class Component {
             attributes: probs.attributes || '',
             bindingToList: probs.bindingToList || false
         }
-
-        this.addProperty(component);
-
-        return this.getInteractivProperty(component);
+        return component;
     }
 
-    private addProperty(componentProperty: ApiComponent) {
+    private addPropertyToApiComponent(componentProperty: ApiComponent) {
         const existingEntryIndex = this.componentFields.findIndex(p => p.propertyName === componentProperty.propertyName);
         if (existingEntryIndex > -1) {
             this.componentFields[existingEntryIndex] = { ...componentProperty};
@@ -108,6 +122,7 @@ export default class Component {
         }
         this.componentFields = [...this.componentFields];
     }
+
 
     /** Список созданных свойств в комоненте */
     public propertyNames (): string [] {

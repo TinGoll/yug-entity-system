@@ -15,20 +15,35 @@ export interface EntityOptions {
   parentKey?: string;
 }
 
+/*************************************************************************************************************************************************** */
+
+
+let test
+
+
+
+export type Components2<> = {
+
+};
+
+export type EntityComponent2<T extends any = string> = {
+  [key: string]: EntityComponentProperty;
+};
+
+
 export type Components<T extends any | EntityComponentDescription = string, J extends 'AnyComponent' | DefaultComponents = 'AnyComponent'> = {
   [key in J extends 'AnyComponent' ? string : J ]: EntityComponent<T>
 
 };
+
 export type EntityComponent<T extends any = string> = {
   [key in T extends string ? string : keyof T]: T extends EntityComponentDescription ? string : EntityComponentProperty;
 };
+
+
 export interface EntityComponentDescription {
   componentDescription: string;
-}
-
-export type PropertyValue = string | number | Date;
-
-export type PropertyTypes = 'number' | 'string' | 'date';
+};
 
 export interface EntityComponentProperty {
   propertyDescription: string;
@@ -37,7 +52,14 @@ export interface EntityComponentProperty {
   propertyFormula: string;
   attributes: string;
   bindingToList: boolean;
-}
+};
+
+export type PropertyValue = string | number | Date;
+
+export type PropertyTypes = 'number' | 'string' | 'date';
+
+
+/*************************************************************************************************************************************************** */
 
 /**------------------------------Api Types-------------------------------------------------- */
 /** Api объект определения сущности. */
@@ -97,8 +119,8 @@ export interface EntityState {
 /**----------------------------------------------------------------------------------------- */
 /** Тут определить компоненты, для которых нужен автокомплит и стандартизация */
 export interface GeometryComponent { geometry: Omit<APIGeometryComponent, 'id'> }
-export interface FinishingComponent { geometry: Omit<APIPriceComponent, "id"> }
-export interface PriceComponent { geometry: Omit<APIPriceComponent, "id"> }
+export interface FinishingComponent { finishing: Omit<APIPriceComponent, "id"> }
+export interface PriceComponent { price: Omit<APIPriceComponent, "id"> }
 
 //export interface GeometryComponent extends Omit<APIGeometryComponent, 'id'>{}
 //export interface FinishingComponent extends Omit<APIFinishingComponent, "id"> {}

@@ -1,5 +1,5 @@
 import Engine from "../engine/Engine";
-import { ApiComponent, CreateOptions} from "../types/entity-types";
+import { ApiComponent, Components, CreateOptions} from "../types/entity-types";
 import Component from "./components/Component";
 
 import { EntityProduct } from "./entities/EntityProduct";
@@ -33,12 +33,18 @@ export default class NomenclatureCreator {
     }
 
     saveComponent (): NomenclatureCreator {
-        if (!this._currentComponent) {
-            Engine.emit('error', { message: 'Текущий компонент не создан или не выбран.' });
+        try {
+             if (!this._currentComponent) {
+                 throw new Error('Текущий компонент не создан или не выбран.')
+            }
+            this._currentComponent.SaveAsTemplate();
+            return this;
+        } catch (error) {
+            const e = error  as Error;
+            Engine.emit('error', { message: e.message });
             return this;
         }
-        this._currentComponent.SaveAsTemplate();
-        return this;
+       
     }
     selectCurrentComponent(componentName: string): NomenclatureCreator {
         const compApi = Engine.getTemplateComponentsApiToName(componentName);
@@ -50,5 +56,9 @@ export default class NomenclatureCreator {
 
     componentNames(): string[] {
         return Engine.getTemplateComponentNames();
+    }
+
+    getTemplateComponent(): Components {
+        return Engine.getTemplateComponents();
     }
 }

@@ -98,20 +98,17 @@ class Engine {
   }
 
   /** Добавляем новый шаблон компонентов. */
-  public static addTemplateComponent(component: ApiComponent[]): Components {
-    const nameComponent = [...new Set(component.map(c => c.componentName))]
+  public static addTemplateComponent(components: ApiComponent[]): Components {
+    const comps = [...this.componentTemplates];
+    for (const component of components) {
+      const index = comps.findIndex(c => c.componentName === component.componentName 
+                && c.propertyName === component.propertyName);
 
-    const exists = this.componentTemplates.find(c => c.componentName == nameComponent[0]);
-
-    Engine.emit('error', {
-      message: `Шаблон компонента ${exists?.componentName}, был перезаписан новыми данными.`
-    })
-  
-    this.componentTemplates = Engine.componentConverterObjectToArray({
-      ...Engine.componentConverterArrayToObject(this.componentTemplates),
-      ...Engine.componentConverterArrayToObject(component)
-    });
-    return Engine.componentConverterArrayToObject(component)
+      if (index > -1) comps[index] = {...component};
+      else comps.push({ ...component });
+    }
+    this.componentTemplates = [...comps]
+    return Engine.componentConverterArrayToObject(components);
   }
   /** Возвращает шаблоны компонентов. */
   public static getTemplateComponents (): Components {
