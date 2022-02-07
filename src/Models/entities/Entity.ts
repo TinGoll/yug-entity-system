@@ -56,7 +56,6 @@ abstract class Entity {
    */
   setComponent(components: { [key: string]: EntityComponent }): Entity {
     const comps = this.getComponents();
-
     for (const key in components) {
       this.saveComponent(Engine.componentConverterObjectToArray(
         {

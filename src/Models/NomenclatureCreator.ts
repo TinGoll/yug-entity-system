@@ -58,6 +58,12 @@ export default class NomenclatureCreator {
         return Engine.getTemplateComponentNames();
     }
 
+    getInstanceComponentToName(componentName: string): Component {
+        const compApi = Engine.getTemplateComponentsApiToName(componentName);
+        const component = Component.setComponent(compApi);
+        return component;
+    }
+
     getTemplateComponent(): Components {
         return Engine.getTemplateComponents();
     }
