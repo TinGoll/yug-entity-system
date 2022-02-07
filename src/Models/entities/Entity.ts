@@ -34,11 +34,11 @@ abstract class Entity {
  /**
   * Добавляет новый компонет, со всеми полями. Если такой комопнент уже существует, новые поля заменят старые значения. 
   * @param comps Объект с влложенными комопнентами
-  * @returns Возвращает все компоненты в сущности.
+  * @returns Сущьность
   */
-  addComponent(component: Component): Components {
+  addComponent(component: Component): Entity {
     this.saveComponent(component.build())
-    return this.getComponents();
+    return this;
   }
 
   /** @returns Все компоненты сущьности */
