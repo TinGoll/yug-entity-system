@@ -1,6 +1,6 @@
 
 import Engine from "../../engine/Engine";
-import { ApiComponent, Components, EntityComponent, EntityComponentProperty, EntityOptions, EntityOptionsApi, EntityState, PropertyAttributes, PropertyValue } from "../../types/entity-types";
+import { ApiComponent, Components, CreateOptions, EntityComponent, EntityComponentProperty, EntityOptions, EntityOptionsApi, EntityState, PropertyAttributes, PropertyValue } from "../../types/entity-types";
 import Component from "../components/Component";
 
 
@@ -215,8 +215,10 @@ abstract class Entity {
   /** Производит новую сущность, на основе передаваемых опций, передавая ей свои параметры компонентов, 
    * если таковые определены в передаваемой сущности. Так же новоя сущность становиться дочерней сущностью текущей.
    * @returns Новая сущность.*/
-  produce (options: EntityOptions) {
-    const entity = Engine.create(Engine.integration(options, this.options));
+  produce(options: CreateOptions) {
+    if (!options.components) options.components = []
+    const opt = options as EntityOptions;
+    const entity = Engine.create(Engine.integration(opt, this.options));
     this.add(entity);
     return entity;
   }
