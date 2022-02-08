@@ -1,11 +1,11 @@
 
 import Engine from "../../engine/Engine";
-import { ApiComponent, Components, CreateOptions, EntityComponent, EntityComponentProperty, EntityOptions, EntityOptionsApi, EntityState, PropertyAttributes, PropertyValue } from "../../types/entity-types";
+import { ApiComponent, Components, CreateOptions, EntityComponent, EntityComponentProperty, EntityOptions, EntityOptionsApi, EntitySnapshot, EntityState, IGetable, PropertyAttributes, PropertyValue } from "../../types/entity-types";
 import Component from "../components/Component";
 
 
 /** Создает новую сущность, на основе передаваемых опций */
-abstract class Entity {
+abstract class Entity implements IGetable {
   protected options: EntityOptions;
   constructor(options: EntityOptions) {
     this.options = {...options};
@@ -299,6 +299,16 @@ abstract class Entity {
   }
   /** ------------------------------------------------------------------------------- */
   /** ------------------------------------------------------------------------------- */
+  /** Получаем "снимок сущности, без методов, с комопнентами в виде объекта. " */
+  public get(): Readonly<EntitySnapshot> {
+    const entitySnapshot: EntitySnapshot = {
+      components: Engine.componentConverterArrayToObject(this.options.components),
+      signature: this.options.signature,
+      key: this.options.key,
+      parentKey: this.options.parentKey
+    }
+    return {...entitySnapshot};
+  }
 }
 
 export default Entity;

@@ -1,6 +1,6 @@
 import { validate } from "uuid";
 import Engine from "../../engine/Engine";
-import { ApiComponent, Components, EntityComponent, EntityComponentDescription, EntityComponentProperty, GeometryComponent, PropertyAttributes, PropertyTypes, PropertyValue } from "../../types/entity-types";
+import { ApiComponent, Components, EntityComponent, EntityComponentDescription, EntityComponentProperty, GeometryComponent, IGetable, PropertyAttributes, PropertyTypes, PropertyValue } from "../../types/entity-types";
 
 interface ComponentProbs extends Partial<EntityComponentProperty> {
     propertyName: string;
@@ -27,7 +27,7 @@ interface EntityComponentPropertyInteractive {
     removeAttributes(att: PropertyAttributes): EntityComponentPropertyInteractive;
 }
 
-export default class Component {
+export default class Component implements IGetable {
     private DEFAULT_COMPONENT_NAME = 'Описание копонента на русском'
     private componentFields: ApiComponent[] = []
     private componentName: string;
@@ -37,7 +37,7 @@ export default class Component {
     }
 
     /** Название компонента на английском */
-    public getComponentName (): string {
+    public getComponentName(): string {
         return this.componentName;
     }
 
@@ -45,7 +45,7 @@ export default class Component {
         return [...this.componentFields]
     }
 
-    public setComponent (componentApi: ApiComponent[]): Component {
+    public setComponent(componentApi: ApiComponent[]): Component {
         const componentName = componentApi[0].componentName;
         const componentDescription = componentApi[0].componentDescription;
         this.componentName = componentName;
@@ -55,12 +55,12 @@ export default class Component {
     }
 
     /** Сохраняем новый компонент в шаблоны */
-    public SaveAsTemplate (): Components | null{
+    public SaveAsTemplate(): Components | null {
         if (!this.validate()) return null;
         return Engine.addTemplateComponent([...this.componentFields]);
     }
     /** Получить имя компонента на английском */
-    public setComponentName (value: string): Component {
+    public setComponentName(value: string): Component {
         this.componentName = value;
         this.componentFields.forEach(c => c.componentName = this.componentName);
         this.componentFields = [...this.componentFields]
@@ -95,7 +95,7 @@ export default class Component {
         return this;
     }
 
-    private defineApiComponent (probs: ComponentProbs): ApiComponent {
+    private defineApiComponent(probs: ComponentProbs): ApiComponent {
         const defaultValue: string = probs.propertyType === 'number' ? '0' : '';
         const component: Required<ApiComponent> = {
             id: 0,
@@ -116,7 +116,7 @@ export default class Component {
     private addPropertyToApiComponent(componentProperty: ApiComponent) {
         const existingEntryIndex = this.componentFields.findIndex(p => p.propertyName === componentProperty.propertyName);
         if (existingEntryIndex > -1) {
-            this.componentFields[existingEntryIndex] = { ...componentProperty};
+            this.componentFields[existingEntryIndex] = { ...componentProperty };
         } else {
             this.componentFields.push(componentProperty);
         }
@@ -125,11 +125,11 @@ export default class Component {
 
 
     /** Список созданных свойств в комоненте */
-    public propertyNames (): string [] {
+    public propertyNames(): string[] {
         return this.componentFields.map(c => c.propertyName);
     }
     /** Колличество свойство в компоненте */
-    public propertyCount (): number {
+    public propertyCount(): number {
         return this.componentFields.length;
     }
     /** Получаем интерактивный объект для редактирования, по имени свойства */
@@ -142,16 +142,16 @@ export default class Component {
             propertyName: "undefined",
             propertyDescription: "undefined",
             propertyValue: ""
-        } 
-            Engine.emit('on-component-error', {
-                component: this,
-                componentName: this.getComponentName(),
-                propertyName: nameProperty,
-                err: {
-                    message: `В компоненте не существует свойства "${nameProperty}". Данный комопнент содержит: ${this.propertyNames().join(', ')}`,
-                    errors: []
-                }
-            })
+        }
+        Engine.emit('on-component-error', {
+            component: this,
+            componentName: this.getComponentName(),
+            propertyName: nameProperty,
+            err: {
+                message: `В компоненте не существует свойства "${nameProperty}". Данный комопнент содержит: ${this.propertyNames().join(', ')}`,
+                errors: []
+            }
+        })
         return this.getInteractivProperty(emptyProperty);
     }
 
@@ -190,14 +190,14 @@ export default class Component {
         return interactive;
     }
 
-    get (): EntityComponent {
-        const components =  Engine.componentConverterArrayToObject(this.componentFields);
+    get(): EntityComponent {
+        const components = Engine.componentConverterArrayToObject(this.componentFields);
         return (components)[this.componentName]
     }
 
     /** Проверка компонента */
     private validate(): boolean {
-        const errors: string [] = [];
+        const errors: string[] = [];
         const component = Engine.componentConverterArrayToObject(this.componentFields)
         if (String(component.componentDescription) == String(this.DEFAULT_COMPONENT_NAME)) {
             errors.push('Не задано описание / название компонента на русском');

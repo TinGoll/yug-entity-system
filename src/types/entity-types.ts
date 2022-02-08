@@ -4,8 +4,16 @@ import { EntityProduct } from "../Models/entities/EntityProduct";
 import { EntityType } from "../utils/entity-units";
 
 
+export interface IGetable {
+  get(): EntityComponent | EntitySnapshot
+}
+
 export interface CreateOptions extends Omit<Partial<EntityOptions>, 'key' | 'parentKey' | 'components' > {
   components?: ApiComponent[]
+}
+
+export interface EntitySnapshot extends Omit<EntityOptions, 'components'> {
+  components: Components
 }
 
 export interface EntityOptions {
@@ -16,6 +24,8 @@ export interface EntityOptions {
 }
 
 /*************************************************************************************************************************************************** */
+
+
 
 
 let test
