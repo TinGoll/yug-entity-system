@@ -1,6 +1,6 @@
 import { validate } from "uuid";
 import Engine from "../../engine/Engine";
-import { ApiComponent, Components, EntityComponent, EntityComponentDescription, EntityComponentProperty, GeometryComponent, IGetable, PropertyAttributes, PropertyTypes, PropertyValue } from "../../types/entity-types";
+import { ApiComponent, Components, EntityComponent, EntityComponentProperty, IGetable, PropertyAttributes, PropertyTypes, PropertyValue } from "../../types/entity-types";
 
 interface ComponentProbs extends Partial<EntityComponentProperty> {
     propertyName: string;

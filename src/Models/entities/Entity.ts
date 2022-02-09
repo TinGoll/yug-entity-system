@@ -42,8 +42,8 @@ abstract class Entity implements IGetable {
   }
 
   /** @returns Все компоненты сущьности */
-  getComponents (): Components {
-    return Engine.componentConverterArrayToObject(this.options.components);
+  getComponents<T extends any = string> (): Components<T> {
+    return <Components<T>> Engine.componentConverterArrayToObject(this.options.components);
   }
 
   /**
