@@ -41,8 +41,8 @@ export type PropertyTypes = 'number' | 'string' | 'date';
 /*************************************************************************************************************************************************** */
 /**------------------------------Api Types-------------------------------------------------- */
 /** Api объект определения сущности. */
-export interface EntityOptionsApi extends EntityOptions {
-  сhildEntities: EntityOptionsApi[];
+export interface ApiEntityOptions extends EntityOptions {
+  сhildEntities: ApiEntityOptions[];
 }
 /** Модель сущность */
 export interface ApiEntity {

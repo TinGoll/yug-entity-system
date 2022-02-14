@@ -8,7 +8,7 @@ import {
   CreateOptions,
   Components,
   EntityComponent,
-  EntityOptionsApi,
+  ApiEntityOptions,
 } from "./types/entity-types";
 import { EntityType } from "./utils/entity-units";
 
@@ -17,11 +17,11 @@ export {
   NomenclatureCreatorOptions,
   EntityOptions,
   ApiEntity,
+  ApiComponent,
   EntityType,
   IGetable,
-  ApiComponent,
   CreateOptions,
-  EntityOptionsApi,
+  ApiEntityOptions,
   EntityComponent,
   Components,
 };

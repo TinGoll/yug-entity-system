@@ -1,6 +1,6 @@
 
 import Engine from "../../engine/Engine";
-import { ApiComponent, Components, CreateOptions, EntityComponent, EntityComponentProperty, EntityOptions, EntityOptionsApi, EntitySnapshot, EntityState, IGetable, PropertyAttributes, PropertyValue } from "../../types/entity-types";
+import { ApiComponent, Components, CreateOptions, EntityComponent, EntityComponentProperty, EntityOptions, ApiEntityOptions, EntitySnapshot, EntityState, IGetable, PropertyAttributes, PropertyValue } from "../../types/entity-types";
 import Component from "../components/Component";
 
 
@@ -193,7 +193,7 @@ abstract class Entity implements IGetable {
   /** ----------------------------------------------------------------- */
 
   /** Построение состояния родительской сущности и всех дочерних. */
-  public build(): EntityOptionsApi {
+  public build(): ApiEntityOptions {
     const children = Engine.getChildrenOptionsToParentKey(this.options.key!)
       .map(e => Engine.create(e)?.build());
     return {
