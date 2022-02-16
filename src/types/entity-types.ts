@@ -48,6 +48,7 @@ export interface ApiEntityOptions extends EntityOptions {
 export interface ApiEntity {
   id?: number;
   typeId?: EntityType;
+  category?: string;
   parentId?: number;
   sampleId?: number;
   name?: string;
