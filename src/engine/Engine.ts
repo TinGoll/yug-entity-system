@@ -203,7 +203,7 @@ class Engine {
       options.components = [...options.components, ...component.build()];
     }
     Engine.entities.set(options.key, options);
-    return {...options};
+    return { ...options, signature: { ...options.signature }, components: [...options.components]};
   }
   /** Описывать здесь все расширяемые классы */
   public static create(options: CreateOptions): Entity {
@@ -214,20 +214,7 @@ class Engine {
       components: [...options.components || []]
     }
     this.entityRegistration(opt);
-    switch (options?.signature?.typeId) {
-      case EntityType.ENTITY_HEADER:
-        return new EntityHeader(opt);
-      case EntityType.ENTITY_BODY:
-        return new EntityBody(opt);
-      case EntityType.ENTITY_PRODUCT:
-        return new EntityProduct(opt);
-      default:
-        options.signature = {
-          ...options.signature,
-          typeId: EntityType.ENTITY_PRODUCT
-        }
-        return new EntityProduct(opt);
-    }
+    return new EntityProduct(opt);
   }
   /** Метод слияния параметров одного объекта с другим */
   public static integration(recipient: EntityOptions, donor: EntityOptions): EntityOptions {

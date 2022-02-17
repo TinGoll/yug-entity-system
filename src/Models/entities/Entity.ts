@@ -8,7 +8,7 @@ import Component from "../components/Component";
 abstract class Entity implements IGetable {
   protected options: EntityOptions;
   constructor(options: EntityOptions) {
-    this.options = {...options};
+    this.options = { ...options, signature: { ...options.signature }, components: [...options.components]};
   }
 
   /** ----------------------------------------------------------------- */
