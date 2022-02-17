@@ -30,35 +30,18 @@ class Engine {
     Engine.mode = mode;
     Engine.instance = this;
   }
-
-
   /*** ----------------------------------- */
   /** Создает пустую номенклатуру */
   public nomenclatureCreator() {
     if (!this._creator) this._creator = new NomenclatureCreator();
     return this._creator
   }
-
-  /*** ----------------------------------- */
- /** * Создание нового заказа. */
- /*
-  newOrder(type: StageType = StageType.STANDART): Order {
-    const order = new Order(type);
-    this._order = order;
-    return order;
-  }
-  */
-  //get order (): Order |null {return this._order || null;}
-
-
   /** Дезинтегрирует объект Engine */
   destroy() {
     this._order = undefined;
     Engine.clearEvents();
     Engine.instance = undefined;
   }
-
-  
 
   /** Статические методы */
   /** События */
@@ -127,6 +110,15 @@ class Engine {
   public static getEntityOptionsToKey(key: string): EntityOptions | null {
     if (!Engine.entities.has(key)) return null;
     return Engine.entities.get(key) || null;
+  }
+
+  /** Получаем сущьность по ключу. */
+  public static setEntityOptionsToKey(key: string, opt: EntityOptions): EntityOptions | null {
+    if (!Engine.entities.has(key)) return null;
+    const entity =  Engine.entities.get(key);
+    entity!.components = [...opt.components];
+    entity!.signature = {...opt.signature};
+    return entity!;
   }
 
   /** Получаем все дочерние сущности. */
@@ -203,7 +195,7 @@ class Engine {
       options.components = [...options.components, ...component.build()];
     }
     Engine.entities.set(options.key, options);
-    return { ...options, signature: { ...options.signature }, components: [...options.components]};
+    return options;
   }
   /** Описывать здесь все расширяемые классы */
   public static create(options: CreateOptions): Entity {
@@ -213,8 +205,7 @@ class Engine {
       signature: { ...options.signature},
       components: [...options.components || []]
     }
-    this.entityRegistration(opt);
-    return new EntityProduct(opt);
+    return new EntityProduct(this.entityRegistration(opt));
   }
   /** Метод слияния параметров одного объекта с другим */
   public static integration(recipient: EntityOptions, donor: EntityOptions): EntityOptions {
@@ -225,7 +216,9 @@ class Engine {
 
     for (const component of recipientComponents) {
       // Если свойство у принимающего обекта не задано, пропускаем
+
       if (typeof component.propertyValue === "undefined" || component.propertyValue == '') continue;
+
       const donorComponent = donorComponents.find(
           c => c.componentName === component.componentName 
               && c.propertyName === component.propertyName

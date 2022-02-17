@@ -182,6 +182,7 @@ abstract class Entity implements IGetable {
    */
   private saveComponent(components: ApiComponent[]) {
     const comps = [...this.options.components];
+
     for (const component of components) {
       const index = comps.findIndex(c => c.componentName === component.componentName && c.propertyName === component.propertyName);
       if (index > -1) comps[index] = {...component}
@@ -196,7 +197,6 @@ abstract class Entity implements IGetable {
   public build(): ApiEntityOptions {
     const children = Engine.getChildrenOptionsToParentKey(this.options.key!)
       .map(e => Engine.create(e)?.build());
-
     return {
       ...this.options,
       сhildEntities: [
@@ -221,6 +221,7 @@ abstract class Entity implements IGetable {
       signature: {...options.signature},
       components: [...options.components || []]
     };
+
     const entity = Engine.create(Engine.integration(opt, this.options));
     this.add(entity);
     return entity;
@@ -264,6 +265,7 @@ abstract class Entity implements IGetable {
   /** Добавление существующей сущности, как дочерний объект. */
   add(entity: Entity): Entity {
     const options =  Engine.getEntityOptionsToKey(entity.key!)
+
     if (options && this.key) {
       options.parentKey = this.key
     }

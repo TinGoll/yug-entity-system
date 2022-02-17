@@ -35,16 +35,18 @@ export default class Component implements IGetable {
     constructor(name: string = 'Новый компонент') {
         this.componentName = name;
     }
-
     /** Название компонента на английском */
     public getComponentName(): string {
         return this.componentName;
     }
-
     public build(): ApiComponent[] {
-        return [...this.componentFields]
+        const buildData: ApiComponent[] = [];
+        for (const prob of this.componentFields) {
+            const buildProb = {...prob};
+            buildData.push(buildProb);
+        }
+        return buildData;
     }
-
     public setComponent(componentApi: ApiComponent[]): Component {
         const componentName = componentApi[0].componentName;
         const componentDescription = componentApi[0].componentDescription;
