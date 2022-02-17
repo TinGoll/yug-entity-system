@@ -216,8 +216,11 @@ abstract class Entity implements IGetable {
    * если таковые определены в передаваемой сущности. Так же новоя сущность становиться дочерней сущностью текущей.
    * @returns Новая сущность.*/
   produce(options: CreateOptions) {
-    const opt = {...options} as EntityOptions;
-    if (!opt.components) opt.components = [];
+    const opt: EntityOptions = {
+      ...options,
+      signature: {...options.signature},
+      components: [...options.components || []]
+    };
     const entity = Engine.create(Engine.integration(opt, this.options));
     this.add(entity);
     return entity;
