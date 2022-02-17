@@ -184,8 +184,9 @@ class Engine {
 
   public static generateKey (): string {return uuid();}
 
-  public static entityRegistration (options: EntityOptions): EntityOptions {
-    if (options.key && Engine.entities.has(options.key)) return options;
+  public static entityRegistration (opt: EntityOptions): EntityOptions {
+    const options = {...opt};
+    if (options.key && Engine.entities.has(options.key)) return {...options};
     options.key = this.generateKey();
     const component = new Component('serialization');
     component.setComponentDescription('Серийный ключ');
@@ -195,17 +196,23 @@ class Engine {
       propertyDescription:'Creator: ' + Engine.mode,
       propertyValue: options.key
     }).addAttributes('readonly');
+
     const index = options.components.findIndex(c => c.componentName === 'serialization');
     if (index > -1) options.components[index] = {...component.build()[0]};
-    else options.components = [...options.components, ...component.build()];
+    else {
+      options.components = [...options.components, ...component.build()];
+    }
     Engine.entities.set(options.key, options);
-    return options;
+    return {...options};
   }
   /** Описывать здесь все расширяемые классы */
   public static create(options: CreateOptions): Entity {
     /** Присваиваем уникальный ключь созданному обекту */
-    if (!options.components) options.components = [];
-    const opt = options as EntityOptions;
+    const opt: EntityOptions = {
+      ...options,
+      signature: { ...options.signature},
+      components: [...options.components || []]
+    }
     this.entityRegistration(opt);
     switch (options?.signature?.typeId) {
       case EntityType.ENTITY_HEADER:
