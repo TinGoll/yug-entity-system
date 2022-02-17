@@ -196,6 +196,7 @@ abstract class Entity implements IGetable {
   public build(): ApiEntityOptions {
     const children = Engine.getChildrenOptionsToParentKey(this.options.key!)
       .map(e => Engine.create(e)?.build());
+
     return {
       ...this.options,
       сhildEntities: [
@@ -211,13 +212,12 @@ abstract class Entity implements IGetable {
 
   /** ----------------------------------------------------------------- */
 
-
   /** Производит новую сущность, на основе передаваемых опций, передавая ей свои параметры компонентов, 
    * если таковые определены в передаваемой сущности. Так же новоя сущность становиться дочерней сущностью текущей.
    * @returns Новая сущность.*/
   produce(options: CreateOptions) {
-    if (!options.components) options.components = []
-    const opt = options as EntityOptions;
+    const opt = {...options} as EntityOptions;
+    if (!opt.components) opt.components = [];
     const entity = Engine.create(Engine.integration(opt, this.options));
     this.add(entity);
     return entity;
@@ -256,9 +256,6 @@ abstract class Entity implements IGetable {
 
   /**----------------------------------------------------------------------------------- */
 
-
-
-  
   /** ------------------------------------------------------------------------------- */
 
   /** Добавление существующей сущности, как дочерний объект. */
