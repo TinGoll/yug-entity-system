@@ -1,6 +1,6 @@
 {
   "name": "yug-entity-system",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "description": "Entity System",
   "main": "dist/index.js",
   "scripts": {
