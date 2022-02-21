@@ -39,10 +39,13 @@ class Engine {
   /** Дезинтегрирует объект Engine */
   destroy() {
     this._order = undefined;
+    this._creator = undefined;
+    Engine.clear();
     Engine.clearEvents();
     Engine.instance = undefined;
   }
 
+ 
   /** Статические методы */
   /** События */
   public static on(event: "error", listener: (data: { message: string }) => void): void;
@@ -78,6 +81,11 @@ class Engine {
       Engine.eventEmitter.removeAllListeners()
     } catch (e) {
     }
+  }
+
+  public static clear () {
+    Engine.componentTemplates = [];
+    Engine.entities.clear();
   }
 
   /** Добавляем новый шаблон компонентов. */
