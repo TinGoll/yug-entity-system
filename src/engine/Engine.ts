@@ -1,14 +1,10 @@
 import Entity from "../Models/entities/Entity";
-import EntityBody from "../Models/entities/EntityBody";
-import EntityHeader from "../Models/entities/EntityHeader";
-import { ApiComponent, Components, CreateOptions, EntityComponentDescription, EntityOptions, EventCallback, IEventable, PropertyValue } from "../types/entity-types";
+import { ApiComponent, Components, CreateOptions, EntityOptions, PropertyValue } from "../types/entity-types";
 
 import uuid from 'uuid-random';
 import EventEmitter from "events"
-import { EntityType } from "../utils/entity-units";
 import Order from "../Models/Order";
 import { EntityProduct } from "../Models/entities/EntityProduct";
-import { StageType } from "../utils/order-utils";
 import NomenclatureCreator from "../Models/NomenclatureCreator";
 import Component from "../Models/components/Component";
 
@@ -36,6 +32,11 @@ class Engine {
     if (!this._creator) this._creator = new NomenclatureCreator();
     return this._creator
   }
+  /** Создание инстанса класса, позволяющего создавать компоненты и сущьности. */
+  public creator (): NomenclatureCreator {
+    return this.nomenclatureCreator()
+  }
+
   /** Дезинтегрирует объект Engine */
   destroy() {
     this._order = undefined;
@@ -87,6 +88,10 @@ class Engine {
     Engine.componentTemplates = [];
     Engine.entities.clear();
   }
+  
+  public static clearTemplateComponents () {
+    Engine.componentTemplates = [];
+  }
 
   /** Добавляем новый шаблон компонентов. */
   public static addTemplateComponent(components: ApiComponent[]): Components {
@@ -101,6 +106,7 @@ class Engine {
     this.componentTemplates = [...comps]
     return Engine.componentConverterArrayToObject(components);
   }
+
   /** Возвращает шаблоны компонентов. */
   public static getTemplateComponents (): Components {
     return Engine.componentConverterArrayToObject(this.componentTemplates);

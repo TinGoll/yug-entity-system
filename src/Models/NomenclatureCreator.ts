@@ -5,16 +5,20 @@ import Component from "./components/Component";
 import { EntityProduct } from "./entities/EntityProduct";
 
 export default class NomenclatureCreator {
-    private _key?: string;
     private _nomenclature?: EntityProduct;
     private _currentComponent?: Component;
-    private _nomenclatureList: EntityProduct[] = [];
     constructor() {}
+
+    loadTemplateComponents (components: ApiComponent[]): NomenclatureCreator {
+        Engine.clearTemplateComponents();
+        Engine.addTemplateComponent(components);
+        return this;
+    }
 
     /** Сщздание номенклатуры или копонента */
     create(type: 'nomenclature', options: CreateOptions): EntityProduct;
     create(type: 'component', name: string): Component;
-    create(type: string, opt: CreateOptions | string): EntityProduct | Component | null{
+    create(type: string, opt: CreateOptions | string): EntityProduct | Component | null {
         switch (type) {
             case 'nomenclature':
                 this._nomenclature = Engine.create(opt as CreateOptions);
@@ -63,8 +67,10 @@ export default class NomenclatureCreator {
         const component = Component.setComponent(compApi);
         return component;
     }
-
-    getTemplateComponent(): Components {
+    /*** Получение шаблонов комопнетов. */
+    getTemplateComponents(): Components {
         return Engine.getTemplateComponents();
     }
+
+
 }
