@@ -80,8 +80,7 @@ class Engine {
   public static clearEvents() {
     try {
       Engine.eventEmitter.removeAllListeners()
-    } catch (e) {
-    }
+    } catch (e) {console.log();}
   }
 
   public static clear () {
