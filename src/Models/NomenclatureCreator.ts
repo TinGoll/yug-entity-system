@@ -18,7 +18,7 @@ export default class NomenclatureCreator {
     eatSavedData (data: ApiComponent[] | ApiEntityOptions) {
         if ((data as ApiEntityOptions ).signature) {
 
-        }else if ( Array.isArray(data)) {
+        } else if ( Array.isArray(data)) {
 
         }
     }
