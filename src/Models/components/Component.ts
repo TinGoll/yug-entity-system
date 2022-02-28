@@ -85,6 +85,27 @@ export default class Component implements IGetable {
         this.addPropertyToApiComponent(component);
         return this.getInteractivProperty(component);
     }
+    /** Удаление свойства комопнента */
+    removeProperty(propertyName: string): Component {
+        const comps = this.componentFields.filter(p => p.propertyName !== propertyName);
+        this.componentFields = [...comps];
+        return this;
+    }
+    /** Удаление свойства по данным с сервера */
+    removePropertyByServerData (properties: ApiComponent[]): Component {
+        const comps = this.componentFields.filter(p => {
+            const removedProb = properties.find(prob => prob.id && prob.id === p.id);
+            return !removedProb
+        });
+        this.componentFields = [...comps];
+        return this;
+    }
+    /** Подготовка свойства для удаления на сервере */
+    preparePropertyForRemoveFromServer(propertyName: string):ApiComponent[] {
+        const prob = this.componentFields.filter(p => p.propertyName === propertyName);
+        return [...prob];
+    }
+
 
     /**
      * Создать новое свойство в компоненте

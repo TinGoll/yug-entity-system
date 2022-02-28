@@ -36,8 +36,8 @@ export interface EntityComponentProperty {
   attributes: string;
   bindingToList: boolean;
 };
-export type PropertyValue = string | number | Date;
-export type PropertyTypes = 'number' | 'string' | 'date';
+export type PropertyValue = string | number | Date | boolean;
+export type PropertyTypes = 'number' | 'string' | 'date' | 'boolean';
 /*************************************************************************************************************************************************** */
 /**------------------------------Api Types-------------------------------------------------- */
 /** Api объект определения сущности. */
@@ -63,9 +63,9 @@ export interface ApiComponent {
   componentDescription: string;
   propertyName: string;
   propertyDescription: string;
-  propertyValue: string | number | Date;
+  propertyValue: PropertyValue;
   propertyFormula?: string;
-  propertyType?: 'string' | 'number' | 'date';
+  propertyType?: PropertyTypes;
   attributes?: string;
   bindingToList?: boolean;
 }

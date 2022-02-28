@@ -1,5 +1,5 @@
 import Engine from "../engine/Engine";
-import { ApiComponent, Components, CreateOptions} from "../types/entity-types";
+import { ApiComponent, ApiEntityOptions, Components, CreateOptions} from "../types/entity-types";
 import Component from "./components/Component";
 
 import { EntityProduct } from "./entities/EntityProduct";
@@ -15,6 +15,14 @@ export default class NomenclatureCreator {
         return this;
     }
 
+    eatSavedData (data: ApiComponent[] | ApiEntityOptions) {
+        if ((data as ApiEntityOptions ).signature) {
+
+        }else if ( Array.isArray(data)) {
+
+        }
+    }
+
     /** Сщздание номенклатуры или копонента */
     create(type: 'nomenclature', options: CreateOptions): EntityProduct;
     create(type: 'component', name: string): Component;
@@ -27,7 +35,7 @@ export default class NomenclatureCreator {
                 this._currentComponent = new Component(opt as string);
                 return this._currentComponent
             default:
-                Engine.emit('error', { message: 'Неверный тип обекста, введи "nomenclature" для создания Номенклатуры или "component" для создания компонента.'})
+                Engine.emit('error', { message: 'Неверный тип объекта, введи "nomenclature" для создания Номенклатуры или "component" для создания компонента.'})
                 return null
         }
     }

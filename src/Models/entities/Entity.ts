@@ -86,8 +86,10 @@ abstract class Entity implements IGetable {
       if (componentApi) {
         if (componentApi.propertyType == 'date' && !(value instanceof Date))
           throw new Error('Попытка присвоить значение, которое не является датой.');
-        if (componentApi.propertyType == 'number' && !isNaN((value as number)))
+
+        if (componentApi.propertyType == 'number' && isNaN((value as number)))
           throw new Error('Попытка присвоить значение, которое не является числом.');
+
         /** Определяем какие установлены атрибуты */
         const atributes: PropertyAttributes[] = <PropertyAttributes[]> componentApi.attributes?.replace(/\s+/g, '')?.split(';') || [];
         if (atributes.includes('readonly')) 
@@ -130,15 +132,17 @@ abstract class Entity implements IGetable {
   ): EntityComponentProperty | null {
     try {
       const componentsApi = this.options.components;
-      const componentApi = componentsApi.find(c => c.componentName && c.propertyName);
+      const componentApi = componentsApi.find(c => c.componentName === componentName && c.propertyName === propertyName);
       if (!componentApi) return null;
       const compObject = Engine.componentConverterArrayToObject([componentApi]);
-      if (Object.prototype.hasOwnProperty.call(compObject, componentName)) 
-        throw new Error(`Сущьность не содержит копонент "${componentName}"`);
-
-      if (Object.prototype.hasOwnProperty.call(compObject[componentName as string], propertyName))
+      if (!Object.prototype.hasOwnProperty.call(compObject, componentName)) 
+        throw new Error(`Сущность не содержит копонент "${componentName}"`);
+      
+      if (!Object.prototype.hasOwnProperty.call(compObject[componentName as string], propertyName))
         throw new Error(`Копонент "${componentName}" не содержит свойство "${propertyName}"`);
+
       return compObject[componentName as string][propertyName as string];
+
     } catch (e) {
       const error = e as Error;
       Engine.emit('on-entity-error', {
@@ -161,9 +165,20 @@ abstract class Entity implements IGetable {
     componentName: U extends string ? string : keyof U,
     propertyName: U extends string ? string : keyof U[keyof U]): T | null {
     try {
-      const property = this.getProperty<U>(componentName, propertyName);
+      const property = this.options.components.find(p => p.componentName === componentName && p.propertyName === propertyName);
       if (!property) throw new Error(`Копонент "${componentName}" не содержит свойство "${propertyName}"`);
-      return <T> property.propertyValue || null;
+      switch (property.propertyType) {
+        case 'number':
+          return <T> Number(property.propertyValue);
+        case 'date':
+          return <T> (new Date(property.propertyValue as string));
+        case 'boolean':
+          return <T> Boolean(property.propertyValue);
+        case 'string':
+          return <T> String(property.propertyValue);
+        default:
+          return <T> String(property.propertyValue);
+      }
     } catch (e) {
       const error = e as Error;
       Engine.emit('on-entity-error', {
