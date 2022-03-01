@@ -15,6 +15,7 @@ import {
 } from "./types/entity-types";
 import { EntityType } from "./utils/entity-units";
 
+/*
 
 Engine.on('on-component-error', ({ err }) => {
   console.log(err);
@@ -56,7 +57,7 @@ entity.setProperty('geometry', 'height', 845)
 
 console.timeEnd('save component-entity');
 
-
+*/
 
 export default Engine;
 export {
