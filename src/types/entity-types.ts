@@ -77,7 +77,7 @@ export interface IEventable {
 }
 /**----------------------------------------------------------------------------------------- */
 export type PropertyAttributes = 'readonly' | 'required';
-export interface NomenclatureCreatorOptions {
+export interface CreatorOptions {
   prototype?: EntityProduct;
   unit?: Unit;
 }

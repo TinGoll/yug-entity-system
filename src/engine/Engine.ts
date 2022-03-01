@@ -3,9 +3,8 @@ import { ApiComponent, Components, CreateOptions, EntityOptions, PropertyValue }
 
 import uuid from 'uuid-random';
 import EventEmitter from "events"
-import Order from "../Models/Order";
 import { EntityProduct } from "../Models/entities/EntityProduct";
-import NomenclatureCreator from "../Models/NomenclatureCreator";
+import Creator from "../Models/Creator";
 import Component from "../Models/components/Component";
 
 
@@ -18,8 +17,7 @@ class Engine {
   private static entities: Map<string, EntityOptions> = new Map <string, EntityOptions>();
   private static componentTemplates: ApiComponent[] = [];
 
-  private _order?: Order;
-  private _creator?: NomenclatureCreator;
+  private _creator?: Creator;
 
   constructor(mode: 'CLIENT' | 'SERVER' = 'CLIENT') {
     if (Engine.instance) {return Engine.instance;}
@@ -28,18 +26,17 @@ class Engine {
   }
   /*** ----------------------------------- */
   /** Создает пустую номенклатуру */
-  public nomenclatureCreator() {
-    if (!this._creator) this._creator = new NomenclatureCreator();
+  public Creator() {
+    if (!this._creator) this._creator = new Creator();
     return this._creator
   }
   /** Создание инстанса класса, позволяющего создавать компоненты и сущьности. */
-  public creator (): NomenclatureCreator {
-    return this.nomenclatureCreator()
+  public creator (): Creator {
+    return this.Creator()
   }
 
   /** Дезинтегрирует объект Engine */
   destroy() {
-    this._order = undefined;
     this._creator = undefined;
     Engine.clear();
     Engine.clearEvents();

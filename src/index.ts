@@ -2,7 +2,7 @@ import Engine from "./engine/Engine";
 import {
   EntityOptions,
   ApiEntity,
-  NomenclatureCreatorOptions,
+  CreatorOptions,
   IGetable,
   ApiComponent,
   CreateOptions,
@@ -29,7 +29,7 @@ Engine.on('on-entity-error', ( { err } ) => {
 
 console.time('save component-entity');
 const engine = new Engine('SERVER');
-const creator = engine.nomenclatureCreator()
+const creator = engine.Creator()
 const entity = creator.create('nomenclature', { signature: { name: 'Тестовая род сущьность' } });
 const component = creator.create('component', 'geometry');
 
@@ -59,9 +59,10 @@ console.timeEnd('save component-entity');
 
 */
 
+
 export default Engine;
 export {
-  NomenclatureCreatorOptions,
+  CreatorOptions,
   EntityOptions,
   ApiEntity,
   ApiComponent,

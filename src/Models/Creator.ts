@@ -4,12 +4,12 @@ import Component from "./components/Component";
 
 import { EntityProduct } from "./entities/EntityProduct";
 
-export default class NomenclatureCreator {
+export default class Creator {
     private _nomenclature?: EntityProduct;
     private _currentComponent?: Component;
     constructor() {}
 
-    loadTemplateComponents (components: ApiComponent[]): NomenclatureCreator {
+    loadTemplateComponents (components: ApiComponent[]): Creator {
         Engine.clearTemplateComponents();
         Engine.addTemplateComponent(components);
         return this;
@@ -17,9 +17,8 @@ export default class NomenclatureCreator {
 
     eatSavedData (data: ApiComponent[] | ApiEntityOptions) {
         if ((data as ApiEntityOptions ).signature) {
-
         } else if ( Array.isArray(data)) {
-
+            
         }
     }
 
@@ -44,7 +43,7 @@ export default class NomenclatureCreator {
         return this._currentComponent || null;
     }
 
-    saveComponent (): NomenclatureCreator {
+    saveComponent (): Creator {
         try {
              if (!this._currentComponent) {
                  throw new Error('Текущий компонент не создан или не выбран.')
@@ -58,7 +57,7 @@ export default class NomenclatureCreator {
         }
        
     }
-    selectCurrentComponent(componentName: string): NomenclatureCreator {
+    selectCurrentComponent(componentName: string): Creator {
         const compApi = Engine.getTemplateComponentsApiToName(componentName);
         if (compApi.length) {
             this._currentComponent = Component.setComponent(compApi);
