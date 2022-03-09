@@ -1,6 +1,6 @@
 import { Engine } from "../engine/Engine";
 import { EngineObjectType } from "../types/engine-interfaces";
-import { ApiComponent, ApiOptionsComponent, ApiOptionsEntity, Components } from "../types/entity-types";
+import { ApiComponent, ApiEntity, ApiOptionsComponent, ApiOptionsEntity, Components } from "../types/entity-types";
 import { Component } from "./components/Component";
 import { Entity } from "./entities/Entity";
 
@@ -38,6 +38,19 @@ export default class Creator {
             return Engine.getApiEntities().filter(e => !!e.sampleId).map(e => new Entity(e.key))
         }
         return Engine.getApiComponents().map((c, index, arr) => new Component(c.componentName, arr));
+    }
+
+    loadTemplateComponents(components: ApiComponent[]): Creator {
+        return this.loadObjects(components);
+    }
+
+    loadObjects(apiObjects: ApiComponent[] | ApiEntity[]): Creator {
+        Engine.loadObjects(apiObjects);
+        return this;
+    }
+
+    getComponents (): ApiComponent[] {
+        return Engine.getApiComponents();
     }
 
     /** Конвертирует массив комопнентов в объект. */
@@ -78,5 +91,7 @@ export default class Creator {
         const { propertyDescription, propertyValue, propertyType, propertyFormula, attributes, bindingToList, entityId, id, key } = component;
         return { id, entityId, propertyDescription, propertyValue, propertyType, propertyFormula, attributes, bindingToList, key}
     }
+
+
   
 }
