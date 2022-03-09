@@ -114,6 +114,7 @@ export class Engine {
         try {
             for (const component of comps) {
                 const index = Engine.apiComponents.findIndex(c => c.componentName === component.componentName && c.propertyName === component.propertyName);
+                Engine.registration(component);
                 if (index > -1) {
                     const candidate = Engine.apiComponents[index];
                     Engine.apiComponents[index] = { ...component, key: candidate.key };
@@ -241,6 +242,6 @@ export class Engine {
         return <T> object
     }
 
-    
+
 
 }
