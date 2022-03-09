@@ -1,83 +1,43 @@
-import Engine from "../engine/Engine";
-import { ApiComponent, ApiEntityOptions, Components, CreateOptions} from "../types/entity-types";
-import Component from "./components/Component";
-
-import { EntityProduct } from "./entities/EntityProduct";
+import { Engine } from "../engine/Engine";
+import { EngineObjectType } from "../types/engine-interfaces";
+import { ApiOptionsComponent, ApiOptionsEntity } from "../types/entity-types";
+import { Component } from "./components/Component";
+import { Entity } from "./entities/Entity";
 
 export default class Creator {
-    private _nomenclature?: EntityProduct;
-    private _currentComponent?: Component;
+   
     constructor() {}
 
-    loadTemplateComponents (components: ApiComponent[]): Creator {
-        Engine.clearTemplateComponents();
-        Engine.addTemplateComponent(components);
-        return this;
-    }
-
-    eatSavedData (data: ApiComponent[] | ApiEntityOptions) {
-        if ((data as ApiEntityOptions ).signature) {
-        } else if ( Array.isArray(data)) {
-            
-        }
-    }
-
-    /** Сщздание номенклатуры или копонента */
-    create(type: 'nomenclature', options: CreateOptions): EntityProduct;
-    create(type: 'component', name: string): Component;
-    create(type: string, opt: CreateOptions | string): EntityProduct | Component | null {
+    create(type: 'entity', name: string, options?: Omit<ApiOptionsEntity, 'name'>): Entity;
+    create(type: 'component', name: string, options?: Omit<ApiOptionsComponent, 'componentName'>): Component;
+    create(type: EngineObjectType, name: string, options?: ApiOptionsEntity | Omit<ApiOptionsComponent, 'componentName'>): Entity | Component {
         switch (type) {
-            case 'nomenclature':
-                this._nomenclature = Engine.create(opt as CreateOptions);
-                return this._nomenclature;
+            case 'entity':
+                const entityOpt: ApiOptionsEntity = { 
+                    ...<ApiOptionsEntity>options,
+                    name: name
+                };
+                const apiEntity = Engine.createObject('entity', entityOpt);
+                Engine.setApiEntities([apiEntity]);
+                return new Entity(apiEntity.key);
             case 'component':
-                this._currentComponent = new Component(opt as string);
-                return this._currentComponent
-            default:
-                Engine.emit('error', { message: 'Неверный тип объекта, введи "nomenclature" для создания Номенклатуры или "component" для создания компонента.'})
-                return null
+                const componentOpt: ApiOptionsComponent = {
+                    ...<ApiOptionsComponent>options,
+                    componentName: name
+                }
+                const apiComponent = Engine.createObject('component', componentOpt);
+                Engine.setApiComponent([apiComponent]);
+                return new Component(name, Engine.getApiComponents());
         }
     }
 
-    get currentComponent(): Component | null {
-        return this._currentComponent || null;
-    }
-
-    saveComponent (): Creator {
-        try {
-             if (!this._currentComponent) {
-                 throw new Error('Текущий компонент не создан или не выбран.')
-            }
-            this._currentComponent.SaveAsTemplate();
-            return this;
-        } catch (error) {
-            const e = error  as Error;
-            Engine.emit('error', { message: e.message });
-            return this;
+    getSamples(type: 'entity'): Entity[];
+    getSamples(type: 'component'): Component[];
+    getSamples(type: EngineObjectType): Entity[] | Component[] {
+        if (type === 'entity') {
+            return Engine.getApiEntities().filter(e => !!e.sampleId).map(e => new Entity(e.key))
         }
-       
+        return Engine.getApiComponents().map((c, index, arr) => new Component(c.componentName, arr));
     }
-    selectCurrentComponent(componentName: string): Creator {
-        const compApi = Engine.getTemplateComponentsApiToName(componentName);
-        if (compApi.length) {
-            this._currentComponent = Component.setComponent(compApi);
-        }
-        return this;
-    }
-
-    componentNames(): string[] {
-        return Engine.getTemplateComponentNames();
-    }
-
-    getInstanceComponentToName(componentName: string): Component {
-        const compApi = Engine.getTemplateComponentsApiToName(componentName);
-        const component = Component.setComponent(compApi);
-        return component;
-    }
-    /*** Получение шаблонов комопнетов. */
-    getTemplateComponents(): Components {
-        return Engine.getTemplateComponents();
-    }
-
-
+  
 }

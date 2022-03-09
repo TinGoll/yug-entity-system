@@ -1,252 +1,89 @@
-import { validate } from "uuid";
-import Engine from "../../engine/Engine";
-import { ApiComponent, Components, EntityComponent, EntityComponentProperty, IGetable, PropertyAttributes, PropertyTypes, PropertyValue } from "../../types/entity-types";
+import { ApiComponent, ComponentProbs, EntityComponent, EntitySnapshot, IGetable, PropertyAttributes, PropertyValue } from "../../types/entity-types";
 
-interface ComponentProbs extends Partial<EntityComponentProperty> {
-    propertyName: string;
-    propertyType: PropertyTypes
-}
-
-interface EntityComponentPropertyInteractive {
-    component: ApiComponent;
-    get propertyDescription(): string;
-    get propertyValue(): PropertyValue;
-    get propertyType(): PropertyTypes
-    get propertyFormula(): string;
-    get attributes(): string;
-    get bindingToList(): boolean;
-
-    set propertyDescription(value: string);
-    set propertyValue(value: PropertyValue);
-    set propertyType(value: PropertyTypes);
-    set propertyFormula(value: string);
-    set attributes(value: string);
-    set bindingToList(value: boolean);
-
-    addAttributes(att: PropertyAttributes): EntityComponentPropertyInteractive;
-    removeAttributes(att: PropertyAttributes): EntityComponentPropertyInteractive;
-}
-
-export default class Component implements IGetable {
-    private DEFAULT_COMPONENT_NAME = 'Описание копонента на русском'
-    private componentFields: ApiComponent[] = []
+export class Component implements IGetable {
+    private apiComponent: ApiComponent[];
     private componentName: string;
-    private componentDescription: string = this.DEFAULT_COMPONENT_NAME;
-    constructor(name: string = 'Новый компонент') {
-        this.componentName = name;
-    }
-    /** Название компонента на английском */
-    public getComponentName(): string {
-        return this.componentName;
-    }
-    public build(): ApiComponent[] {
-        const buildData: ApiComponent[] = [];
-        for (const prob of this.componentFields) {
-            const buildProb = {...prob};
-            buildData.push(buildProb);
-        }
-        return buildData;
-    }
-    public setComponent(componentApi: ApiComponent[]): Component {
-        const componentName = componentApi[0].componentName;
-        const componentDescription = componentApi[0].componentDescription;
+    constructor(componentName: string, apiComponent: ApiComponent[]) {
         this.componentName = componentName;
-        this.componentDescription = componentDescription;
-        this.componentFields = [...componentApi]
-        return this;
+        this.apiComponent = apiComponent;
     }
 
-    /** Сохраняем новый компонент в шаблоны */
-    public SaveAsTemplate(): Components | null {
-        if (!this.validate()) return null;
-        return Engine.addTemplateComponent([...this.componentFields]);
+    get(): EntityComponent<string> | EntitySnapshot {
+        throw new Error("Method not implemented.");
     }
-    /** Получить имя компонента на английском */
-    public setComponentName(value: string): Component {
-        this.componentName = value;
-        this.componentFields.forEach(c => c.componentName = this.componentName);
-        this.componentFields = [...this.componentFields]
-        return this;
-    }
-    /** Получить описание компонента на русском */
-    public setComponentDescription(value: string): Component {
-        this.componentDescription = value;
-        this.componentFields.forEach(c => c.componentDescription = this.componentDescription);
-        this.componentFields = [...this.componentFields]
-        return this;
+    
+    /**
+     * Получение значение свойства компонента.
+     * @param propertyName Название свойства
+     * @returns PropertyValue (string, number, Date, boolean) 
+     */
+    getProperty<U extends PropertyValue = string, 
+                T extends object | string = string
+                >(propertyName: T extends string ? string : keyof T[keyof T]): U | null {
+        try {
+            const prob = this.apiComponent.find(p => p.componentName === this.componentName && p.propertyName === propertyName);
+            if (!prob) return null;
+            switch (prob.propertyType) {
+                case 'number':
+                    return <U>Number(prob.propertyValue);
+                case 'date':
+                    return <U>(new Date(prob.propertyValue as string));
+                case 'boolean':
+                    return <U>Boolean(prob.propertyValue);
+                case 'string':
+                    return <U>String(prob.propertyValue);
+                default:
+                    return <U>String(prob.propertyValue);
+            }
+        } catch (e) {
+            console.log(e); // сделать событие на ошибку.
+            return null;
+        }
     }
     /**
-     * Создать новое свойство в компоненте
-     * @param probs Набор необходимых параметров для создания свойства компонента
-     * @returns Интерактивный обект, позволяющий редактировать свойство не прибегая к мутации
+     * Присвоение значения свойству компонента.
+     * @param propertyName Название свойства.
+     * @param value PropertyValue (string, number, Date, boolean). 
+     * @returns Component.
      */
-    public crateProperty(probs: ComponentProbs): EntityComponentPropertyInteractive {
-        const component = this.defineApiComponent(probs);
-        this.addPropertyToApiComponent(component);
-        return this.getInteractivProperty(component);
-    }
-    /** Удаление свойства комопнента */
-    removeProperty(propertyName: string): Component {
-        const comps = this.componentFields.filter(p => p.propertyName !== propertyName);
-        this.componentFields = [...comps];
-        return this;
-    }
-    /** Удаление свойства по данным с сервера */
-    removePropertyByServerData (properties: ApiComponent[]): Component {
-        const comps = this.componentFields.filter(p => {
-            const removedProb = properties.find(prob => prob.id && prob.id === p.id);
-            return !removedProb
-        });
-        this.componentFields = [...comps];
-        return this;
-    }
-    /** Подготовка свойства для удаления на сервере */
-    preparePropertyForRemoveFromServer(propertyName: string):ApiComponent[] {
-        const prob = this.componentFields.filter(p => p.propertyName === propertyName);
-        return [...prob];
-    }
-
-
-    /**
-     * Создать новое свойство в компоненте
-     * @param probs Набор необходимых параметров для создания свойства компонента
-     * @returns Component
-     */
-    public addProperty(probs: ComponentProbs): Component {
-        const component = this.defineApiComponent(probs);
-        this.addPropertyToApiComponent(component);
+    setProperty<U extends PropertyValue = string, T extends object | string = string>
+                (propertyName: T extends string ? string : keyof T[keyof T], value: U): Component {
+        try {
+            const prob = this.apiComponent.find(p => p.componentName === this.componentName && p.propertyName === propertyName);
+            if (!prob) throw new Error('Свойство не найдено.');
+            const attributes = <PropertyAttributes[]> (prob.attributes?.split(';') || []);
+            if (attributes.includes('readonly')) 
+                throw new Error('Попытка присвоить значение свойству которое помечено как "Только для чтения".');
+            if (prob.propertyType == 'date' && !(value instanceof Date))
+                throw new Error('Попытка присвоить значение, которое не является датой.');
+            if (prob.propertyType == 'number' && isNaN((value as number)))
+                throw new Error('Попытка присвоить значение, которое не является числом.');
+            prob.propertyValue = value;
+        } catch (e) {
+            console.log(e); // сделать событие на ошибку
+        }   
         return this;
     }
 
-    private defineApiComponent(probs: ComponentProbs): ApiComponent {
-        const defaultValue: string = probs.propertyType === 'number' ? '0' : '';
-        const component: Required<ApiComponent> = {
-            id: 0,
-            entityId: 0,
-            componentName: this.componentName,
-            componentDescription: this.componentDescription,
-            propertyName: probs.propertyName,
-            propertyDescription: probs.propertyDescription || 'Описание свойства',
-            propertyValue: probs.propertyValue || defaultValue,
-            propertyFormula: probs.propertyFormula || '',
-            propertyType: probs.propertyType,
-            attributes: probs.attributes || '',
-            bindingToList: probs.bindingToList || false
-        }
-        return component;
-    }
-
-    private addPropertyToApiComponent(componentProperty: ApiComponent) {
-        const existingEntryIndex = this.componentFields.findIndex(p => p.propertyName === componentProperty.propertyName);
-        if (existingEntryIndex > -1) {
-            this.componentFields[existingEntryIndex] = { ...componentProperty };
-        } else {
-            this.componentFields.push(componentProperty);
-        }
-        this.componentFields = [...this.componentFields];
-    }
-
-
-    /** Список созданных свойств в комоненте */
-    public propertyNames(): string[] {
-        return this.componentFields.map(c => c.propertyName);
-    }
-    /** Колличество свойство в компоненте */
-    public propertyCount(): number {
-        return this.componentFields.length;
-    }
-    /** Получаем интерактивный объект для редактирования, по имени свойства */
-    public getPropertyToName(nameProperty: string): EntityComponentPropertyInteractive {
-        const property = this.componentFields.find(c => c.propertyName === nameProperty);
-        if (property) return this.getInteractivProperty(property);
-        const emptyProperty: ApiComponent = {
-            componentName: "undefined",
-            componentDescription: "undefined",
-            propertyName: "undefined",
-            propertyDescription: "undefined",
-            propertyValue: ""
-        }
-        Engine.emit('on-component-error', {
-            component: this,
-            componentName: this.getComponentName(),
-            propertyName: nameProperty,
-            err: {
-                message: `В компоненте не существует свойства "${nameProperty}". Данный комопнент содержит: ${this.propertyNames().join(', ')}`,
-                errors: []
-            }
-        })
-        return this.getInteractivProperty(emptyProperty);
-    }
-
-    private getInteractivProperty(component: ApiComponent): EntityComponentPropertyInteractive {
-        const interactive: EntityComponentPropertyInteractive = {
-            component: component,
-            get propertyDescription() { return this.component.propertyDescription; },
-            get propertyValue() { return this.component.propertyValue!; },
-            get propertyType() { return this.component.propertyType!; },
-            get propertyFormula() { return this.component.propertyFormula!; },
-            get attributes() { return this.component.attributes!; },
-            get bindingToList() { return this.component.bindingToList!; },
-
-            set propertyDescription(value: string) { this.component.propertyDescription = value; },
-            set propertyValue(value: PropertyValue) { this.component.propertyValue = value; },
-            set propertyType(value: PropertyTypes) { this.component.propertyType = value; },
-            set propertyFormula(value: string) { this.component.propertyFormula = value; },
-            set attributes(value: string) { this.component.attributes = value; },
-            set bindingToList(value: boolean) { this.component.bindingToList = value; },
-
-            addAttributes: function (att: PropertyAttributes): EntityComponentPropertyInteractive {
-                const attStr = this.attributes + att + ';'
-                const setAtt = new Set(attStr.replace(/\s+/g, '').split(';'))
-                this.attributes = [...setAtt].join(';')
-                return this;
-            },
-
-            removeAttributes: function (att: PropertyAttributes): EntityComponentPropertyInteractive {
-                const strAtt = this.attributes || '';
-                const arrAtt = [...new Set(strAtt.replace(/\s+/g, '').split(';'))]
-                this.attributes = arrAtt.filter(a => a !== att).join(';');
-                return this;
-            }
-        }
-
-        return interactive;
-    }
-
-    get(): EntityComponent {
-        const components = Engine.componentConverterArrayToObject(this.componentFields);
-        return (components)[this.componentName]
-    }
-
-    /** Проверка компонента */
-    private validate(): boolean {
-        const errors: string[] = [];
-        const component = Engine.componentConverterArrayToObject(this.componentFields)
-        if (String(component.componentDescription) == String(this.DEFAULT_COMPONENT_NAME)) {
-            errors.push('Не задано описание / название компонента на русском');
-        }
-        if (!this.propertyNames().length) {
-            errors.push('В компонент не добавлено ни одно свойство.')
-        }
-        if (errors.length) {
-            Engine.emit('on-component-error', {
-                component: this,
+    addProperty(componentProbs: ComponentProbs): Component {
+        const template = this.apiComponent.find(c => c.componentName === this.componentName);
+        const candidate = this.apiComponent.find(c => c.componentName === this.componentName && c.propertyName === componentProbs.propertyName);
+        if (candidate) {
+            candidate.propertyDescription = componentProbs.propertyDescription || '';
+            candidate.propertyValue = componentProbs.propertyValue || '';
+            candidate.propertyFormula = componentProbs.propertyFormula;
+            candidate.propertyType = componentProbs.propertyType;
+            candidate.attributes = componentProbs.attributes;
+            candidate.bindingToList = componentProbs.bindingToList;
+        }else {
+            const component: Omit<Partial<ApiComponent>, 'id' | 'entityId' | 'entityKey'> = {
                 componentName: this.componentName,
-                err: {
-                    message: `Ошибка сохранения копонента "${this.componentName}"`,
-                    errors: [...errors]
-                }
-            })
+                componentDescription: template?.componentDescription || '',
+                ...componentProbs
+            }
+            this.apiComponent.push(<ApiComponent> component);
         }
-        return !errors.length;
+        return this;
     }
 
-    public static setComponent(componentApi: ApiComponent[]): Component {
-        const componentName = componentApi[0].componentName;
-        const componentDescription = componentApi[0].componentDescription;
-        const component = new Component(componentName);
-        component.componentDescription = componentDescription;
-        component.componentFields = [...componentApi]
-        return component;
-    }
 }

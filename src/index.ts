@@ -1,78 +1,21 @@
-import Engine from "./engine/Engine";
-import {
-  EntityOptions,
-  ApiEntity,
-  CreatorOptions,
-  IGetable,
-  ApiComponent,
-  CreateOptions,
-  Components,
-  EntityComponent,
-  ApiEntityOptions,
-  PropertyAttributes,
-  PropertyTypes,
-  PropertyValue,
-} from "./types/entity-types";
-import { EntityType } from "./utils/entity-units";
-
-/*
-
-Engine.on('on-component-error', ({ err }) => {
-  console.log(err);
-  
-})
-
-Engine.on('on-entity-error', ( { err } ) => {
-  console.log(err);
-  
-})
-
-console.time('save component-entity');
-const engine = new Engine('SERVER');
-const creator = engine.Creator()
-const entity = creator.create('nomenclature', { signature: { name: 'Тестовая род сущьность' } });
-const component = creator.create('component', 'geometry');
-
-component.setComponentDescription('Геометрия')
-  .addProperty({ propertyName: 'height', propertyType: 'number', propertyDescription: 'Высота', propertyValue: 916, attributes: 'Вообще что угодно'})
-
-entity.addComponent(component);
-
-component.crateProperty({
-  propertyName: 'heigh2t', propertyType: 'number', propertyDescription: 'Высота', propertyValue: 916
-}).addAttributes('readonly')
-
-
-
-const deleteData = component.preparePropertyForRemoveFromServer('heigh2t')
-
-component.removePropertyByServerData(deleteData);
-
-console.log(component.get());
-
-
-entity.setProperty('geometry', 'height', 845)
-
-//console.log('result', entity.getPropertyValue('geometry', 'height'));
-
-console.timeEnd('save component-entity');
-
-*/
+import { Engine } from "./engine/Engine";
+import { Component } from "./Models/components/Component";
+import { Entity } from "./Models/entities/Entity";
+import { ISerializable, EngineObjectType, EngineObject } from "./types/engine-interfaces";
+import { ApiComponent, ApiEntity, PropertyAttributes, PropertyTypes, PropertyValue, Unit } from "./types/entity-types";
 
 
 export default Engine;
 export {
-  CreatorOptions,
-  EntityOptions,
   ApiEntity,
   ApiComponent,
-  EntityType,
-  IGetable,
-  CreateOptions,
-  ApiEntityOptions,
-  EntityComponent,
-  Components,
-  PropertyAttributes,
+  Entity,
+  Component,
+  ISerializable,
+  EngineObjectType,
+  EngineObject,
   PropertyTypes,
-  PropertyValue
+  PropertyValue,
+  PropertyAttributes,
+  Unit
 };

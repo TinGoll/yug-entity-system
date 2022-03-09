@@ -1,8 +1,19 @@
 import { EntityProduct } from "../Models/entities/EntityProduct";
 import { EntityType } from "../utils/entity-units";
+import { ISerializable } from "./engine-interfaces";
 
 /****************************************************************** */
+
+export interface ApiOptionsEntity extends Omit<ApiEntity, 'key'> {
+  key?: string;
+}
+
+export interface ApiOptionsComponent extends Omit<ApiComponent, 'key'> {
+  key?: string;
+}
+
 export interface IGetable {
+  /** Превращение объекта движка в статический образ, для отображения */
   get(): EntityComponent | EntitySnapshot
 }
 export interface CreateOptions extends Omit<Partial<EntityOptions>, 'key' | 'parentKey' | 'components' > {
@@ -11,6 +22,7 @@ export interface CreateOptions extends Omit<Partial<EntityOptions>, 'key' | 'par
 export interface EntitySnapshot extends Omit<EntityOptions, 'components'> {
   components: Components
 }
+
 /****************************************************************** */
 export interface EntityOptions {
   signature: ApiEntity;
@@ -18,6 +30,7 @@ export interface EntityOptions {
   key?: string;
   parentKey?: string;
 }
+
 /****************************************************************** */
 export type Components<T extends any = string> = {
   [key in T extends string ? string : keyof T]: EntityComponent<T>;
@@ -28,6 +41,10 @@ export type EntityComponent<T extends any = string> = {
 export interface EntityComponentDescription {
   componentDescription: string;
 };
+export interface ComponentProbs extends Partial<EntityComponentProperty> {
+  propertyName: string;
+  propertyType: PropertyTypes
+}
 export interface EntityComponentProperty {
   propertyDescription: string;
   propertyValue: PropertyValue;
@@ -45,7 +62,7 @@ export interface ApiEntityOptions extends EntityOptions {
   сhildEntities: ApiEntityOptions[];
 }
 /** Модель сущность */
-export interface ApiEntity {
+export interface ApiEntity extends ISerializable {
   id?: number;
   typeId?: EntityType;
   category?: string;
@@ -55,10 +72,15 @@ export interface ApiEntity {
   note?: string;
   dateCreation?: Date;
   dateUpdate?: Date;
+  key: string;
+  parentKey?: string;
+  components?: ApiComponent[];
 }
-export interface ApiComponent {
+export interface ApiComponent extends ISerializable {
   id?: number;
+  key: string;
   entityId?: number;
+  entityKey?: string;
   componentName: string;
   componentDescription: string;
   propertyName: string;

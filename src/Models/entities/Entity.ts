@@ -1,331 +1,164 @@
+import { Engine } from "../../engine/Engine";
+import { EngineObject } from "../../types/engine-interfaces";
+import { ApiComponent, ApiEntity, EntityComponent, EntitySnapshot, IGetable, PropertyValue } from "../../types/entity-types";
+import { Component } from "../components/Component";
 
-import Engine from "../../engine/Engine";
-import { ApiComponent, Components, CreateOptions, EntityComponent, EntityComponentProperty, EntityOptions, ApiEntityOptions, EntitySnapshot, EntityState, IGetable, PropertyAttributes, PropertyValue } from "../../types/entity-types";
-import Component from "../components/Component";
 
-
-/** Создает новую сущность, на основе передаваемых опций */
-abstract class Entity implements IGetable {
-  protected options: EntityOptions;
-  constructor(options: EntityOptions) {
-    this.options = { ...options, signature: { ...options.signature }, components: [...options.components]};
-  }
-
-  /** ----------------------------------------------------------------- */
-  /**
-   * Возвращает массив объектов класса Component - независимый объект. не путать с объектом компонента сущьности.
-   * @returns Массив компонентов, каждый из которых, является instance класса Component. Который создается креатором.
-   */
-  produceComponents(): Component[] {
-    const components: Component[] = [];
-    const componentNames = [...new Set(this.options.components.map(c => c.componentName))]
-    for (const name of componentNames) {
-      const probs = this.options.components.filter(c => c.componentName === name).map(c => {
-        c.id = undefined;
-        c.entityId = undefined;
-        return c;
-      });
-      const component = Component.setComponent(probs);
-      components.push(component);
+export class Entity implements EngineObject<ApiEntity>, IGetable {
+    private _key: string;
+    constructor(key: string) {
+        this._key = key;
     }
-    return [...components];
-  }
+    get(): EntityComponent<string> | EntitySnapshot {
+        throw new Error("Method not implemented.");
+    }
 
- /**
-  * Добавляет новый компонет, со всеми полями. Если такой комопнент уже существует, новые поля заменят старые значения. 
-  * @param comps Объект с влложенными комопнентами
-  * @returns Сущьность
-  */
-  addComponent(component: Component): Entity {
-    this.saveComponent(component.build())
-    return this;
-  }
+    /** * Собирает сущность для отправки серверу/клиенту.*/
+    build(): ApiEntity[] {
+        return Engine.getBuildData(this._key);
+    }
 
-  /** @returns Все компоненты сущьности */
-  getComponents<T extends any = string> (): Components<T> {
-    return <Components<T>> Engine.componentConverterArrayToObject(this.options.components);
-  }
-
-  /**
-   * Перезаписывает значения всех переданных компонентов, если они существуют (Устарело). Можно передавать комопненты из других сущностей.
-   * Метод позволяем переопределить название комопнента, если есть такая необходимость
-   * (New) Изменил подход. Теперь добавляються компоненты, которых нет в текущей сущности.
-   * Метод setComponent - основной метод редактирования комопнентов для Админа.
-   * @param components - Компоненты  ввиде объекта
-   * @returns сущность
-   */
-  setComponent(components: { [key: string]: EntityComponent }): Entity {
-    const comps = this.getComponents();
-    for (const key in components) {
-      this.saveComponent(Engine.componentConverterObjectToArray(
-        {
-          ...components,
-          [key]: { ...components[key] }
+    addComponent(apiComponent: ApiComponent[]): Entity {
+        try {
+            const apiEntity = Engine.get(this._key);
+            if (!apiEntity) throw new Error("Сущность с таким ключем не обнаружена.")
+            const apiComponents = apiEntity.components || [];
+            for (const comp of apiComponent) {
+                const index = apiComponents.findIndex(c => c.componentName === comp.componentName && c.propertyName === comp.propertyName);
+                if (index >= 0){
+                    apiComponents[index] = { ...comp, id: apiComponents[index].id, entityId: apiEntity.id, entityKey: apiEntity.key }
+                }else{
+                    apiComponents.push({ ...comp, entityId: apiEntity.id, entityKey: apiEntity.key });
+                }
+            }
+            return this;
+        } catch (e) {
+            console.log(e);
+            // выкинуть ошибку
+            return this;
         }
-      ))
-      // Удалена проверка на наличие компонента в сущности.
-      //if (Object.prototype.hasOwnProperty.call(comps, key)) {} else {}
     }
-    return this;
-  }
-  /**
-   * Установить комопнент, с помощью данных, сформированнх методом build(), или данными полученными по API
-   * @param components - Массив данных сформированных методом build();
-   * @returns Возвращает Entity;
-   */
-  setComponentToBuildData (components: ApiComponent[]): Entity {
-    this.saveComponent(components)
-    return this;
-  }
-
-  /** Присваивает значение свойству определенного комопнента. В случае неудачи генерирует событие ошибки. */
-  setProperty(componentName: string, propertyName: string, value: PropertyValue): Entity {
-    try {
-      const componentsApi = this.options.components;
-      const componentApi = componentsApi.find(c => c.componentName === componentName && c.propertyName === propertyName);
-      if (componentApi) {
-        if (componentApi.propertyType == 'date' && !(value instanceof Date))
-          throw new Error('Попытка присвоить значение, которое не является датой.');
-
-        if (componentApi.propertyType == 'number' && isNaN((value as number)))
-          throw new Error('Попытка присвоить значение, которое не является числом.');
-
-        /** Определяем какие установлены атрибуты */
-        const atributes: PropertyAttributes[] = <PropertyAttributes[]> componentApi.attributes?.replace(/\s+/g, '')?.split(';') || [];
-        if (atributes.includes('readonly')) 
-          throw new Error('Попытка присвоить значение, свойству которое помечено как "только для чтения"');
-        /** присвоение  */
-        //* Сохраняем прежнее значение.
-        const oldValue = componentApi.propertyValue;
-        // * Записываем новое значение.
-        componentApi.propertyValue = value;
-        // * Разворачиваем копоненты, что бы избежать мутации.
-        this.options.components = [...componentsApi];
-        /** событие на изменение */
-      } else {
-        throw new Error(`Свойство ${propertyName} не найдено в компоненте ${componentName}`)
-      }
-      return this;
-    } catch (e) {
-      /** Реализовать событие ошибки */
-      const error = e as Error;
-      Engine.emit('on-entity-error', {
-        entity: this,
-        err: {
-          message: error.message,
-          errors: []
+    /** Получение всех комопнентов сущности */
+    getComponents (): ApiComponent[] {
+        try {
+            const apiEntity = Engine.get(this._key);
+            return apiEntity?.components || [];
+        } catch (e) {
+            return []
         }
-      })
-      return this;
     }
-  }
-  
-  /**
-   * Получаем объект определенного свойства определенного комонента.
-   * Использование дженерика заранее определенных копонентов, позволит использовать автокоплит.
-   * @param componentName Название копонента , на английском
-   * @param propertyName Название свойства на английском
-   */
-  getProperty<T extends any = string>(
-    componentName: T extends string ? string : keyof T, 
-    propertyName: T extends string ? string : keyof T[keyof T]
-  ): EntityComponentProperty | null {
-    try {
-      const componentsApi = this.options.components;
-      const componentApi = componentsApi.find(c => c.componentName === componentName && c.propertyName === propertyName);
-      if (!componentApi) return null;
-      const compObject = Engine.componentConverterArrayToObject([componentApi]);
-      if (!Object.prototype.hasOwnProperty.call(compObject, componentName)) 
-        throw new Error(`Сущность не содержит копонент "${componentName}"`);
-      
-      if (!Object.prototype.hasOwnProperty.call(compObject[componentName as string], propertyName))
-        throw new Error(`Копонент "${componentName}" не содержит свойство "${propertyName}"`);
 
-      return compObject[componentName as string][propertyName as string];
-
-    } catch (e) {
-      const error = e as Error;
-      Engine.emit('on-entity-error', {
-        entity: this,
-        err: {
-          message: error.message,
-          errors: []
-        }
-      })
-      return null;
+    /**
+     * Переопределяет данный объект.
+     * @param state  Набор данных, определяющий сущность.
+     * @returns  instance Сущности.
+     */
+    setState(state: ApiEntity): Entity {
+        this._key = state.key!;
+        Engine.setApiEntities([state]);
+        return this;
     }
-  }
-  /**
-   * 
-   * @param componentName Название копонента , на английском
-   * @param propertyName Название свойства на английском
-   * @returns Текст, число или дата, определяется дженериком <string>
-   */
-  getPropertyValue<T extends PropertyValue = string, U extends any = string>(
-    componentName: U extends string ? string : keyof U,
-    propertyName: U extends string ? string : keyof U[keyof U]): T | null {
-    try {
-      const property = this.options.components.find(p => p.componentName === componentName && p.propertyName === propertyName);
-      if (!property) throw new Error(`Копонент "${componentName}" не содержит свойство "${propertyName}"`);
-      switch (property.propertyType) {
-        case 'number':
-          return <T> Number(property.propertyValue);
-        case 'date':
-          return <T> (new Date(property.propertyValue as string));
-        case 'boolean':
-          return <T> Boolean(property.propertyValue);
-        case 'string':
-          return <T> String(property.propertyValue);
-        default:
-          return <T> String(property.propertyValue);
-      }
-    } catch (e) {
-      const error = e as Error;
-      Engine.emit('on-entity-error', {
-        entity: this,
-        err: {
-          message: error.message,
-          errors: []
-        }
-      })
-      return null;
+    /**
+     * Возвращает наименование сущности.
+     * @returns строка, имя сущности.
+     */
+    getName(): string {
+        return Engine.getApiEntityToKey(this._key)?.name || ''
     }
-  }
-
-  /** Приватный сервисный метод, для разворачивания комопнента (устарело)
-   *  Изменил принцип действия. Теперь в качестве аргумента, надо передавать массив ApiComponent[]
-   */
-  private saveComponent(components: ApiComponent[]) {
-    const comps = [...this.options.components];
-
-    for (const component of components) {
-      const index = comps.findIndex(c => c.componentName === component.componentName && c.propertyName === component.propertyName);
-      if (index > -1) comps[index] = {...component}
-      else comps.push({ ...component});
+    /**
+     * Возвращает уникальный ключ сущности.
+     * @returns строка
+     */
+    getKey(): string {
+        return this._key;
     }
-    this.options.components = [...comps];
-  }
-
-  /** ----------------------------------------------------------------- */
-
-  /** Построение состояния родительской сущности и всех дочерних. */
-  public build(): ApiEntityOptions {
-    const children = Engine.getChildrenOptionsToParentKey(this.options.key!)
-      .map(e => Engine.create(e)?.build());
-    return {
-      ...this.options,
-      сhildEntities: [
-        ...children
-      ]
+    /** Родительская сущность или  undefined*/
+    getParent(): Entity | undefined {
+        const parentKey = Engine.get(this._key)?.parentKey;
+        if (!parentKey) return;
+        return new Entity(parentKey);
     }
-  }
-
-  /** Установка состояния родительской сущности и всех дочерних. */
-  public setState(state: EntityState): Entity {
-    return this;
-  }
-
-  /** ----------------------------------------------------------------- */
-
-  /** Производит новую сущность, на основе передаваемых опций, передавая ей свои параметры компонентов, 
-   * если таковые определены в передаваемой сущности. Так же новоя сущность становиться дочерней сущностью текущей.
-   * @returns Новая сущность.*/
-  produce(options: CreateOptions) {
-    const opt: EntityOptions = {
-      ...options,
-      signature: {...options.signature},
-      components: [...options.components || []]
-    };
-
-    const entity = Engine.create(Engine.integration(opt, this.options));
-    this.add(entity);
-    return entity;
-  }
-
-  /** Принимает существующую сущность передавая ей свои параметры компонентов,
-   * если таковые определены в передаваемой сущности. 
-   * @returns Возвращает модифицированную сущность, с интегированными компонентами*/
-  override(entity: Entity): Entity {
-    return entity.setOption(Engine.integration(entity.getOptions(), this.options));
-  }
-
-  /** ------------------------------Отношение сущностей------------------------------ */
-  /** Уникальный ключь */
-  get key(): string | null {
-    return this.options.key || null;
-  }
-  /** Уникальный ключь родительского объекта. */
-  get parentKey(): string | null {
-    return this.options.parentKey || null;
-  }
-  set parentKey(key: string|null) {
-    this.options.parentKey = key||undefined
-  }
-  /**----------------------------------------------------------------------------------- */
-
-  /** Получить имя сущности. */
-  getName(): string {
-    return this.options.signature.name||'Без имени';
-  }
-  /** Определить имя сущности */
-  public setName(name: string): Entity {
-    this.options.signature.name = name;
-    return this;
-  }
-
-  /**----------------------------------------------------------------------------------- */
-
-  /** ------------------------------------------------------------------------------- */
-
-  /** Добавление существующей сущности, как дочерний объект. */
-  add(entity: Entity): Entity {
-    const options =  Engine.getEntityOptionsToKey(entity.key!)
-
-    if (options && this.key) {
-      options.parentKey = this.key
+    /**
+     * Получение всех дочерних сущностей.
+     * @returns массив дочерних сущностей instance класса Entity
+     */
+    getChildren(): Entity[] {
+        const children = Engine.getChildrenApiEntityToKey(this._key).map(e => new Entity(e.key!));
+        return children;
     }
-    return entity;
-  }
-  /** Добавляет дочерние сущности списком. */
-  addAll(arr: Entity[]): Entity {
-    for (const entity of arr) {
-      this.add(entity)
+    /**
+     * Добавление дочеренй сущности, путем передачи строкового ключа или ApiEntity.
+     * @param child Ключ дочерней сущности или сама сущность.
+     * @returns Entity
+     */
+    addChild(child: string): Entity;
+    addChild(child: ApiEntity): Entity;
+    addChild(child: string | ApiEntity): Entity {
+        const apiEntity = typeof child === "string" || child instanceof String ? Engine.get(<string>child) : child;
+        if (apiEntity) apiEntity.parentKey = this._key;
+        return this;
     }
-    return this;
-  }
-
-  /** @returns - Возвращает dto сущности. */
-  getOptions(): EntityOptions {
-    return this.options;
-  }
-
-  /** Определяет новые опции для сущности
-   * @returns this;
-   */
-  setOption(options: EntityOptions): Entity {
-    this.options = {...options}
-    return this;
-  }
-  /** ------------------------------------------------------------------------------- */
-  /** Вовращает массив объектов сущностей. */
-  getChildren(): Entity[] {
-    const children = Engine.getChildrenOptionsToParentKey(this.options.key!).map(opt => {
-      return Engine.create(opt);
-    });
-    return children;
-  }
-  /** ------------------------------------------------------------------------------- */
-  /** ------------------------------------------------------------------------------- */
-  /** Получаем "снимок сущности, без методов, с комопнентами в виде объекта. " */
-  public get(): Readonly<EntitySnapshot> {
-    const entitySnapshot: EntitySnapshot = {
-      components: Engine.componentConverterArrayToObject(this.options.components),
-      signature: this.options.signature,
-      key: this.options.key,
-      parentKey: this.options.parentKey
+    /**
+     * Способ получения значения свойства компонента.
+     * @param componentName название компонента на английском
+     * @param propertyName название свойства на английском.
+     * @returns PropertyValue (string, number, Date, boolean)
+     */
+    getPropertyValue<U extends PropertyValue = string, T extends object | string = string>(
+        componentName: T extends string ? string: keyof T, 
+        propertyName: T extends string ? string : keyof T[keyof T]
+    ): U | null {
+        const apiComponent = Engine.get(this._key)?.components || [];
+        const component = new Component(componentName, apiComponent);
+        return component.getProperty<U, T>(propertyName);
     }
-    return {...entitySnapshot};
-  }
+
+    /**
+     * Способ присвоения значения определенному свойству компонента.
+     * @param componentName название компонента на английском.
+     * @param propertyName название свойства на английском.
+     * @param value PropertyValue (string, number, Date, boolean).
+     * @returns Entity.
+     */
+    setPropertyValue<U extends PropertyValue = PropertyValue, T extends object | string = string>(
+        componentName: T extends string ? string : keyof T,
+        propertyName: T extends string ? string : keyof T[keyof T],
+        value: U
+    ): Entity {
+        const apiComponent = Engine.get(this._key)?.components || [];
+        const component = new Component(componentName, apiComponent);
+        component.setProperty(propertyName, value);
+        return this;
+    }
+
+    /** Пересчет всех компонентов */
+    calculate() {
+
+    }
+
+    /** Название сущности. */
+    get name (): string {
+        return this.getName();
+    }
+    /** Уникальный ключ сущности. */
+    get key(): string {
+        return this.getKey();
+    }
+    /** Родительская сущность или  undefined*/
+    get parent(): Entity | undefined {
+        return this.getParent();
+    }
+    /** Массив дочерних сущностей */
+    get children(): Entity[] {
+        return this.getChildren();
+    }
 }
 
-export default Entity;
+/*
+interface Geometry {geometry: GeometryProb}
+interface GeometryProb extends EntityComponentDescription {
+    height: EntityComponentProperty;
+    width: EntityComponentProperty;
+    depth: EntityComponentProperty;
+}
+*/
