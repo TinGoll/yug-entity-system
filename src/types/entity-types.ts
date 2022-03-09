@@ -1,4 +1,3 @@
-import { EntityProduct } from "../Models/entities/EntityProduct";
 import { EntityType } from "../utils/entity-units";
 import { ISerializable } from "./engine-interfaces";
 
@@ -99,13 +98,6 @@ export interface IEventable {
 }
 /**----------------------------------------------------------------------------------------- */
 export type PropertyAttributes = 'readonly' | 'required';
-export interface CreatorOptions {
-  prototype?: EntityProduct;
-  unit?: Unit;
-}
-export interface EntityState {
-  options: EntityOptions;
-  elements: EntityState[];
-}
+
 /**----------------------------------------------------------------------------------------- */
 export type Unit = 'шт.' | 'м. кв.' | 'м. куб.' | 'п/м';
