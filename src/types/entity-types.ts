@@ -31,12 +31,14 @@ export interface EntityOptions {
 }
 
 /****************************************************************** */
-export type Components<T extends any = string> = {
+export type Components<T extends object | string = string> = {
   [key in T extends string ? string : keyof T]: EntityComponent<T>;
 };
+
 export type EntityComponent<T extends any = string> = {
   [key in T extends string ? string : keyof T[keyof T]]: EntityComponentProperty
 };
+
 export interface EntityComponentDescription {
   componentDescription: string;
 };
