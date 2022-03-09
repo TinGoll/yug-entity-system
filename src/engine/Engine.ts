@@ -1,18 +1,27 @@
 import { ApiComponent, ApiEntity, ApiOptionsComponent, ApiOptionsEntity } from "../types/entity-types";
 import EventEmitter from "events"
 import { EngineObjectType, ISerializable } from "../types/engine-interfaces";
+import Creator from "../Models/Creator";
 
 
 export class Engine {
     private static eventEmitter: EventEmitter = new EventEmitter();
     private static instance?: Engine;
- 
+
     private static apiEntityList = new Map<string, ApiEntity>();
     private static apiComponents: ApiComponent[] = [];
+
+    private _creator?: Creator;
 
     constructor () {
         if (Engine.instance) { return Engine.instance; }
         Engine.instance = this;
+    }
+
+    creator(): Creator {
+        if (this._creator) return this._creator;
+        this._creator = new Creator();
+        return this._creator;
     }
 
     /**
