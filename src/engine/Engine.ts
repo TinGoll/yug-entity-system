@@ -2,6 +2,9 @@ import { ApiComponent, ApiEntity, ApiOptionsComponent, ApiOptionsEntity } from "
 import EventEmitter from "events"
 import { EngineObjectType, ISerializable } from "../types/engine-interfaces";
 import Creator from "../Models/Creator";
+import { randomUUID } from "crypto";
+
+import uuid from 'uuid-random'
 
 
 export class Engine {
@@ -119,6 +122,7 @@ export class Engine {
                     const candidate = Engine.apiComponents[index];
                     Engine.apiComponents[index] = { ...component, key: candidate.key };
                 } else {
+                    if (!component.propertyName) return;
                     Engine.apiComponents.push({ ...component });
                 }
             }
@@ -234,7 +238,9 @@ export class Engine {
     }
     /** Генератор ключей, для объектов */
     public static keyGenerator (): string {
-        return Date.now().toString(16);
+        //return Date.now().toString(16);
+        //return randomUUID();
+        return uuid();
     }
     /** Регистрация (сериализация) всех объектов движка. Объекту присваивается уникальный ключь. В качстве дженерика, используется интерфейс сущности или компонента. */
     public static registration <T extends ApiComponent | ApiEntity> (object: ISerializable): T {

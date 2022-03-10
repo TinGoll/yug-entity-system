@@ -1,12 +1,38 @@
 import { Engine } from "../../engine/Engine";
-import { ApiComponent, ComponentProbs, EntityComponent, EntitySnapshot, IGetable, PropertyAttributes, PropertyValue } from "../../types/entity-types";
+import { ISerializable } from "../../types/engine-interfaces";
+import { ApiComponent, ApiOptionsComponent, ComponentProbs, EntityComponent, EntitySnapshot, IGetable, PropertyAttributes, PropertyValue } from "../../types/entity-types";
 
 export class Component {
     private apiComponent: ApiComponent[];
     private componentName: string;
-    constructor(componentName: string, apiComponent: ApiComponent[]) {
-        this.componentName = componentName;
+    private componentDescription: string;
+    constructor(opt: ApiOptionsComponent, apiComponent: ApiComponent[]) {
+        this.componentName = opt.componentName;
+        this.componentDescription = opt.componentDescription
         this.apiComponent = apiComponent;
+    }
+
+    setName (name: string) : Component {
+        for (const component of this.apiComponent.filter(c => c.componentName === this.componentName)) {
+            component.componentName = name;
+        }
+        this.componentName = name;
+        return this;
+    }
+    setDescription(description: string): Component {
+        for (const component of this.apiComponent.filter(c => c.componentName === this.componentName)) {
+            component.componentDescription = description;
+        }
+        this.componentDescription = description;
+        return this;
+    }
+
+    getName (): string {
+        return this.componentName;
+    }
+
+    getDescription (): string {
+        return this.componentDescription;
     }
 
     build (): ApiComponent[] {
@@ -73,6 +99,7 @@ export class Component {
     addProperty(componentProbs: ComponentProbs): Component {
         const template = this.apiComponent.find(c => c.componentName === this.componentName);
         const candidate = this.apiComponent.find(c => c.componentName === this.componentName && c.propertyName === componentProbs.propertyName);
+
         if (candidate) {
             candidate.propertyDescription = componentProbs.propertyDescription || '';
             candidate.propertyValue = componentProbs.propertyValue || '';
@@ -83,12 +110,20 @@ export class Component {
         }else {
             const component: Omit<Partial<ApiComponent>, 'id' | 'entityId' | 'entityKey'> = {
                 componentName: this.componentName,
-                componentDescription: template?.componentDescription || '',
+                componentDescription: this.componentDescription || 'Описание компонента',
                 ...componentProbs
             }
+            Engine.registration(<ISerializable>component)
             this.apiComponent.push(<ApiComponent> component);
         }
         return this;
+    }
+
+    get name (): string {
+        return this.getName();
+    }
+    get description(): string {
+        return this.getDescription();
     }
 
 }

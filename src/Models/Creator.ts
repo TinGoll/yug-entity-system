@@ -9,8 +9,8 @@ export default class Creator {
     constructor() {}
 
     create(type: 'entity', name: string, options?: Omit<ApiOptionsEntity, 'name'>): Entity;
-    create(type: 'component', name: string, options?: Omit<ApiOptionsComponent, 'componentName'>): Component;
-    create(type: EngineObjectType, name: string, options?: ApiOptionsEntity | Omit<ApiOptionsComponent, 'componentName'>): Entity | Component {
+    create(type: 'component', name: string, options?: Omit<Partial<ApiOptionsComponent>, 'componentName'>): Component;
+    create(type: EngineObjectType, name: string, options?: ApiOptionsEntity | Omit<Partial<ApiOptionsComponent>, 'componentName'>): Entity | Component {
         switch (type) {
             case 'entity':
                 const entityOpt: ApiOptionsEntity = { 
@@ -27,7 +27,7 @@ export default class Creator {
                 }
                 const apiComponent = Engine.createObject('component', componentOpt);
                 Engine.setApiComponent([apiComponent]);
-                return new Component(name, Engine.getApiComponents());
+                return new Component(componentOpt, Engine.getApiComponents());
         }
     }
 
@@ -37,7 +37,7 @@ export default class Creator {
         if (type === 'entity') {
             return Engine.getApiEntities().filter(e => !!e.sampleId).map(e => new Entity(e.key))
         }
-        return Engine.getApiComponents().map((c, index, arr) => new Component(c.componentName, arr));
+        return Engine.getApiComponents().map((c, index, arr) => new Component(c, arr));
     }
 
     loadTemplateComponents(components: ApiComponent[]): Creator {

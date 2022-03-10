@@ -21,8 +21,9 @@ export class Entity implements EngineObject<ApiEntity>, IGetable {
     addComponent(apiComponent: ApiComponent[]): Entity {
         try {
             const apiEntity = Engine.get(this._key);
-            if (!apiEntity) throw new Error("Сущность с таким ключем не обнаружена.")
+            if (!apiEntity) throw new Error("Сущность с таким ключем не обнаружена.");
             const apiComponents = apiEntity.components || [];
+
             for (const comp of apiComponent) {
                 const index = apiComponents.findIndex(c => c.componentName === comp.componentName && c.propertyName === comp.propertyName);
                 if (index >= 0){
@@ -31,6 +32,7 @@ export class Entity implements EngineObject<ApiEntity>, IGetable {
                     apiComponents.push({ ...comp, entityId: apiEntity.id, entityKey: apiEntity.key });
                 }
             }
+            apiEntity.components = [...apiComponents]
             return this;
         } catch (e) {
             console.log(e);
@@ -109,7 +111,9 @@ export class Entity implements EngineObject<ApiEntity>, IGetable {
         propertyName: T extends string ? string : keyof T[keyof T]
     ): U | null {
         const apiComponent = Engine.get(this._key)?.components || [];
-        const component = new Component(componentName, apiComponent);
+        const firstOpt = apiComponent.find(c => c.componentName === componentName);
+        if (!firstOpt) return null;
+        const component = new Component(firstOpt, apiComponent);
         return component.getProperty<U, T>(propertyName);
     }
 
@@ -126,8 +130,11 @@ export class Entity implements EngineObject<ApiEntity>, IGetable {
         value: U
     ): Entity {
         const apiComponent = Engine.get(this._key)?.components || [];
-        const component = new Component(componentName, apiComponent);
-        component.setProperty(propertyName, value);
+        const firstOpt = apiComponent.find(c => c.componentName === componentName);
+        if (firstOpt) {
+            const component = new Component(firstOpt, apiComponent);
+            component.setProperty(propertyName, value);
+        }
         return this;
     }
 
