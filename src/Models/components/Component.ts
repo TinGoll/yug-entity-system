@@ -10,7 +10,11 @@ export class Component {
     }
 
     build (): ApiComponent[] {
-        return this.apiComponent.filter(c => c.componentName === this.componentName);
+        const buildData: ApiComponent[] = [];
+        for (const component of this.apiComponent.filter(c => c.componentName === this.componentName)) {
+            buildData.push({...component})
+        }
+        return buildData;
     }
     
     /**
