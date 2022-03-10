@@ -168,8 +168,8 @@ export class Engine {
      */
     public static getChildrenApiEntityToKey(key: string): ApiEntity[] {
         const apiEntities: ApiEntity[] = [];
-        for (const apiEntity of Engine.apiEntityList) {
-            if (apiEntity[0] === key) apiEntities.push(apiEntity[1]);
+        for (const apiEntity of Engine.apiEntityList.values()) {
+            if (apiEntity.parentKey === key) apiEntities.push(apiEntity);
         }
         return apiEntities;
     }
