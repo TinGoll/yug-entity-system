@@ -1,6 +1,7 @@
+import { Engine } from "../../engine/Engine";
 import { ApiComponent, ComponentProbs, EntityComponent, EntitySnapshot, IGetable, PropertyAttributes, PropertyValue } from "../../types/entity-types";
 
-export class Component implements IGetable {
+export class Component {
     private apiComponent: ApiComponent[];
     private componentName: string;
     constructor(componentName: string, apiComponent: ApiComponent[]) {
@@ -8,8 +9,8 @@ export class Component implements IGetable {
         this.apiComponent = apiComponent;
     }
 
-    get(): EntityComponent<string> | EntitySnapshot {
-        throw new Error("Method not implemented.");
+    build (): ApiComponent[] {
+        return this.apiComponent.filter(c => c.componentName === this.componentName);
     }
     
     /**
