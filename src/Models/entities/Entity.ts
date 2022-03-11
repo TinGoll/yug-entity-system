@@ -96,9 +96,22 @@ export class Entity implements EngineObject<ApiEntity>, IGetable {
     addChild(child: string): Entity;
     addChild(child: ApiEntity): Entity;
     addChild(child: string | ApiEntity): Entity {
-        const apiEntity = typeof child === "string" || child instanceof String ? Engine.get(<string>child) : child;
-        if (apiEntity) apiEntity.parentKey = this._key;
-        return this;
+        try {
+            if (typeof child === "string" || child instanceof String) {
+                if (Engine.has(<string>child)) {
+                    Engine.get(<string>child)!.parentKey = this._key;
+                }
+            }else{
+                const apiEntity = child as ApiEntity;
+                if (Engine.has(apiEntity.key)) {
+                    Engine.get(apiEntity.key)!.parentKey = this._key;
+                }
+            }
+            return this;
+        } catch (e) {
+            console.log(e);
+            return this;
+        }
     }
     /**
      * Способ получения значения свойства компонента.
