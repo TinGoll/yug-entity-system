@@ -3,7 +3,7 @@ import { Component } from "./Models/components/Component";
 import Creator from "./Models/Creator";
 import { Entity } from "./Models/entities/Entity";
 import { ISerializable, EngineObjectType, EngineObject } from "./types/engine-interfaces";
-import { ApiComponent, ApiEntity, PropertyAttributes, PropertyTypes, PropertyValue, Unit } from "./types/entity-types";
+import { ApiComponent, ApiEntity, KeyType, PropertyAttributes, PropertyTypes, PropertyValue, Unit } from "./types/entity-types";
 
 /*
  const engine = new Engine();
@@ -24,18 +24,15 @@ import { ApiComponent, ApiEntity, PropertyAttributes, PropertyTypes, PropertyVal
   entity.addChild(entityFilenka).addChild(entityProfile1).addChild(entityProfile2).addChild(entityProfile3).addChild(entityProfile4)
 
 
-  entity.addComponent(component.build());
+entity.addComponent(component.build());
 console.log(entity.build());
 
-*/
 const engine = new Engine();
 const creator = engine.creator();
-
 const component = creator.create('component', 'ComponentTest', {componentDescription: 'Тестовый компонент'});
 component.addProperty({propertyName: 'testProperty', propertyType: 'string'})
-
 console.log(JSON.stringify(component.build(), null, 2));
-
+*/
 
 export default Engine;
 export {
@@ -50,5 +47,6 @@ export {
   PropertyValue,
   PropertyAttributes,
   Unit,
-  Creator
+  Creator,
+  KeyType
 };

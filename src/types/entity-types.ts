@@ -1,6 +1,8 @@
 import { EntityType } from "../utils/entity-units";
 import { ISerializable } from "./engine-interfaces";
 
+export type KeyType = 'ent' | 'cmp';
+
 /****************************************************************** */
 
 export interface ApiOptionsEntity extends Omit<ApiEntity, 'key'> {
