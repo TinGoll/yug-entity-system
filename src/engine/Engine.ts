@@ -32,9 +32,9 @@ export class Engine {
      */
     public static loadObjects(apiObjects: ApiComponent[] | ApiEntity[]) {
         try {
-            if (apiObjects.length && (<ApiEntity>apiObjects[0]).name ) {
+            if (apiObjects?.length && (<ApiEntity>apiObjects[0]).name ) {
                 Engine.setApiEntities(<ApiEntity[]>apiObjects);
-            } else if (apiObjects.length && (<ApiComponent>apiObjects[0]).componentName){
+            } else if (apiObjects?.length && (<ApiComponent>apiObjects[0]).componentName){
                 Engine.setApiComponent(<ApiComponent[]>apiObjects);
             }
         } catch (e) {
@@ -244,7 +244,10 @@ export class Engine {
     }
     /** Регистрация (сериализация) всех объектов движка. Объекту присваивается уникальный ключь. В качстве дженерика, используется интерфейс сущности или компонента. */
     public static registration <T extends ApiComponent | ApiEntity> (object: ISerializable): T {
-        if (!object.key) object.key = Engine.keyGenerator();
+        let prefix = '';
+        if ((<ApiEntity>object).name) prefix = 'ent:';
+        if ((<ApiComponent>object).componentName) prefix = 'cmp:';
+        if (!object.key) object.key = prefix + Engine.keyGenerator();
         return <T> object
     }
 

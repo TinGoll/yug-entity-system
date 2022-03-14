@@ -28,6 +28,15 @@ import { ApiComponent, ApiEntity, PropertyAttributes, PropertyTypes, PropertyVal
 console.log(entity.build());
 
 */
+const engine = new Engine();
+const creator = engine.creator();
+
+const component = creator.create('component', 'ComponentTest', {componentDescription: 'Тестовый компонент'});
+component.addProperty({propertyName: 'testProperty', propertyType: 'string'})
+
+console.log(JSON.stringify(component.build(), null, 2));
+
+
 export default Engine;
 export {
   ApiEntity,
