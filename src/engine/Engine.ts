@@ -134,6 +134,7 @@ export class Engine {
     public static setApiEntities(states: ApiEntity[]): void {
         try {
             for (const state of states) {
+                this.registration(state);
                 if (Engine.has(state.key!)) {
                     const apiEntity = Engine.get(state.key!)!;
                     const components: ApiComponent[] = [];
