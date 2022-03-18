@@ -1,4 +1,4 @@
-import { ApiComponent, ApiEntity, ApiOptionsComponent, ApiOptionsEntity } from "../types/entity-types";
+import { ApiComponent, ApiEntity, ApiOptionsComponent, ApiOptionsEntity, KeyType } from "../types/entity-types";
 import EventEmitter from "events"
 import { EngineObjectType, ISerializable } from "../types/engine-interfaces";
 import Creator from "../Models/Creator";
@@ -18,6 +18,13 @@ export class Engine {
     constructor () {
         if (Engine.instance) { return Engine.instance; }
         Engine.instance = this;
+    }
+
+    /** Удаление объекта из хранилища движка. */
+    public static removeObjectToKey (key: string) {
+        const type: KeyType = <KeyType>key.split(':')[0];
+        if (type === 'ent') Engine.apiEntityList.delete(key);
+        if (type === 'cmp') Engine.apiComponents = [...Engine.apiComponents.filter(c => c.key !== key)];
     }
 
     creator(): Creator {

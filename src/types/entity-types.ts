@@ -1,7 +1,32 @@
 import { EntityType } from "../utils/entity-units";
 import { ISerializable } from "./engine-interfaces";
 
+/**
+ * interface MyTuple extends Array<number | string> {
+    0: number;
+    1: string;
+    length: 2; // это литеральный тип ‘2’, это не значение!
+  }
+ */
+
+export interface IKeysMap {
+  [index: string]: string;
+}
+
+
 export type KeyType = 'ent' | 'cmp';
+//export type ComponentTuple = [string, string];
+
+export interface ComponentTuple {
+  0: string;
+  1: string;
+  length: 2;
+}
+
+export interface FormulaPropertySet {
+  group: string;
+  buttons: Array<{ compName: string; name: string; value: string; }>
+}
 
 /****************************************************************** */
 

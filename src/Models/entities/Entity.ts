@@ -18,6 +18,11 @@ export class Entity implements EngineObject<ApiEntity>, IGetable {
         return Engine.getBuildData(this._key);
     }
 
+    /**
+     * Добавление комопнента в сущность. 
+     * @param apiComponent Массив ApiComponent
+     * @returns this
+     */
     addComponent(apiComponent: ApiComponent[]): Entity {
         try {
             const apiEntity = Engine.get(this._key);
@@ -40,6 +45,7 @@ export class Entity implements EngineObject<ApiEntity>, IGetable {
             return this;
         }
     }
+    
     /** Получение всех комопнентов сущности */
     getComponents (): ApiComponent[] {
         try {
@@ -155,6 +161,9 @@ export class Entity implements EngineObject<ApiEntity>, IGetable {
     calculate() {
 
     }
+
+    /************************************************************************************ */
+    /** GETERS */
 
     /** Название сущности. */
     get name (): string {
