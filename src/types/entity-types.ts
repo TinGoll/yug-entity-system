@@ -23,7 +23,7 @@ export interface ComponentTuple {
   length: 2;
 }
 
-export interface FormulaPropertySet {
+export interface FormulaPropertyButtons {
   group: string;
   buttons: Array<{ compName: string; name: string; value: string; }>
 }

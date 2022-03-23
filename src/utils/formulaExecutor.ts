@@ -1,13 +1,25 @@
 import { Engine } from "../engine/Engine";
 import { Entity } from "../Models/entities/Entity";
-import { ComponentTuple, ApiComponent, PropertyValue, FormulaPropertySet, IKeysMap } from "../types/entity-types";
+import { ComponentTuple, ApiComponent, PropertyValue, FormulaPropertyButtons, IKeysMap } from "../types/entity-types";
 
 interface FormulaComponents { entityName: string, key: string, components: ApiComponent[], count: number }
+interface IFactory {
+    CMP: (componentTuple: ComponentTuple) => PropertyValue | null;
+    BUTTONS: IButtons [];
+}
+interface IButtons {
+    GROUP: string;
+    COM_DESC: string;
+    NAME: string;
+    VALUE: string;
+    TUPLE: ComponentTuple;
+    CODE: string;
+}
 
 export function formulaExecutor(this: Entity, code: string, type: 'execution' | 'preparation' = 'execution') {
     try {
         /************************************************************************************************************************** */
-        const propertiesSet = new Map<string, FormulaPropertySet>();
+        const propertiesSet = new Map<string, FormulaPropertyButtons>();
         const propertyVariable = new Map<string, ComponentTuple[]>();
 
         const ME = this as Entity;
@@ -17,34 +29,24 @@ export function formulaExecutor(this: Entity, code: string, type: 'execution' | 
         const BROTHERS = FATHER?.getChildren() || [];
         const GRAND_FATHER = GET_GRAND_FATHER(FATHER);
 
-        const M_COMPONENTS = ME?.getComponents() || [];
-        const F_COMPONENTS = FATHER?.getComponents() || [];
-        
-        const m_comp_names: ComponentTuple[] = [...<ComponentTuple[]>(M_COMPONENTS.map(c => ([c.componentName!, c.propertyName!])))];
-        const f_comp_names: ComponentTuple[] = [...<ComponentTuple[]>(F_COMPONENTS.map(c => ([c.componentName!, c.propertyName!])))];
+        const FACS = new Map<string, IFactory>();
 
         for (const fComp of GET_COMPONENTS(GRAND_FATHER || ME)) {
-            const factory = cmp_factory(fComp.components);
             /** Подготовка кнопок для использования на клиенте. */
-            for (const component of fComp.components) {
-                const formulaElement = {}
-                
-            }
-
-            /** Подготовка кнопок для использования на клиенте. */
-            propertiesSet.set(`${fComp.entityName}[${fComp.count}]`, {
-                group: `${fComp.entityName}[${fComp.count}]`,
-                buttons: [
-                    ...(fComp.components || []).map(c => {
-                        const ps: { compName: string; name: string; value: string } = {
-                            name: `${c.propertyDescription} ${fComp.entityName}[${fComp.count}]`,
-                            value: `${strtr(fComp.entityName.split(' ').map(a => a.slice(0, 3)).join('_'))}_${fComp.count}_${c.propertyName.toUpperCase()}`,
-                            compName: c.componentName
-                        }
-                        return ps;
-                     })
-                ]
+            //.replace(/[^a-z]/g, '')
+            const CMP = cmp_factory(fComp.components);
+            const BUTTONS = fComp.components.map(component => {
+                const GROUP = `${fComp.entityName} inx: ${fComp.count}`;
+                const COM_DESC = `${component.componentDescription}`
+                const NAME  = `${component.propertyDescription} [${fComp.count}]`;
+                const VALUE = `${component.propertyName.toUpperCase()}_I${fComp.count}`;
+                const TUPLE = <ComponentTuple>[component.componentName!, component.propertyName!];
+                const CODE  = `const ${VALUE} = FACS.get('${fComp.entityName} inx: ${fComp.count}')?.CMP(['${TUPLE[0]}', '${TUPLE[1]}']);`;
+                return { GROUP, COM_DESC, NAME, VALUE, TUPLE, CODE};
             });
+            /** Сборка элемента экзекутора */
+            const factoryElement: IFactory = {CMP, BUTTONS};
+            FACS.set(`${fComp.entityName} inx: ${fComp.count}`, factoryElement);
         }
   
         /************************************************************************************************************************** */
@@ -95,35 +97,65 @@ export function formulaExecutor(this: Entity, code: string, type: 'execution' | 
         }
         /************************************************************************************************************************** */
 
-        const MCMP = cmp_factory(M_COMPONENTS);
-        const FCMP = cmp_factory(F_COMPONENTS);
+        //const MCMP = cmp_factory(M_COMPONENTS);
+        //const FCMP = cmp_factory(F_COMPONENTS);
 
         const baseCode = `
         const executor = () => {
                 /************************************************/
-                const M_HEIGHT = MCMP(['geometry', 'height'])
-                const M_WIDTH = MCMP(['geometry', 'width'])
-                const M_AMOUNT = MCMP(['geometry', 'amount']) 
+                //const M_HEIGHT = MCMP(['geometry', 'height']);
+                //const M_WIDTH = MCMP(['geometry', 'width']);
+                //const M_AMOUNT = MCMP(['geometry', 'amount']);
                 /************************************************/
-                const F_HEIGHT = FCMP(['geometry', 'height'])
-                const F_WIDTH = FCMP(['geometry', 'width'])
-                const F_AMOUNT = FCMP(['geometry', 'amount']) 
+                //const F_HEIGHT = FCMP(['geometry', 'height']);
+                //const F_WIDTH = FCMP(['geometry', 'width']);
+                //const F_AMOUNT = FCMP(['geometry', 'amount']); 
                 /************************************************/
-                let RESULT = null; // Результат
+                let RESULT = 1; // Результат
                 ${code}
                 return RESULT;
         }
         executor();
         `;
         if (type === 'execution') return eval(baseCode);
-        return [...propertiesSet.values()]
+        const clientButtons: any[] = [];
+        for (const F of FACS) {
+            const compNames = [...new Set(F[1].BUTTONS.map(b => b.COM_DESC))];
+            const tempArr: any [] = [];
+            for (const cname of compNames) {
+                const buttons = F[1].BUTTONS.filter(b => b.COM_DESC === cname)
+                    .map(b=> {
+                        return {
+                            name: b.NAME,
+                            value: b.VALUE,
+                        }
+                    })
+                tempArr.push({componentName: cname, buttons});
+            }
+            const but = {
+                group: F[0],
+                components: [...tempArr]
+            }
+            clientButtons.push(but)
+        }
+
+        let startCode = '';
+        startCode += `/*************************************************************/\n`;
+        startCode += `/*  ME - Текущий объект, FATHER - родитель,                  */\n`;
+        startCode += `/*  CHILDS - детки, BROTHERS - братья, GRAND_FATHER - дед    */\n`;
+        startCode += `/*  RESULT - в эту переменную внесите результат.             */\n`;
+        startCode += `/*************************************************************/\n`;
+        startCode += `// Тут пишите ваш код, удачи!\n\n\n`;
+
+        return {clientButtons, startCode};
     } catch (e) {
+        console.log(e);
         return null;
     }
 }
 
-function strtr(str: string) {
-    let txt = str.toLowerCase().replace(/[^a-z]/g, '');
+function strtr(str: string): string {
+    let txt = str.toLowerCase();
     const trans: IKeysMap = {
         'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd',
         'е': 'e', 'ё': 'e', 'ж': 'zh', 'з': 'z', 'и': 'i',

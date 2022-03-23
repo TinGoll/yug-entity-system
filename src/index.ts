@@ -78,7 +78,7 @@ rubashka.addComponent(geometry.build()).addComponent(money.build());
 
 fasadGluhoy.addChild(filenka.addChild(mdfShild).addChild(rubashka)).addChild(profileTop).addChild(profileBot).addChild(profileLeft).addChild(profileRight);
 
-const res = formulaExecutor.bind(fasadGluhoy)(`
+const res = formulaExecutor.bind(profileTop)(`
 
   // Доступные.
 
@@ -99,16 +99,10 @@ const res = formulaExecutor.bind(fasadGluhoy)(`
   // Логика.
 
   // AA - (Фасад глухой Геометрия Высота)
-  /*
-  const BCMP = cmp_factory(CHILDS[0].getComponents())
-  MCMP(['geometry', 'height'])
-  FCMP(['geometry', 'height'])
-
-  let test =  BCMP(['geometry', 'height'])
-
-  RESULT = (test / 1000 * F_WIDTH / 1000 * F_AMOUNT);
-  */
-`, 'preparation')
+  
+  RESULT = ME.parent.getName();
+  
+`,)
 
 console.log(JSON.stringify(res, null, 2));
 

@@ -34,6 +34,7 @@ export class Entity implements EngineObject<ApiEntity>, IGetable {
                 if (index >= 0){
                     apiComponents[index] = { ...comp, id: apiComponents[index].id, entityId: apiEntity.id, entityKey: apiEntity.key }
                 }else{
+                    Engine.registration(comp);
                     apiComponents.push({ ...comp, entityId: apiEntity.id, entityKey: apiEntity.key });
                 }
             }
