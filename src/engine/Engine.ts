@@ -28,13 +28,28 @@ export class Engine {
     }
 
 
-
-    
-
     /****************************************************************************************************** */
     /****************************************************************************************************** */
     /**************************************Статические методы********************************************** */
     /****************************************************************************************************** */
+    /** Клонирование объекта. */
+    public static cloningObject<T extends ApiComponent | ApiEntity>(object: T[]): T[] {
+        try {
+            const temArr: T[] = [];
+            /** Если объект - компонент */
+            if (object && object.length) {
+                for (const obj of object) {
+                    const clonObj ={...obj, key: '', id: undefined }
+                    Engine.registration(clonObj);
+                    temArr.push(<T>clonObj);
+                }
+            }
+            return temArr;
+        } catch (e) {
+            console.log(e);
+            return [];
+        }
+    }
 
     /** Удаление объекта из хранилища движка. */
     public static removeObjectToKey(key: string) {

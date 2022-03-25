@@ -28,8 +28,8 @@ export class Entity implements EngineObject<ApiEntity>, IGetable {
             const apiEntity = Engine.get(this._key);
             if (!apiEntity) throw new Error("Сущность с таким ключем не обнаружена.");
             const apiComponents = apiEntity.components || [];
-
-            for (const comp of apiComponent) {
+            const cloneComponents = Engine.cloningObject(apiComponent);
+            for (const comp of cloneComponents) {
                 const index = apiComponents.findIndex(c => c.componentName === comp.componentName && c.propertyName === comp.propertyName);
                 if (index >= 0){
                     apiComponents[index] = { ...comp, id: apiComponents[index].id, entityId: apiEntity.id, entityKey: apiEntity.key }
@@ -107,16 +107,23 @@ export class Entity implements EngineObject<ApiEntity>, IGetable {
     addChild(child: string): Entity;
     addChild(child: ApiEntity): Entity;
     addChild(child: string | ApiEntity): Entity {
+        let key: string;
         try {
             if (typeof child === "string" || child instanceof String) {
-                if (Engine.has(<string>child)) {
-                    Engine.get(<string>child)!.parentKey = this._key;
-                }
+                key = <string>child;
             }else{
                 const apiEntity = child as ApiEntity;
-                if (Engine.has(apiEntity.key)) {
-                    Engine.get(apiEntity.key)!.parentKey = this._key;
-                }
+                key = apiEntity.key;
+            }
+            if (Engine.has(key)) {
+               // Engine.cloningObject([Engine.get(key)!])[0].parentKey = this._key;
+                const candidate = Engine.get(key)!;
+                const components = candidate.components!;
+                const cloneComponents = Engine.cloningObject(components);
+                const clone = Engine.cloningObject([candidate])[0];
+                clone.components = cloneComponents;
+                clone.parentKey = this._key;
+                Engine.loadObjects([clone]);
             }
             return this;
         } catch (e) {
