@@ -20,17 +20,27 @@ export class Engine {
         Engine.instance = this;
     }
 
-    /** Удаление объекта из хранилища движка. */
-    public static removeObjectToKey (key: string) {
-        const type: KeyType = <KeyType>key.split(':')[0];
-        if (type === 'ent') Engine.apiEntityList.delete(key);
-        if (type === 'cmp') Engine.apiComponents = [...Engine.apiComponents.filter(c => c.key !== key)];
-    }
 
     creator(): Creator {
         if (this._creator) return this._creator;
         this._creator = new Creator();
         return this._creator;
+    }
+
+
+
+    
+
+    /****************************************************************************************************** */
+    /****************************************************************************************************** */
+    /**************************************Статические методы********************************************** */
+    /****************************************************************************************************** */
+
+    /** Удаление объекта из хранилища движка. */
+    public static removeObjectToKey(key: string) {
+        const type: KeyType = <KeyType>key.split(':')[0];
+        if (type === 'ent') Engine.apiEntityList.delete(key);
+        if (type === 'cmp') Engine.apiComponents = [...Engine.apiComponents.filter(c => c.key !== key)];
     }
 
     /**

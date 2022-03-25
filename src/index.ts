@@ -33,7 +33,7 @@ const creator = engine.creator();
 const component = creator.create('component', 'ComponentTest', {componentDescription: 'Тестовый компонент'});
 component.addProperty({propertyName: 'testProperty', propertyType: 'string'})
 console.log(JSON.stringify(component.build(), null, 2));
-*/
+
 const engine = new Engine();
 const creator = engine.creator();
 
@@ -55,16 +55,16 @@ const workShlif = creator.create('component', "workShlif", { componentDescriptio
 const workFinishing = creator.create('component', "workFinishing", { componentDescription: "Работа отделка" })
   .addProperty({ propertyName: 'cost', propertyType: 'number', propertyDescription: 'Стоимость', propertyValue: 0, attributes: "required" });
 
-const fasadGluhoy = creator.create('entity', 'Фасад глухой', { category: "Фасад", note: "Это описание фасада." });
+const fasadGluhoy = creator.create('entity', 'Фасад глухой', { category: "Фасад", note: "Это описание фасада.", id: 1 });
 
-const profileTop = creator.create('entity', 'Профиль верхний', { category: "Профиль", });
-const profileLeft = creator.create('entity', 'Профиль левый', { category: "Профиль", });
-const profileBot = creator.create('entity', 'Профиль нижний', { category: "Профиль", });
-const profileRight = creator.create('entity', 'Профиль правый', { category: "Профиль", });
+const profileTop = creator.create('entity', 'Профиль верхний', { category: "Профиль", id: 2});
+const profileLeft = creator.create('entity', 'Профиль левый', { category: "Профиль", id: 3});
+const profileBot = creator.create('entity', 'Профиль нижний', { category: "Профиль", id: 4});
+const profileRight = creator.create('entity', 'Профиль правый', { category: "Профиль", id: 5});
 
-const filenka = creator.create('entity', 'Филенка Мария Ивановна', { category: "Филёнка", });
-const mdfShild = creator.create('entity', 'Мдф Плита 6 мм.', { category: "МДФ", });
-const rubashka = creator.create('entity', 'Рубашка 1,2 мм', { category: "Рубашка", });
+const filenka = creator.create('entity', 'Филенка Мария Ивановна', { category: "Филёнка", id: 6});
+const mdfShild = creator.create('entity', 'Мдф Плита 6 мм.', { category: "МДФ", id: 7});
+const rubashka = creator.create('entity', 'Рубашка 1,2 мм', { category: "Рубашка", id: 8});
 
 fasadGluhoy.addComponent(geometry.build()).addComponent(money.build()).addComponent(workFinishing.build()).addComponent(workShlif.build()).addComponent(workSborka.build());
 filenka.addComponent(geometry.build()).addComponent(money.build()).addComponent(workFinishing.build()).addComponent(workShlif.build());
@@ -79,33 +79,11 @@ rubashka.addComponent(geometry.build()).addComponent(money.build());
 fasadGluhoy.addChild(filenka.addChild(mdfShild).addChild(rubashka)).addChild(profileTop).addChild(profileBot).addChild(profileLeft).addChild(profileRight);
 
 const res = formulaExecutor.bind(profileTop)(`
-
-  // Доступные.
-
-  /*************************************************************/
-  /*  M_HEIGHT - Высота, M_WIDTH - Ширина,  M_AMOUNT - Кол-во  */               
-  /*************************************************************/
-  /*  F_HEIGHT - Высота, F_WIDTH - Ширина,  F_AMOUNT - Кол-во  */
-  /*************************************************************/
-  /*  ME, FATHER, CHILDS, BROTHERS, GRAND_FATHER               */
-  /*************************************************************/
-
-  /*
-    [ 'geometry', 'height' ]
-    [ 'geometry', 'width' ]
-    [ 'geometry', 'amount' ]
-  */
-
-  // Логика.
-
-  // AA - (Фасад глухой Геометрия Высота)
-  
-  RESULT = ME.parent.getName();
-  
-`,)
+  RESULT = VAR_HEIGHT_GEOMETRY_ID1;
+`, )
 
 console.log(JSON.stringify(res, null, 2));
-
+*/
 export default Engine;
 export {
   ApiEntity,

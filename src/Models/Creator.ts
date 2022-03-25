@@ -8,6 +8,53 @@ export default class Creator {
    
     constructor() {}
 
+    /** ************************************************************************************************************************************************ */
+
+    /**
+     * Загрузка, фиксация и возврат массива instance сущности или компонента.
+     * @param apiObjects api дата.
+     * @returns  Entity[] или Component[]
+     */
+    loadAndReturning<T extends Entity | Component = Entity>(apiObjects: ApiComponent[] | ApiEntity[]): T[] {
+        try {
+            Engine.loadObjects(apiObjects);
+            /** Возвращаем массив объектов класса Entity */
+            if (apiObjects && (<ApiEntity> apiObjects[0]).name) {
+                const apiEnts = <ApiEntity[]>apiObjects;
+                const apiFathers = apiEnts.filter(e => !e.parentKey);
+                return <T[]> apiFathers.map(e => new Entity(e.key));
+            }
+            /** Возвращаем массив объектов класса Component */
+            if (apiObjects && (<ApiComponent>apiObjects[0]).propertyName) {
+                const comps = (<ApiComponent[]>apiObjects);
+                const compNames = [...new Set(comps.map(c => c.componentName))];
+                const components = compNames.map(cmpName => {
+                    const opt = comps.find(c => c.componentName === cmpName);
+                    return new Component(opt!, comps);
+                })
+                return <T[]> components;
+            }
+
+            return [];
+        } catch (e) {
+            // Сделать вывод ошибки.
+            console.log(e);   
+            return [];
+        }
+    }
+    
+    /**
+     * Загрузка объеетов в движок
+     * @param apiObjects 
+     * @returns 
+     */
+    loadObjects(apiObjects: ApiComponent[] | ApiEntity[]): Creator {
+        Engine.loadObjects(apiObjects);
+        return this;
+    }
+
+    /** ************************************************************************************************************************************************ */
+
     create(type: 'entity', name: string, options?: Omit<ApiOptionsEntity, 'name'>): Entity;
     create(type: 'component', name: string, options?: Omit<Partial<ApiOptionsComponent>, 'componentName'>): Component;
     create(type: EngineObjectType, name: string, options?: ApiOptionsEntity | Omit<Partial<ApiOptionsComponent>, 'componentName'>): Entity | Component {
@@ -40,18 +87,10 @@ export default class Creator {
         return Engine.getApiComponents().map((c, index, arr) => new Component(c, arr));
     }
 
-    loadTemplateComponents(components: ApiComponent[]): Creator {
-        return this.loadObjects(components);
-    }
-
-    loadObjects(apiObjects: ApiComponent[] | ApiEntity[]): Creator {
-        Engine.loadObjects(apiObjects);
-        return this;
-    }
-
-    getComponents (): ApiComponent[] {
-        return Engine.getApiComponents();
-    }
+    loadTemplateComponents(components: ApiComponent[]): Creator {return this.loadObjects(components);}
+    
+    /** Получить комопненты */
+    getComponents (): ApiComponent[] {return Engine.getApiComponents();}
 
     /** Конвертирует массив комопнентов в объект. */
     public componentConverterArrayToObject(components: ApiComponent[]): Components {
@@ -80,9 +119,9 @@ export default class Creator {
     /** служебная функция для групировки комопнентов по определенному полю. */
     private groupBy<T>(array: T[], predicate: (compEntry: T) => string) {
         return array.reduce((acc, value, index, arr) => {
-            (acc[predicate(value)] ||= []).push(value);
-            return acc;
-        }, {} as { [key: string]: T[] }
+                (acc[predicate(value)] ||= []).push(value);
+                return acc;
+            }, {} as { [key: string]: T[] }
         );
     }
 

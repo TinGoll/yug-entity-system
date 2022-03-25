@@ -75,6 +75,9 @@ export class Entity implements EngineObject<ApiEntity>, IGetable {
     getName(): string {
         return Engine.getApiEntityToKey(this._key)?.name || ''
     }
+    getId(): number {
+        return Engine.getApiEntityToKey(this._key)?.id||0;
+    }
     /**
      * Возвращает уникальный ключ сущности.
      * @returns строка

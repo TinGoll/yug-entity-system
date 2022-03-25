@@ -1,8 +1,7 @@
-import { Engine } from "../engine/Engine";
 import { Entity } from "../Models/entities/Entity";
 import { ComponentTuple, ApiComponent, PropertyValue, FormulaPropertyButtons, IKeysMap } from "../types/entity-types";
 
-interface FormulaComponents { entityName: string, key: string, components: ApiComponent[], count: number }
+interface FormulaComponents { entityName: string, key: string, id: number, components: ApiComponent[], count: number }
 interface IFactory {
     CMP: (componentTuple: ComponentTuple) => PropertyValue | null;
     BUTTONS: IButtons [];
@@ -39,7 +38,9 @@ export function formulaExecutor(this: Entity, code: string, type: 'execution' | 
                 const GROUP = `${fComp.entityName} inx: ${fComp.count}`;
                 const COM_DESC = `${component.componentDescription}`
                 const NAME  = `${component.propertyDescription} [${fComp.count}]`;
-                const VALUE = `${component.propertyName.toUpperCase()}_I${fComp.count}`;
+                //const VALUE = `${component.propertyName.toUpperCase()}_I${fComp.count}`; // Вариант более осмысленного названия.
+                //const VALUE = `VAR_ID${component.id || (component.key.split(':')[1]?.slice(0, 8))}`; // Привязка к ID или ключу.
+                const VALUE = `VAR_${component.propertyName.toUpperCase()}_${component.componentName.toUpperCase()}_ID${fComp.id}`; // Привязка к ID или ключу.
                 const TUPLE = <ComponentTuple>[component.componentName!, component.propertyName!];
                 const CODE  = `const ${VALUE} = FACS.get('${fComp.entityName} inx: ${fComp.count}')?.CMP(['${TUPLE[0]}', '${TUPLE[1]}']);`;
                 return { GROUP, COM_DESC, NAME, VALUE, TUPLE, CODE};
@@ -59,7 +60,7 @@ export function formulaExecutor(this: Entity, code: string, type: 'execution' | 
             const objs: FormulaComponents[] = [];
             if (!object) return objs;
             count++;
-            objs.push({ entityName: object?.name || '', key: object.key, components: object?.getComponents()||[], count});
+            objs.push({ entityName: object?.name || '', key: object.key, id: object.getId(),   components: object?.getComponents()||[], count});
             for (const ent of (object?.getChildren()||[])) {
                 objs.push(...GET_COMPONENTS(ent, count));
             }
@@ -100,23 +101,24 @@ export function formulaExecutor(this: Entity, code: string, type: 'execution' | 
         //const MCMP = cmp_factory(M_COMPONENTS);
         //const FCMP = cmp_factory(F_COMPONENTS);
 
+        const arrCodeVar: string[] = [];
+        for (const fac of FACS.values()) {
+            for (const but of fac.BUTTONS) {
+                arrCodeVar.push(but.CODE);
+           }
+        }
+
         const baseCode = `
         const executor = () => {
-                /************************************************/
-                //const M_HEIGHT = MCMP(['geometry', 'height']);
-                //const M_WIDTH = MCMP(['geometry', 'width']);
-                //const M_AMOUNT = MCMP(['geometry', 'amount']);
-                /************************************************/
-                //const F_HEIGHT = FCMP(['geometry', 'height']);
-                //const F_WIDTH = FCMP(['geometry', 'width']);
-                //const F_AMOUNT = FCMP(['geometry', 'amount']); 
-                /************************************************/
-                let RESULT = 1; // Результат
+                ${arrCodeVar.join('\n')}
+                let RESULT = null; // Результат
                 ${code}
                 return RESULT;
         }
         executor();
         `;
+        console.log(baseCode);
+        
         if (type === 'execution') return eval(baseCode);
         const clientButtons: any[] = [];
         for (const F of FACS) {
@@ -144,6 +146,7 @@ export function formulaExecutor(this: Entity, code: string, type: 'execution' | 
         startCode += `/*  ME - Текущий объект, FATHER - родитель,                  */\n`;
         startCode += `/*  CHILDS - детки, BROTHERS - братья, GRAND_FATHER - дед    */\n`;
         startCode += `/*  RESULT - в эту переменную внесите результат.             */\n`;
+        startCode += `/*  Остальное в кнопках на панели                            */\n`;
         startCode += `/*************************************************************/\n`;
         startCode += `// Тут пишите ваш код, удачи!\n\n\n`;
 
