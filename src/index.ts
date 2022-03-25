@@ -33,7 +33,7 @@ const creator = engine.creator();
 const component = creator.create('component', 'ComponentTest', {componentDescription: 'Тестовый компонент'});
 component.addProperty({propertyName: 'testProperty', propertyType: 'string'})
 console.log(JSON.stringify(component.build(), null, 2));
-*/
+
 const engine = new Engine();
 const creator = engine.creator();
 
@@ -77,14 +77,15 @@ mdfShild.addComponent(geometry.build()).addComponent(money.build());
 rubashka.addComponent(geometry.build()).addComponent(money.build());
 
 fasadGluhoy.addChild(filenka.addChild(mdfShild).addChild(rubashka)).addChild(profileTop).addChild(profileBot).addChild(profileLeft).addChild(profileRight);
-/*
+
+
 const res = formulaExecutor.bind(profileTop)(`
   RESULT = VAR_HEIGHT_GEOMETRY_ID1;
 `, )
-*/
+
 
 console.log(JSON.stringify(fasadGluhoy.build() , null, 2));
-
+*/
 export default Engine;
 export {
   ApiEntity,
