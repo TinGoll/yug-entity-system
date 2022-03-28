@@ -1,6 +1,6 @@
 import { Engine } from "../engine/Engine";
 import { EngineObjectType } from "../types/engine-interfaces";
-import { ApiComponent, ApiEntity, ApiOptionsComponent, ApiOptionsEntity, Components } from "../types/entity-types";
+import { ApiComponent, ApiEntity, ApiEntityOptions, ApiOptionsComponent, ApiOptionsEntity, Components } from "../types/entity-types";
 import { Component } from "./components/Component";
 import { Entity } from "./entities/Entity";
 
@@ -9,6 +9,45 @@ export default class Creator {
     constructor() {}
 
     /** ************************************************************************************************************************************************ */
+
+    createEmpty(type: 'component'): ApiComponent[];
+    createEmpty(type: 'entity'): ApiEntity[];
+    createEmpty(type: 'entity' | 'component'): ApiComponent[] | ApiEntity [] {
+        if (type === 'component') {
+            return [
+                <ApiComponent>{ 
+                    id: 0,
+                    key: '',
+                    entityId: 0,
+                    entityKey: '',
+                    componentName: '',
+                    componentDescription: '',
+                    propertyName: '',
+                    propertyDescription: '',
+                    propertyValue: '',
+                    propertyFormula: '',
+                    propertyType: 'string',
+                    attributes: '',
+                    bindingToList: false,
+                }
+            ]
+        }
+        return [
+            <ApiEntity> {
+                id: 0,
+                category: '',
+                parentId: 0,
+                sampleId: 0,
+                name: '',
+                note: '',
+                key: '',
+                parentKey: '',
+                components:[],
+                сhildEntities:[]
+            }
+        ]
+    }
+
 
     /**
      * Загрузка, фиксация и возврат массива instance сущности или компонента.

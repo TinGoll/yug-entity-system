@@ -18,6 +18,10 @@ export class Entity implements EngineObject<ApiEntity>, IGetable {
         return Engine.getBuildData(this._key);
     }
 
+    clone(): ApiEntity [] {
+        return Engine.getCloneData(this._key);
+    }
+
     /**
      * Добавление комопнента в сущность. 
      * @param apiComponent Массив ApiComponent
@@ -116,14 +120,8 @@ export class Entity implements EngineObject<ApiEntity>, IGetable {
                 key = apiEntity.key;
             }
             if (Engine.has(key)) {
-               // Engine.cloningObject([Engine.get(key)!])[0].parentKey = this._key;
-                const candidate = Engine.get(key)!;
-                const components = candidate.components!;
-                const cloneComponents = Engine.cloningObject(components);
-                const clone = Engine.cloningObject([candidate])[0];
-                clone.components = cloneComponents;
-                clone.parentKey = this._key;
-                Engine.loadObjects([clone]);
+                const clone = Engine.getCloneData(key, this._key);
+                Engine.loadObjects(clone);
             }
             return this;
         } catch (e) {

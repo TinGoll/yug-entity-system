@@ -27,13 +27,17 @@ import { formulaExecutor } from "./utils/formulaExecutor";
 
 entity.addComponent(component.build());
 console.log(entity.build());
+*/
 
+/*
 const engine = new Engine();
 const creator = engine.creator();
 const component = creator.create('component', 'ComponentTest', {componentDescription: 'Тестовый компонент'});
 component.addProperty({propertyName: 'testProperty', propertyType: 'string'})
 console.log(JSON.stringify(component.build(), null, 2));
+*/
 
+/*
 const engine = new Engine();
 const creator = engine.creator();
 
@@ -78,14 +82,47 @@ rubashka.addComponent(geometry.build()).addComponent(money.build());
 
 fasadGluhoy.addChild(filenka.addChild(mdfShild).addChild(rubashka)).addChild(profileTop).addChild(profileBot).addChild(profileLeft).addChild(profileRight);
 
+*/
 
+/*
 const res = formulaExecutor.bind(profileTop)(`
   RESULT = VAR_HEIGHT_GEOMETRY_ID1;
 `, )
-
-
-console.log(JSON.stringify(fasadGluhoy.build() , null, 2));
 */
+
+
+//console.log(JSON.stringify(fasadGluhoy.build() , null, 2));
+
+
+// Добавление методом клонирования
+/*
+
+const engine = new Engine();
+const creator = engine.creator();
+
+
+const ded = creator.create('entity', 'Дед', { category: 'Тестовая сущность', id: 100 });
+const syn = creator.create('entity', 'Сын', { category: 'Тестовая сущность', id: 200 });
+const vnyk = creator.create('entity', 'Внук', { category: 'Тестовая сущность', id: 300 });
+
+const comp = creator.create('component', 'testComps', { componentDescription: 'Тестовый компонент', });
+comp
+  .addProperty({ propertyName: 'field1', propertyType: 'string', propertyDescription: 'Поле 1', propertyValue: 'Значение поля 1' })
+  .addProperty({ propertyName: 'field2', propertyType: 'string', propertyDescription: 'Поле 2', propertyValue: 'Значение поля 2' });
+
+ded.addComponent(comp.build());
+syn.addComponent(comp.build());
+vnyk.addComponent(comp.build());
+
+syn.addChild(vnyk);
+ded.addChild(syn);
+
+
+console.log(JSON.stringify(ded.build(), null, 2));
+
+*/
+
+
 export default Engine;
 export {
   ApiEntity,

@@ -11,6 +11,7 @@ export class Engine {
     private static instance?: Engine;
 
     private static apiEntityList = new Map<string, ApiEntity>();
+    
     private static apiComponents: ApiComponent[] = [];
 
     private _creator?: Creator;
@@ -29,8 +30,7 @@ export class Engine {
 
 
     /****************************************************************************************************** */
-    /****************************************************************************************************** */
-    /**************************************Статические методы********************************************** */
+    /************************************  Статические методы  ******************************************** */
     /****************************************************************************************************** */
     /** Клонирование объекта. */
     public static cloningObject<T extends ApiComponent | ApiEntity>(object: T[]): T[] {
@@ -50,6 +50,8 @@ export class Engine {
             return [];
         }
     }
+
+
 
     /** Удаление объекта из хранилища движка. */
     public static removeObjectToKey(key: string) {
@@ -122,6 +124,7 @@ export class Engine {
         return arr;
     }
 
+
     /** Сборка определенной сущности и ее дочерних элементов. */
     public static getBuildData(key: string): ApiEntity [] {
         const apiEntities: ApiEntity[] = [];
@@ -130,6 +133,31 @@ export class Engine {
         const children = Engine.getChildrenApiEntityToKey(key);
         for (const child of children) {
             apiEntities.push(...Engine.getBuildData(child.key!))
+        }
+        return apiEntities;
+    }
+
+    /** Полное клонирование объекта, с компонентами */
+    public static getCloneData (key: string, parentKey?: string): ApiEntity [] {
+        const apiEntities: ApiEntity[] = [];
+        const candidate = Engine.getApiEntityToKey(key);
+        if (candidate) {
+            const entity = { ...candidate,
+                key: this.keyGenerator('ent:'),
+                parentKey,
+                id: 0
+            }
+            const candidateComponents = candidate.components;
+            const components: ApiComponent[] = [...(candidateComponents || []).map(c => {
+                return { ...c, key: Engine.keyGenerator('cmp:'), entityKey:  entity.key, id: 0, entityId: 0}
+            })];
+            entity.components = components;
+            apiEntities.push(entity);
+            const children = Engine.getChildrenApiEntityToKey(key);
+            for (const child of children) {
+                const childKey = child.key!
+                apiEntities.push(...Engine.getCloneData(childKey, entity.key))
+            }
         }
         return apiEntities;
     }
@@ -269,17 +297,18 @@ export class Engine {
         }
     }
     /** Генератор ключей, для объектов */
-    public static keyGenerator (): string {
+    public static keyGenerator(pfx?: 'ent:' | 'cmp:'): string {
         //return Date.now().toString(16);
         //return randomUUID();
-        return uuid();
+        if (!pfx) return uuid();
+        return pfx + uuid();
     }
     /** Регистрация (сериализация) всех объектов движка. Объекту присваивается уникальный ключь. В качстве дженерика, используется интерфейс сущности или компонента. */
     public static registration <T extends ApiComponent | ApiEntity> (object: ISerializable): T {
-        let prefix = '';
+        let prefix: 'ent:' | 'cmp:' | undefined = undefined;
         if ((<ApiEntity>object).name) prefix = 'ent:';
         if ((<ApiComponent>object).componentName) prefix = 'cmp:';
-        if (!object.key) object.key = prefix + Engine.keyGenerator();
+        if (!object.key) object.key = Engine.keyGenerator(prefix);
         return <T> object
     }
 
