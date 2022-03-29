@@ -32,15 +32,14 @@ export class Entity implements EngineObject<ApiEntity>, IGetable {
             const apiEntity = Engine.get(this._key);
             if (!apiEntity) throw new Error("Сущность с таким ключем не обнаружена.");
             const apiComponents = apiEntity.components || [];
-            const cloneComponents = Engine.cloningObject(apiComponent);
+            const cloneComponents = Engine.getCloneComponent(apiComponent, this._key);
             for (const comp of cloneComponents) {
                 const index = apiComponents.findIndex(c => c.componentName === comp.componentName && c.propertyName === comp.propertyName);
                 if (index >= 0){
                     apiComponents[index] = { ...comp, id: apiComponents[index].id, entityId: apiEntity.id, entityKey: apiEntity.key }
                 }else{
-                    comp.key = '';
                     Engine.registration(comp);
-                    apiComponents.push({ ...comp, entityId: apiEntity.id, entityKey: apiEntity.key });
+                    apiComponents.push({ ...comp, entityId: apiEntity.id});
                 }
             }
             apiEntity.components = [...apiComponents]

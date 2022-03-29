@@ -124,6 +124,20 @@ export class Engine {
         return arr;
     }
 
+    public static getCloneComponent(components: ApiComponent[], parentKey?: string) {
+        const cloneDate: ApiComponent[] = [];
+        for (const cmp of components) {
+            const cloneComponent: ApiComponent = {
+                ...cmp, 
+                key: this.keyGenerator('cmp:'),
+                entityKey: parentKey,
+                id: 0,
+                entityId: 0
+            }
+            cloneDate.push(cloneComponent)
+        }
+        return cloneDate;
+    }
 
     /** Сборка определенной сущности и ее дочерних элементов. */
     public static getBuildData(key: string): ApiEntity [] {
