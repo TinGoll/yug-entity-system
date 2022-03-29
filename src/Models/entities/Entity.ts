@@ -18,8 +18,11 @@ export class Entity implements EngineObject<ApiEntity>, IGetable {
         return Engine.getBuildData(this._key);
     }
 
-    clone(): ApiEntity [] {
-        return Engine.getCloneData(this._key);
+    clone(): Entity {
+        const cloneData =  Engine.getCloneData(this._key);
+        const overEntity = cloneData.find(e => !e.parentKey)!;
+        Engine.loadObjects(cloneData);
+        return new Entity(overEntity.key);
     }
 
     /**
