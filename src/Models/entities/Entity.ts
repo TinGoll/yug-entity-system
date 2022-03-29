@@ -74,6 +74,17 @@ export class Entity implements EngineObject<ApiEntity>, IGetable {
         Engine.setApiEntities([state]);
         return this;
     }
+
+    setName (name: string) {
+       try {
+            if (Engine.has(this._key)) {
+                Engine.getApiEntityToKey(this._key!)!.name = name
+            }
+       } catch (e) {
+           console.log(e);
+       }
+    }
+ 
     /**
      * Возвращает наименование сущности.
      * @returns строка, имя сущности.
