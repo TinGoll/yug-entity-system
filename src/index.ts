@@ -8,9 +8,9 @@ import {
   PropertyValue,
 } from "./types/engine-types";
 
-const engine = (): Engine => new Engine();
+const createEngine = (): Engine => new Engine();
 
-export default engine;
+export default createEngine;
 export {
   Engine,
   Entity,
