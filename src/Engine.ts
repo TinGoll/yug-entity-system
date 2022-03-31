@@ -98,7 +98,7 @@ export default class Engine {
 
     cloneComponents (components: ApiComponent[], entityKey?: string): ApiComponent[] {
         const cloneComponents = components.map( c => {
-            return { ...c, id: 0, entityId: 0, entityKey: entityKey }
+            return { ...c, key: Engine.keyGenerator('cmp:'), id: 0, entityId: 0, entityKey: entityKey }
         })
         return cloneComponents;
     }
