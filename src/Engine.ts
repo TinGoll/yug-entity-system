@@ -27,7 +27,11 @@ export default class Engine {
     /** загрузка в хранилище движка сущностей и возврат массива instance Entity */
     loadAndReturning(entities: ApiEntity[]): Entity[] {
         const apiEntities = this.loadEntities(entities);
-        const grandParents = apiEntities.filter(e => !e.parentKey);
+        const grandParents = apiEntities.filter((e, i, arr) => {
+            if (!e.parentKey) return true;
+            const index = arr.findIndex(f => f.key === e.parentKey);
+            return index === -1;
+        });
         return grandParents.map(e => new Entity(e, this));
     }
     /** Добавление сущности в движок, регистрация */
