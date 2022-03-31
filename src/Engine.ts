@@ -1,14 +1,21 @@
 import { ApiComponent, ApiEntity, ISerializable } from "./types/engine-types";
 import uuid from 'uuid-random'
 import Entity from "./Entity";
+import Creator from "./Creator";
 
 export default class Engine {
     private static instance?: Engine;
     private entityList: Map<string, ApiEntity> = new Map <string, ApiEntity> ();
+    private _creator?: Creator;
     constructor() {
         if (Engine.instance) { return Engine.instance; }
         Engine.instance = this;
     }
+
+    creator (): Creator {
+        return this._creator || new Creator(this);
+    }
+
     /** очистка хранилища движка */
     clearEntity () {
         this.entityList.clear();
@@ -117,6 +124,25 @@ export default class Engine {
             if (apiChld) apiEntity.children!.push({ ...apiChld })
         }
         return apiEntity;
+    }
+
+    deassembleObject (entity: ApiEntity): ApiEntity[] {
+        const tempArr: ApiEntity[] = [];
+        const { id, parentId, key, parentKey, category, dateCreation, dateUpdate, name, note, sampleId, components, children } = entity;
+        const deEntity = {
+            id, parentId, key, parentKey, category, dateCreation, dateUpdate, name, note, sampleId, components, children: []
+        }
+        this.set(deEntity)
+        tempArr.push(deEntity);
+        for (const chld of (children||[])) {
+            tempArr.push(...this.deassembleObject(chld));
+        }
+        return tempArr;
+    }
+
+    deassembleObjectAndReturning(entity: ApiEntity): Entity {
+        this.deassembleObject(entity);
+        return new Entity(this.get(entity.key)!, this);
     }
     
     getAllDescendants (children: ApiEntity[]): ApiEntity[] {

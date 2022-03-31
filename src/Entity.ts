@@ -10,12 +10,20 @@ export default class Entity {
         this.options =  options;
     }
 
+    getOptions () : ApiEntity {
+        return {...this.options};
+    }
+
     getEngine(): Engine {
         return this.engine;
     }
 
     build (): ApiEntity[] {
         return this.engine.getBuildData(this.options.key);
+    }
+
+    assemble () : ApiEntity {
+        return this.engine.assembleObject(this.options.key)!;
     }
 
     clone (): ApiEntity {
@@ -35,16 +43,28 @@ export default class Entity {
 
     }
 
-    addChild (children: ApiEntity[]): Entity {
-        const candidateChildren =  this.engine.loadEntities(children);
+
+    addChild (children: ApiEntity[] | Entity): Entity {
+        let candidateChildren: ApiEntity[] = []
+        if (children instanceof Entity ) {
+            candidateChildren.push(children.getOptions())
+        }
+        if (children && (<ApiEntity[]>children).length && (<ApiEntity[]>children)[0].name) {
+            candidateChildren.push(...<ApiEntity[]>children)
+        }
+        this.engine.loadEntities(candidateChildren);
         for (const candidate of candidateChildren) {
             const chld = this.engine.cloneEntity(candidate.key, this.options.key);
         }
         return this;
     }
 
-    addComponent (component: ApiComponent[]): Entity {
-        const cmps = this.engine.cloneComponents(component, this.options.key)
+    addComponent (component: ApiComponent[] | Component): Entity {
+        let addedComponents: ApiComponent[] = [];
+        if (component instanceof Component) addedComponents =  component.build();
+        if (component && (<ApiComponent[]>component)[0]?.propertyName) addedComponents = (<ApiComponent[]>component);
+        
+        const cmps = this.engine.cloneComponents(addedComponents, this.options.key)
         if (!this.options.components) this.options.components = [];
         for (const cmp of cmps) {
             const index = this.options.components?.findIndex(c =>
