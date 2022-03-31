@@ -50,8 +50,13 @@ export default class Entity {
             candidateChildren.push(children.getOptions())
         }
         if (children && (<ApiEntity[]>children).length && (<ApiEntity[]>children)[0].name) {
-            candidateChildren.push(...<ApiEntity[]>children)
+            candidateChildren.push(...(<ApiEntity[]>children||[]).filter((e, i, arr) => {
+                if (!e.parentKey) return true;
+                const index = arr.findIndex(f => f.key === e.parentKey);
+                return index === -1;
+            }))
         }
+
         this.engine.loadEntities(candidateChildren);
         for (const candidate of candidateChildren) {
             const chld = this.engine.cloneEntity(candidate.key, this.options.key);
@@ -63,7 +68,7 @@ export default class Entity {
         let addedComponents: ApiComponent[] = [];
         if (component instanceof Component) addedComponents =  component.build();
         if (component && (<ApiComponent[]>component)[0]?.propertyName) addedComponents = (<ApiComponent[]>component);
-        
+
         const cmps = this.engine.cloneComponents(addedComponents, this.options.key)
         if (!this.options.components) this.options.components = [];
         for (const cmp of cmps) {

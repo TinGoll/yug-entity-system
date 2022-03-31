@@ -10,7 +10,7 @@ EngineObjectType,
 } from "./types/engine-types";
 const createEngine = (): Engine => new Engine();
 
-/*
+
 
 const engine = createEngine();
 const creator = engine.creator();
@@ -27,16 +27,15 @@ const entity2 = creator.create('entity', 'Сын');
 const entity3 = creator.create('entity', 'Внук');
 
 
-
 entity2.addChild(entity3);
-entity.addChild(entity2);
+entity.addChild(entity2.build());
 
 console.log('assemble', JSON.stringify(entity.assemble(), null, 2));
 
 
 console.log('deassemble', JSON.stringify(engine.deassembleObjectAndReturning(entity.assemble()).getName(), null, 2));
 
-*/
+
 
 
 export default createEngine;
