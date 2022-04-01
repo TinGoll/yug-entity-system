@@ -63,8 +63,8 @@ fasad.setPropertyValue('geometry', 'amount', 1); // задаем в ручную
 
 console.log(fasad.getPropertyValue('geometry', 'square')); // получаем результат работы формулы
 
-
 */
+
 
 export default createEngine;
 export {

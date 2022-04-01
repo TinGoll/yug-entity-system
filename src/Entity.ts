@@ -90,6 +90,19 @@ export default class Entity {
         return this;
     }
 
+    getPropertyFormula<T extends object | string = string>(
+        componentName: T extends string ? string : keyof T,
+        propertyName: T extends string ? string : keyof T[keyof T],
+        formula: string | null
+    ): string | null {
+        const cmp = this.options.components?.find(c =>
+            c.componentName === componentName &&
+            c.propertyName === propertyName
+        );
+        if (!cmp) return null;
+        return cmp.propertyFormula||null;
+    }
+
     /**
      * Получение данных для редактора формул
      */
