@@ -10,39 +10,61 @@ EngineObjectType,
 } from "./types/engine-types";
 const createEngine = (): Engine => new Engine();
 
-
 /*
+const save = (apiEntity: ApiEntity[]): ApiEntity[] => {
+    let genEntId = 1;
+    let genCmpId = 1;
+    for (const ent of apiEntity) {
+        if (!ent.id) ent.id = genEntId++;
+        for (const cmp of (ent.components || [])) {
+            cmp.id = genCmpId++;
+            cmp.entityId = ent.id;
+        }
+    }
+    return apiEntity;
+}
+
 const engine = createEngine();
 const creator = engine.creator();
 
 const component = creator.create('component', 'geometry', { componentDescription: "Геометрия"})
     .addProperty({ propertyName: 'height', propertyType: 'number', propertyDescription: "высота" })
     .addProperty({ propertyName: 'width', propertyType: 'number', propertyDescription: "ширина" })
-    .addProperty({ propertyName: 'amount', propertyType: 'number', propertyDescription: "кол-во" });
+    .addProperty({ propertyName: 'amount', propertyType: 'number', propertyDescription: "кол-во" })
+    .addProperty({ propertyName: 'square', propertyType: 'number', propertyDescription: "площадь" });
+
 
 const money = creator.create('component', 'money', {componentDescription: "Деньги"})
     .addProperty({ propertyName: 'price', propertyDescription: 'Цена', propertyValue: 0 })
     .addProperty({ propertyName: 'cost', propertyDescription: 'Стоимость', propertyValue: 0 })
 
 
-const entity = creator.create('entity', 'Папа', { id: 17000 }).addComponent(money).addComponent(component);
+const entity = creator.create('entity', 'Папа').addComponent(money).addComponent(component);
+const entity2 = creator.create('entity', 'Сын').addComponent(money);
+const entity3 = creator.create('entity', 'Внук').addComponent(money);
 
-console.log(JSON.stringify(entity.getPreparationData(), null, 2));
-*/
-//console.log(entity.getPreparationData());
-
-
-//const entity2 = creator.create('entity', 'Сын');
-//const entity3 = creator.create('entity', 'Внук');
-
-/*
 entity2.addChild(entity3);
 entity.addChild(entity2.build());
+
+
+
+const savedApiEntity = save(entity.build())
+const [fasad] = engine.loadAndReturning(savedApiEntity);
+
+const code = `
+    S =  GEOMETRY_HEIGHT_ID1 / 1000 * GEOMETRY_WIDTH_ID1 / 1000 * GEOMETRY_AMOUNT_ID1;
+    RESULT = ROUND(S, 3);
+`
+fasad.setPropertyFormula('geometry', 'square', code); // ПРисваиваем формулу для свойства высота, геометрии
+
+fasad.setPropertyValue('geometry', 'height', 916); // задаем в ручную, свойтсво
+fasad.setPropertyValue('geometry', 'width', 396); // задаем в ручную, свойтсво
+fasad.setPropertyValue('geometry', 'amount', 1); // задаем в ручную, свойтсво
+
+console.log(fasad.getPropertyValue('geometry', 'square')); // получаем результат работы формулы
+
+
 */
-
-//console.log('assemble', JSON.stringify((entity.build()), null, 2));
-
-//console.log('deassemble', JSON.stringify(engine.deassembleObjectAndReturning(entity.assemble()).getName(), null, 2));
 
 export default createEngine;
 export {

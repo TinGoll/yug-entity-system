@@ -1,7 +1,7 @@
 import Component from "./Component";
 import Engine from "./Engine";
 import { formulaExecutor } from "./FormulaExecutor";
-import { ApiComponent, ApiEntity } from "./types/engine-types";
+import { ApiComponent, ApiEntity, PropertyTypes, PropertyValue } from "./types/engine-types";
 
 export default class Entity {
     private options: ApiEntity;
@@ -10,6 +10,86 @@ export default class Entity {
         this.engine = engine;
         this.options =  options;
     }
+
+
+
+    getPropertyValue<U extends PropertyValue = string, T extends object | string = string>(
+        componentName: T extends string ? string : keyof T,
+        propertyName: T extends string ? string : keyof T[keyof T]
+    ): U | null {
+        const cmp = this.options.components?.find(c => 
+            c.componentName === componentName &&
+            c.propertyName === propertyName
+        )
+        if (!cmp) return null;
+        const formula = cmp.propertyFormula;
+        if (!formula) return this.get_value<U>(cmp.propertyType!, cmp.propertyValue);
+        return <U>(formulaExecutor.bind(this)(formula, cmp.propertyValue, 'execution'));
+    }
+
+    /**
+     * Задает свойство копонента
+     * @param componentName Название копопнента
+     * @param propertyName Название свойства
+     * @param value значение, согласно типа свойства
+     * @returns Entity
+     */
+    setPropertyValue<U extends PropertyValue = PropertyValue, T extends object | string = string>(
+        componentName: T extends string ? string : keyof T,
+        propertyName: T extends string ? string : keyof T[keyof T],
+        value: U
+    ): Entity {
+        try {
+            const index = (this.options.components || []).findIndex(c => 
+                c.componentName === componentName &&
+                c.propertyName === propertyName
+            );
+            if (index >= 0) {
+                const propertyType = this.options.components![index].propertyType;
+                let tempValue: PropertyValue;
+                switch (propertyType) {
+                    case 'string':
+                        tempValue = String(value);
+                        break;
+                    case 'boolean':
+                        tempValue = Boolean(value);
+                        break;
+                    case 'number':
+                        tempValue = Number(value);
+                        break;
+                    case 'date':
+                        tempValue = new Date(<string>value);
+                        break;
+                    default:
+                        throw new Error("Неизвестный тип копонента")
+                }
+                this.options.components![index].propertyValue = tempValue;
+            }
+        } catch (e) {
+            console.log(e);
+        }
+        return this;
+    }
+
+    setPropertyFormula<T extends object | string = string>(
+        componentName: T extends string ? string : keyof T,
+        propertyName: T extends string ? string : keyof T[keyof T],
+        formula: string | null
+        ): Entity {
+        try {
+            const cmp = this.options.components?.find(c =>
+                c.componentName === componentName &&
+                c.propertyName === propertyName
+            )
+            if (!cmp) throw new Error("Свойство компонента не найдено");
+            if (!formula) cmp.propertyFormula = undefined;
+            cmp.propertyFormula = String(formula);
+        } catch (e) {
+            console.log(e);
+        }
+        return this;
+    }
+
     /**
      * Получение данных для редактора формул
      */
@@ -242,5 +322,19 @@ export default class Entity {
     private get_grand_father(father: Entity | undefined): Entity | undefined {
         if (!father) return;
         return this.get_grand_father(father.getParent()) || father;
+    }
+    private get_value<U extends PropertyValue = string>(type: PropertyTypes, value: PropertyValue): U {
+        switch (type) {
+            case 'string':
+                return <U>String(value);
+            case 'boolean':
+                return <U>Boolean(value);
+            case 'number':
+                return <U>Number(value);
+            case 'date':
+                return <U>new Date(<string>value);
+            default:
+                return <U>value;
+        }
     }
 }

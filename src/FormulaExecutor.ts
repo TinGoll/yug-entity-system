@@ -34,7 +34,6 @@ interface FormulaPropertyButtons {
     buttons: Array<{ compName: string; name: string; value: string; }>
 }
 
-export function formulaExecutor(this: Entity, code: '', defaultValue: null, type: 'preparation'): { clientButtons: any, startCode: string }
 export function formulaExecutor(this: Entity, code: string, defaultValue: PropertyValue | null = null, type: 'execution' | 'preparation' = 'execution') {
     try {
         /************************************************************************************************************************** */
