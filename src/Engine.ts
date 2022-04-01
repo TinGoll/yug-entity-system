@@ -11,7 +11,10 @@ export default class Engine {
         if (Engine.instance) { return Engine.instance; }
         Engine.instance = this;
     }
-
+    /**
+     * Модуль создания объектов.
+     * @returns Creator;
+     */
     creator (): Creator {
         return this._creator || new Creator(this);
     }
@@ -64,14 +67,29 @@ export default class Engine {
            throw e;
        }
     }
+    /**
+     * Получаем сущность из памяти движка по ключу.
+     * @param key  ключ сущности.
+     * @returns ApiEntity | undefined
+     */
     get (key: string): ApiEntity | undefined { 
         if (!this.entityList.has(key)) return;
         return this.entityList.get(key);
     }
+    /**
+     * Сущетсвует ли требуемая сущность в памяти движка.
+     * @param key ключ сущности.
+     * @returns boolean
+     */
     has(key: string): boolean { 
         return this.entityList.has(key);
     }
-
+    /**
+     * Клонирование сущности.
+     * @param key ключ требуемой сущности.
+     * @param parentKey родительский ключ Entity, не обязательное.
+     * @returns ApiEntity
+     */
     cloneEntity (key: string, parentKey?: string): ApiEntity | undefined {
         if (!this.entityList.has(key)) return;
         const candidate = this.entityList.get(key)!;
@@ -95,14 +113,23 @@ export default class Engine {
         }
         return clone;
     }
-
+    /**
+     * Слонирование компонента
+     * @param components комопнент ApiComponent[];
+     * @param entityKey ключ Entity, не обязательное.
+     * @returns ApiComponent[] 
+     */
     cloneComponents (components: ApiComponent[], entityKey?: string): ApiComponent[] {
         const cloneComponents = components.map( c => {
             return { ...c, key: Engine.keyGenerator('cmp:'), id: 0, entityId: 0, entityKey: entityKey }
         })
         return cloneComponents;
     }
-
+    /**
+     * Данные для сохранения в бд или передачи в память движка.
+     * @param key ключ требуемой сущности.
+     * @returns ApiEntity[];
+     */
     getBuildData(key: string): ApiEntity[] {
         const tempArr: ApiEntity[] = [];
         const apiEntity = this.entityList.get(key);
@@ -112,6 +139,11 @@ export default class Engine {
         return tempArr;
     }  
 
+    /**
+     * Собираем сущность с вложениями, на выходе получим объект ApiEntity с дочерними сущностями во вложении.
+     * @param entityKey - ключ сущности верхнего уровня.
+     * @returns 
+     */
     assembleObject(entityKey: string): ApiEntity | undefined {
         const candidate = this.entityList.get(entityKey);
         if (!candidate) return;
@@ -130,6 +162,12 @@ export default class Engine {
         return apiEntity;
     }
 
+    /**
+     * Разбор сущности для сохранения в бд или для передачи в память движка.
+     * Сущность может иметь бесконечное множество вложений и будет разобрана на массив сущностей без вложений.
+     * @param entity сущность
+     * @returns ApiEntity[]
+     */
     deassembleObject (entity: ApiEntity): ApiEntity[] {
         const tempArr: ApiEntity[] = [];
         const { id, parentId, key, parentKey, category, dateCreation, dateUpdate, name, note, sampleId, components, children } = entity;
@@ -144,11 +182,22 @@ export default class Engine {
         return tempArr;
     }
 
+    /**
+     * Разбор сущности для передачи в память движка, и возврат instance Entity сущности верхнего уровня.
+     * @param entity сущность с вложениями.
+     * @returns Entity
+     */
     deassembleObjectAndReturning(entity: ApiEntity): Entity {
         this.deassembleObject(entity);
         return new Entity(this.get(entity.key)!, this);
     }
-    
+    /**
+     * Получение всех потомков. Передавая дочерние сущности, 
+     * получаем массив этих сущностей, а так же их дочерние сущности,
+     * любого уровня вложенности.
+     * @param children массив дочерних сущностей
+     * @returns ApiEntity[]
+     */
     getAllDescendants (children: ApiEntity[]): ApiEntity[] {
         const tempArr: ApiEntity[] = [];
         tempArr.push(...children);
@@ -158,6 +207,11 @@ export default class Engine {
         return tempArr;
     }
 
+    /**
+     * Получение дочерних сущностей ApiEntity, по ключу родительской.
+     * @param key Родительский ключ.
+     * @returns ApiEntity[];
+     */
     getСhildren (key: string): ApiEntity[] {
         const tempArr: ApiEntity[] = [];
         for (const chld of this.entityList.values()) {
@@ -181,5 +235,15 @@ export default class Engine {
         if ((<ApiComponent>object).componentName) prefix = 'cmp:';
         if (!object.key) object.key = Engine.keyGenerator(prefix);
         return <T>object
+    }
+
+    /**
+     * Уничтожение объекта движка.
+     * Так же будут уничтожены все объекты, которые находятся в памяти движка.
+     */
+    destroy () {
+        this.clearEntity();
+        this._creator = undefined;
+        Engine.instance = undefined;
     }
 }

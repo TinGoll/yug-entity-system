@@ -20,6 +20,14 @@ export default class Component {
         return this;
     }
 
+    getComponentName (): string {
+        return this.componentName;
+    }
+    getComponentDescription() {
+        return this.componentDescription;
+    }
+
+
 
     addProperty(component: Partial<ApiComponent>): Component {
         try {

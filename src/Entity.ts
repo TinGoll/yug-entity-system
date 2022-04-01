@@ -40,7 +40,6 @@ export default class Entity {
 
     produceAndRetutning(): Entity {
         throw new Error('Не реализовано')
-
     }
 
 
@@ -65,17 +64,30 @@ export default class Entity {
     }
 
     addComponent (component: ApiComponent[] | Component): Entity {
+
         let addedComponents: ApiComponent[] = [];
+
         if (component instanceof Component) addedComponents =  component.build();
+
         if (component && (<ApiComponent[]>component)[0]?.propertyName) addedComponents = (<ApiComponent[]>component);
 
         const cmps = this.engine.cloneComponents(addedComponents, this.options.key)
+
         if (!this.options.components) this.options.components = [];
+
         for (const cmp of cmps) {
             const index = this.options.components?.findIndex(c =>
                  c.componentName === cmp.componentName && c.propertyName === cmp.propertyName);
             if (index >= 0 ) {
-                this.options.components[index] = { ...cmp };
+                const currentCmp = this.options.components[index];
+                this.options.components[index] = { 
+                    ...currentCmp, 
+                    componentDescription: cmp.componentDescription,
+                    propertyDescription: cmp.propertyDescription,
+                    propertyType: cmp.propertyType,
+                    propertyFormula: cmp.propertyFormula,
+                    propertyValue: cmp.propertyValue
+                };
             }else {
                 this.options.components.push({...cmp})
             } 
@@ -121,11 +133,17 @@ export default class Entity {
     }
 
     getComponents (): Component[] {
-        throw new Error("Не реализовано")
+        const componentNames = [...new Set((this.options.components||[]).map(c => c.componentName))];
+        return (componentNames||[]).map(name => {
+            const cmps = (this.options.components || []).filter(c => c.componentName === name);
+            return new Component({ componentName: name, componentDescription: cmps[0].componentDescription||'Описание компонента' },
+                cmps);
+        })
     }
 
     getChildrens(): Entity[] {
-        throw new Error("Не реализовано")
+        const chlds = this.engine.getСhildren(this.options.key);
+        return chlds.map(e => new Entity(e, this.engine));
     }
 
     getSampleId (): number {
