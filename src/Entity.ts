@@ -1,5 +1,6 @@
 import Component from "./Component";
 import Engine from "./Engine";
+import { formulaExecutor } from "./FormulaExecutor";
 import { ApiComponent, ApiEntity } from "./types/engine-types";
 
 export default class Entity {
@@ -8,6 +9,39 @@ export default class Entity {
     constructor(options: ApiEntity, engine: Engine) {
         this.engine = engine;
         this.options =  options;
+    }
+
+    /**
+     * Получение данных для редактора формул
+     */
+    getPreparationData () {
+        if (!this.options.id) return;
+        return formulaExecutor.bind(this)('', null, 'preparation');
+    }
+
+    /**
+     * Получение родительской сущности.
+     * @returns Entity
+     */
+    getParent(): Entity | undefined {
+        const parentKey = this.options.parentKey;
+        if (!parentKey) return;
+        return this.engine.creator().getEntityToKey(parentKey);
+    }
+    /**
+     * Получаем наивысшую сущность, в независимости с какого уровня вложенности будет запрос
+     * будет получена самая верхная сущность.
+     * @returns Entity;
+     */
+    getGrandFather () {
+        return this.get_grand_father(this.getParent());
+    }
+    /**
+     * Получаем все дочерние сущности.
+     * @returns Entity[]
+     */
+    getChildren(): Entity[] {
+        return this.engine.creator().getEntityChildren(this.options.key);
     }
 
     getOptions () : ApiEntity {
@@ -180,5 +214,35 @@ export default class Entity {
     setSampleId(value: number): Entity {
         this.options.sampleId = value;
         return this;
+    }
+
+    getApiComponents (): ApiComponent[] {
+        return this.options.components||[];
+    }
+
+    /************************************************************************************ */
+    /** GETERS */
+
+    /** Название сущности. */
+    get name(): string {
+        return this.getName();
+    }
+    /** Уникальный ключ сущности. */
+    get key(): string {
+        return this.getKey();
+    }
+    /** Родительская сущность или  undefined*/
+    get parent(): Entity | undefined {
+        return this.getParent();
+    }
+    /** Массив дочерних сущностей */
+    get children(): Entity[] {
+        return this.getChildren();
+    }
+
+    /** Приватные методы */
+    private get_grand_father(father: Entity | undefined): Entity | undefined {
+        if (!father) return;
+        return this.get_grand_father(father.getParent()) || father;
     }
 }

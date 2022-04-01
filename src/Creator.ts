@@ -34,4 +34,15 @@ export default class Creator {
                 throw new Error("Не верный тип объекта.");
         }
     }
+
+    getEntityToKey (key: string): Entity | undefined {
+        if (!this.engine.has(key)) return;
+        const apiEntity = this.engine.get(key)!;
+        return new Entity(apiEntity, this.engine);
+    }
+
+    getEntityChildren (key: string): Entity[] {
+        const apiEntities = this.engine.getСhildren(key);
+        return apiEntities.map(e => new Entity(e, this.engine));
+    }
 }

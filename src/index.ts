@@ -10,8 +10,8 @@ EngineObjectType,
 } from "./types/engine-types";
 const createEngine = (): Engine => new Engine();
 
-/*
 
+/*
 const engine = createEngine();
 const creator = engine.creator();
 
@@ -25,8 +25,13 @@ const money = creator.create('component', 'money', {componentDescription: "Де�
     .addProperty({ propertyName: 'cost', propertyDescription: 'Стоимость', propertyValue: 0 })
 
 
-const entity = creator.create('entity', 'Папа').addComponent(money).addComponent(component).addComponent(component);
+const entity = creator.create('entity', 'Папа', { id: 17000 }).addComponent(money).addComponent(component);
+
+console.log(JSON.stringify(entity.getPreparationData(), null, 2));
 */
+//console.log(entity.getPreparationData());
+
+
 //const entity2 = creator.create('entity', 'Сын');
 //const entity3 = creator.create('entity', 'Внук');
 
