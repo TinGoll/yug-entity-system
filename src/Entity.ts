@@ -10,7 +10,6 @@ export default class Entity {
         this.engine = engine;
         this.options =  options;
     }
-
     /**
      * Получение данных для редактора формул
      */
@@ -18,7 +17,6 @@ export default class Entity {
         if (!this.options.id) return;
         return formulaExecutor.bind(this)('', null, 'preparation');
     }
-
     /**
      * Получение родительской сущности.
      * @returns Entity
