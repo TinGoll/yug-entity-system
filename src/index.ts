@@ -10,12 +10,18 @@ EngineObjectType,
 } from "./types/engine-types";
 const createEngine = (): Engine => new Engine();
 
+// функция присвоения id 
+
 /*
 const save = (apiEntity: ApiEntity[]): ApiEntity[] => {
     let genEntId = 1;
     let genCmpId = 1;
     for (const ent of apiEntity) {
         if (!ent.id) ent.id = genEntId++;
+
+        const parnt = apiEntity.find(e => e.key === ent.parentKey)
+        if (parnt) ent.parentId = parnt.id;
+
         for (const cmp of (ent.components || [])) {
             cmp.id = genCmpId++;
             cmp.entityId = ent.id;
@@ -48,9 +54,15 @@ entity.addChild(entity2);
 
 
 const savedApiEntity = save(entity.build())
+
 const [fasad] = engine.loadAndReturning(savedApiEntity);
 
-console.log('Первое вложение', JSON.stringify(fasad.assemble(), null, 2));
+const container = creator.create('entity', 'Папа', { category: 'Род сущ', id: 777 });
+
+container.addChild(fasad)
+
+
+console.log('container', JSON.stringify(container.assemble(), null, 2));
 
 const code = `
     S =  GEOMETRY_HEIGHT_ID1 / 1000 * GEOMETRY_WIDTH_ID1 / 1000 * GEOMETRY_AMOUNT_ID1;
@@ -63,9 +75,9 @@ fasad.setPropertyValue('geometry', 'width', 396); // задаем в ручну�
 fasad.setPropertyValue('geometry', 'amount', 1); // задаем в ручную, свойтсво
 
 console.log(fasad.getPropertyValue('geometry', 'square')); // получаем результат работы формулы
-
-
 */
+
+
 
 export default createEngine;
 export {
