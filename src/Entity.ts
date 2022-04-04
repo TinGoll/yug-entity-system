@@ -11,8 +11,6 @@ export default class Entity {
         this.options =  options;
     }
 
-
-
     getPropertyValue<U extends PropertyValue = string, T extends object | string = string>(
         componentName: T extends string ? string : keyof T,
         propertyName: T extends string ? string : keyof T[keyof T]
@@ -92,8 +90,7 @@ export default class Entity {
 
     getPropertyFormula<T extends object | string = string>(
         componentName: T extends string ? string : keyof T,
-        propertyName: T extends string ? string : keyof T[keyof T],
-        formula: string | null
+        propertyName: T extends string ? string : keyof T[keyof T]
     ): string | null {
         const cmp = this.options.components?.find(c =>
             c.componentName === componentName &&
@@ -171,7 +168,7 @@ export default class Entity {
     addChild (children: ApiEntity[] | Entity): Entity {
         let candidateChildren: ApiEntity[] = []
         if (children instanceof Entity ) {
-            candidateChildren.push(children.getOptions())
+            candidateChildren.push(...children.build())
         }
         if (children && (<ApiEntity[]>children).length && (<ApiEntity[]>children)[0].name) {
             candidateChildren.push(...(<ApiEntity[]>children||[]).filter((e, i, arr) => {
@@ -180,7 +177,6 @@ export default class Entity {
                 return index === -1;
             }))
         }
-
         this.engine.loadEntities(candidateChildren);
         for (const candidate of candidateChildren) {
             const chld = this.engine.cloneEntity(candidate.key, this.options.key);
