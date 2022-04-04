@@ -32,8 +32,8 @@ export default class Engine {
         const apiEntities = this.loadEntities(entities);
         const grandParents = apiEntities.filter((e, i, arr) => {
             if (!e.parentKey) return true;
-            const index = arr.findIndex(f => f.key === e.parentKey);
-            return index === -1;
+            const idx = arr.findIndex(f => f.key === e.parentKey);
+            return idx === -1;
         });
         return grandParents.map(e => new Entity(e, this));
     }
@@ -84,6 +84,46 @@ export default class Engine {
     has(key: string): boolean { 
         return this.entityList.has(key);
     }
+
+    /**
+     * Клонирование api данных, полученных в результате метода build()
+     * @param apiEntity Результат метода build()
+     * @param parentKey Необязательно, ключ родительской сущности.
+     */
+    cloneApiEntityBuildData (apiEntity: ApiEntity[], parentKey?: string): ApiEntity[] {
+        const tempArr: ApiEntity[] = [];
+        // Находим верхний уровень сущностей.
+        const overEntities = apiEntity.filter((oEnt, idx, arr) => {
+            if (!oEnt.parentKey) return true;
+            const index = arr.findIndex(o => o.id === oEnt.parentKey);
+            return index === -1;
+        });
+        for (const ent of overEntities) {
+            tempArr.push(...this.сloneByChain(apiEntity, ent.key, parentKey));
+        }
+        return tempArr;
+    }
+    /**
+     * Клонирование по цепочке
+     * @param overKey 
+     * @param arr 
+     */
+    private сloneByChain(arr: ApiEntity[], overKey: string, parentKey?: string): ApiEntity[] {
+        const tempArr: ApiEntity[] = [];
+        const overEntity = arr.find(e => e.key === overKey);
+        if (overEntity) {
+            const newKey = Engine.keyGenerator('ent:');
+            const componentsOverEntity = overEntity?.components||[];
+            const cloneComponents = this.cloneComponents(componentsOverEntity, newKey);
+            tempArr.push({ ...overEntity, key: newKey, parentKey: parentKey, id: 0, parentId: 0, components: cloneComponents });
+            const childs: ApiEntity[] = arr.filter(e => e.parentKey === overKey);
+            for (const child of childs) {
+                tempArr.push(...this.сloneByChain(arr, child.key, newKey));
+            }
+        }
+        return tempArr;
+    }
+
     /**
      * Клонирование сущности.
      * @param key ключ требуемой сущности.
@@ -95,9 +135,11 @@ export default class Engine {
         const candidate = this.entityList.get(key)!;
         const parent = this.entityList.get(parentKey || '');
         const children = this.getСhildren(key);
+
         const candidateComponens = candidate.components||[];
         const newKey = Engine.keyGenerator('ent:');
         const newParentId = parent?.parentId || 0;
+
         const cloneComponents = this.cloneComponents(candidateComponens, newKey);
         const clone: ApiEntity = { 
             ...candidate, 

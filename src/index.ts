@@ -44,20 +44,13 @@ const entity2 = creator.create('entity', 'Сын');
 const entity3 = creator.create('entity', 'Внук');
 
 entity2.addChild(entity3);
-entity.addChild(entity2.build());
-
+entity.addChild(entity2);
 
 
 const savedApiEntity = save(entity.build())
 const [fasad] = engine.loadAndReturning(savedApiEntity);
 
 console.log('Первое вложение', JSON.stringify(fasad.assemble(), null, 2));
-
-fasad.addChild(entity3);
-fasad.addChild(entity3);
-fasad.addChild(entity3);
-
-console.log('Второе вложение', fasad.getChildren());
 
 const code = `
     S =  GEOMETRY_HEIGHT_ID1 / 1000 * GEOMETRY_WIDTH_ID1 / 1000 * GEOMETRY_AMOUNT_ID1;
@@ -70,9 +63,9 @@ fasad.setPropertyValue('geometry', 'width', 396); // задаем в ручну�
 fasad.setPropertyValue('geometry', 'amount', 1); // задаем в ручную, свойтсво
 
 console.log(fasad.getPropertyValue('geometry', 'square')); // получаем результат работы формулы
+
+
 */
-
-
 
 export default createEngine;
 export {

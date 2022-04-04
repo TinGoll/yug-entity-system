@@ -15,14 +15,19 @@ export default class Entity {
         componentName: T extends string ? string : keyof T,
         propertyName: T extends string ? string : keyof T[keyof T]
     ): U | null {
-        const cmp = this.options.components?.find(c => 
-            c.componentName === componentName &&
-            c.propertyName === propertyName
-        )
-        if (!cmp) return null;
-        const formula = cmp.propertyFormula;
-        if (!formula) return this.get_value<U>(cmp.propertyType!, cmp.propertyValue);
-        return <U>(formulaExecutor.bind(this)(formula, cmp.propertyValue, 'execution'));
+       try {
+            const cmp = this.options.components?.find(c => 
+                c.componentName === componentName &&
+                c.propertyName === propertyName
+            )
+            if (!cmp) return null;
+            const formula = cmp.propertyFormula;
+            if (!formula) return this.get_value<U>(cmp.propertyType!, cmp.propertyValue);
+            return <U>(formulaExecutor.bind(this)(formula, cmp.propertyValue, 'execution'));
+       } catch (e) {
+           console.log(e);
+           return null;
+       }
     }
 
     /**
@@ -166,10 +171,14 @@ export default class Entity {
 
 
     addChild (children: ApiEntity[] | Entity): Entity {
+
         let candidateChildren: ApiEntity[] = []
         if (children instanceof Entity ) {
             candidateChildren.push(...children.build())
+            console.log('Entity', JSON.stringify(candidateChildren), null, 2);
+            
         }
+
         if (children && (<ApiEntity[]>children).length && (<ApiEntity[]>children)[0].name) {
             candidateChildren.push(...(<ApiEntity[]>children||[]).filter((e, i, arr) => {
                 if (!e.parentKey) return true;
@@ -177,10 +186,10 @@ export default class Entity {
                 return index === -1;
             }))
         }
-        this.engine.loadEntities(candidateChildren);
-        for (const candidate of candidateChildren) {
-            const chld = this.engine.cloneEntity(candidate.key, this.options.key);
-        }
+
+        const cloneData =  this.engine.cloneApiEntityBuildData(candidateChildren, this.options.key);
+        this.engine.loadEntities(cloneData);
+
         return this;
     }
 
