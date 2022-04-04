@@ -115,7 +115,9 @@ export default class Engine {
             const newKey = Engine.keyGenerator('ent:');
             const componentsOverEntity = overEntity?.components||[];
             const cloneComponents = this.cloneComponents(componentsOverEntity, newKey);
-            tempArr.push({ ...overEntity, key: newKey, parentKey: parentKey, id: 0, parentId: 0, components: cloneComponents });
+            const cloneEntity = { ...overEntity, key: newKey, parentKey: parentKey, id: 0, parentId: 0, components: cloneComponents }
+            this.set(cloneEntity);
+            tempArr.push(cloneEntity);
             const childs: ApiEntity[] = arr.filter(e => e.parentKey === overKey);
             for (const child of childs) {
                 tempArr.push(...this.сloneByChain(arr, child.key, newKey));

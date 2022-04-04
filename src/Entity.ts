@@ -178,7 +178,6 @@ export default class Entity {
             console.log('Entity', JSON.stringify(candidateChildren), null, 2);
             
         }
-
         if (children && (<ApiEntity[]>children).length && (<ApiEntity[]>children)[0].name) {
             candidateChildren.push(...(<ApiEntity[]>children||[]).filter((e, i, arr) => {
                 if (!e.parentKey) return true;
@@ -186,10 +185,7 @@ export default class Entity {
                 return index === -1;
             }))
         }
-
-        const cloneData =  this.engine.cloneApiEntityBuildData(candidateChildren, this.options.key);
-        this.engine.loadEntities(cloneData);
-
+        this.engine.cloneApiEntityBuildData(candidateChildren, this.options.key);
         return this;
     }
 
