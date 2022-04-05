@@ -30,10 +30,10 @@ export default class Engine {
     /** загрузка в хранилище движка сущностей и возврат массива instance Entity */
     loadAndReturning(entities: ApiEntity[]): Entity[] {
         const apiEntities = this.loadEntities(entities);
-        const grandParents = apiEntities.filter((e, i, arr) => {
-            if (!e.parentKey) return true;
-            const idx = arr.findIndex(f => f.key === e.parentKey);
-            return idx === -1;
+        const grandParents = apiEntities.filter((oEnt, i, arr) => {
+            if (!oEnt.parentKey) return true;
+            const index = arr.findIndex(fEnt => fEnt.key === oEnt.parentKey);
+            return (index === -1);
         });
         return grandParents.map(e => new Entity(e, this));
     }
@@ -95,8 +95,8 @@ export default class Engine {
         // Находим верхний уровень сущностей.
         const overEntities = apiEntity.filter((oEnt, idx, arr) => {
             if (!oEnt.parentKey) return true;
-            const index = arr.findIndex(o => o.id === oEnt.parentKey);
-            return index === -1;
+            const index = arr.findIndex(fEnt => fEnt.key === oEnt.parentKey);
+            return (index === -1);
         });
         for (const ent of overEntities) {
             tempArr.push(...this.сloneByChain(apiEntity, ent.key, parentKey));

@@ -169,21 +169,19 @@ export default class Entity {
         throw new Error('Не реализовано')
     }
 
-
+    /**
+     * Добавление дочерней сущности. Принцип основан на копировании передаваемой сущности.
+     * Так же новые сущности добавляються в хранилище движка.
+     * @param children Либо объект класса Entity либо api данные.
+     * @returns This
+     */
     addChild (children: ApiEntity[] | Entity): Entity {
-
         let candidateChildren: ApiEntity[] = []
         if (children instanceof Entity ) {
             candidateChildren.push(...children.build())
-            console.log('Entity', JSON.stringify(candidateChildren), null, 2);
-            
         }
         if (children && (<ApiEntity[]>children).length && (<ApiEntity[]>children)[0].name) {
-            candidateChildren.push(...(<ApiEntity[]>children||[]).filter((e, i, arr) => {
-                if (!e.parentKey) return true;
-                const index = arr.findIndex(f => f.key === e.parentKey);
-                return index === -1;
-            }))
+            candidateChildren.push(...<ApiEntity[]>children);
         }
         this.engine.cloneApiEntityBuildData(candidateChildren, this.options.key);
         return this;
@@ -192,15 +190,10 @@ export default class Entity {
     addComponent (component: ApiComponent[] | Component): Entity {
 
         let addedComponents: ApiComponent[] = [];
-
         if (component instanceof Component) addedComponents =  component.build();
-
         if (component && (<ApiComponent[]>component)[0]?.propertyName) addedComponents = (<ApiComponent[]>component);
-
         const cmps = this.engine.cloneComponents(addedComponents, this.options.key)
-
         if (!this.options.components) this.options.components = [];
-
         for (const cmp of cmps) {
             const index = this.options.components?.findIndex(c =>
                  c.componentName === cmp.componentName && c.propertyName === cmp.propertyName);
