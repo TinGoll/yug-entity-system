@@ -103,29 +103,7 @@ export default class Engine {
         }
         return tempArr;
     }
-    /**
-     * Клонирование по цепочке
-     * @param overKey 
-     * @param arr 
-     */
-    private сloneByChain(arr: ApiEntity[], overKey: string, parentKey?: string): ApiEntity[] {
-        const tempArr: ApiEntity[] = [];
-        const overEntity = arr.find(e => e.key === overKey);
-        if (overEntity) {
-            const newKey = Engine.keyGenerator('ent:');
-            const componentsOverEntity = overEntity?.components||[];
-            const cloneComponents = this.cloneComponents(componentsOverEntity, newKey);
-            const cloneEntity = { ...overEntity, key: newKey, parentKey: parentKey, id: 0, parentId: 0, components: cloneComponents }
-            this.set(cloneEntity);
-            tempArr.push(cloneEntity);
-            const childs: ApiEntity[] = arr.filter(e => e.parentKey === overKey);
-            for (const child of childs) {
-                tempArr.push(...this.сloneByChain(arr, child.key, newKey));
-            }
-        }
-        return tempArr;
-    }
-
+   
     /**
      * Клонирование сущности.
      * @param key ключ требуемой сущности.
@@ -289,5 +267,28 @@ export default class Engine {
         this.clearEntity();
         this._creator = undefined;
         Engine.instance = undefined;
+    }
+
+    /**
+    * Клонирование по цепочке
+    * @param overKey 
+    * @param arr 
+    */
+    private сloneByChain(arr: ApiEntity[], overKey: string, parentKey?: string): ApiEntity[] {
+        const tempArr: ApiEntity[] = [];
+        const overEntity = arr.find(e => e.key === overKey);
+        if (overEntity) {
+            const newKey = Engine.keyGenerator('ent:');
+            const componentsOverEntity = overEntity?.components || [];
+            const cloneComponents = this.cloneComponents(componentsOverEntity, newKey);
+            const cloneEntity = { ...overEntity, key: newKey, parentKey: parentKey, id: 0, parentId: 0, components: cloneComponents }
+            this.set(cloneEntity);
+            tempArr.push(cloneEntity);
+            const childs: ApiEntity[] = arr.filter(e => e.parentKey === overKey);
+            for (const child of childs) {
+                tempArr.push(...this.сloneByChain(arr, child.key, newKey));
+            }
+        }
+        return tempArr;
     }
 }

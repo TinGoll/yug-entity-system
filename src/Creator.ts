@@ -45,4 +45,22 @@ export default class Creator {
         const apiEntities = this.engine.getСhildren(key);
         return apiEntities.map(e => new Entity(e, this.engine));
     }
+
+    getDynasty(key: string): Entity[] {
+        const tempEntities: Entity[] = [];
+        const entity = this.getEntityToKey(key);
+        if (!entity) return tempEntities;
+        tempEntities.push(entity);
+        tempEntities.push(...this.get_all_connections(entity.getChildrens()));
+        return tempEntities;
+    }
+
+    private get_all_connections (children: Entity[]): Entity[] {
+        const tempEntities: Entity[] = [];
+        tempEntities.push(...children);
+        for (const child of children) {
+            tempEntities.push(...this.get_all_connections(child.getChildrens()));
+        }
+        return tempEntities;
+    }
 }

@@ -14,6 +14,90 @@ const createEngine = (): Engine => new Engine();
 
 /*
 const save = (apiEntity: ApiEntity[]): ApiEntity[] => {
+  let genEntId = 1;
+  let genCmpId = 1;
+  for (const ent of apiEntity) {
+    if (!ent.id) ent.id = genEntId++;
+    const parnt = apiEntity.find(e => e.key === ent.parentKey)
+    if (parnt) ent.parentId = parnt.id;
+    for (const cmp of (ent.components || [])) {
+      cmp.id = genCmpId++;
+      cmp.entityId = ent.id;
+    }
+  }
+  return apiEntity;
+}
+
+
+const engine = createEngine();
+const creator = engine.creator();
+
+const money = creator.create('component', 'money', { componentDescription: "Деньги" })
+  .addProperty({ propertyName: 'price', propertyDescription: 'Цена', propertyValue: 1000, propertyType: 'number' });
+
+const entity = creator.create('entity', 'БАТЯ', { category: 'Род сущ' }).addComponent(money);
+const entity2 = creator.create('entity', 'СЫН').addComponent(money);
+const entity3 = creator.create('entity', 'ВНУЧА').addComponent(money);
+
+const container = creator.create('entity', 'CONTAINER', { category: 'Род сущ', id: 777 }).addComponent(money);
+
+entity2.addChild(entity3.build());
+entity.addChild(entity2.build());
+
+const saveData = save(entity.build());
+
+const [fasad] = engine.loadAndReturning(saveData);
+const [cld1] = fasad.getChildrens();
+const [cld2] = cld1.getChildrens();
+
+// Изначальная цена у всех сущностей 1000.
+// Формула фасада
+fasad.setPropertyFormula('money', 'price', `
+    A = THIS;
+    RESULT = A * 2;
+`);
+// Формула филенки
+cld1.setPropertyFormula('money', 'price', `
+    A = G_PRICE_ID1();
+    C = THIS;
+    RESULT = A + C;
+`)
+// Формула рубашки, с последующим вычислением.
+// Далее по цепи, что бы вычислить стоимость,  вычисляется стоимость филенки, 
+// которая провоцирует вычисление фасада и результат выводиться в лог
+
+
+const res =  cld2.setPropertyFormula('money', 'price', `
+      A = G_PRICE_ID1();
+      B = G_PRICE_ID2();
+      C = THIS;
+      RESULT = RUB(A + B + C)
+`)
+.getPropertyValue('money', 'price');
+
+
+
+console.log(res);
+
+*/
+
+//************************************************************ */
+//const GETAGGREGATOR = fasad.getterExecutor<number>('money', 'price')
+//const SETAGGREGATOR = fasad.setterExecutor<number>('money', 'price')
+
+/** Значение price в комопненте фасада равно 1000 */
+//console.log('Результат работы геттера:', GETAGGREGATOR());
+
+// Теперь сеттер
+//SETAGGREGATOR(580)
+
+//console.log('Результат работы геттера:', GETAGGREGATOR());
+
+//aggregator
+
+
+/*
+const save = (apiEntity: ApiEntity[]): ApiEntity[] => {
     let genEntId = 1;
     let genCmpId = 1;
     for (const ent of apiEntity) {
@@ -27,18 +111,6 @@ const save = (apiEntity: ApiEntity[]): ApiEntity[] => {
     }
     return apiEntity;
 }
-
-const engine = createEngine();
-const creator = engine.creator();
-
-const entity = creator.create('entity', 'FATHER', { category: 'Род сущ'});
-const entity2 = creator.create('entity', 'SAN');
-const entity3 = creator.create('entity', 'VNUCHARA');
-const container = creator.create('entity', 'CONTAINER', { category: 'Род сущ', id: 777 });
-
-entity2.addChild(entity3.build());
-entity.addChild(entity2.build());
-
 console.log('-------------------------------------');
 console.log('BUILD', JSON.stringify(entity.build(), null, 2));
 console.log('-------------------------------------');

@@ -1,6 +1,7 @@
 import Component from "./Component";
 import Engine from "./Engine";
 import { formulaExecutor } from "./FormulaExecutor";
+import { formulaExecutor2 } from "./FormulaExecutor2";
 import { ApiComponent, ApiEntity, PropertyTypes, PropertyValue } from "./types/engine-types";
 
 export default class Entity {
@@ -10,6 +11,21 @@ export default class Entity {
         this.engine = engine;
         this.options =  options;
     }
+
+    testNewFormula<U extends PropertyValue = string, T extends object | string = string>(
+        componentName: T extends string ? string : keyof T,
+        propertyName: T extends string ? string : keyof T[keyof T]
+    ): U | null {
+        const cmp = this.options.components?.find(c =>
+            c.componentName === componentName &&
+            c.propertyName === propertyName
+        )
+        if (!cmp) return null;
+        console.log(JSON.stringify(formulaExecutor2.bind(this)(cmp, '', 'preparation'), null, 2));
+        
+        return null;
+    }
+
 
     getPropertyValue<U extends PropertyValue = string, T extends object | string = string>(
         componentName: T extends string ? string : keyof T,
@@ -23,11 +39,35 @@ export default class Entity {
             if (!cmp) return null;
             const formula = cmp.propertyFormula;
             if (!formula) return this.get_value<U>(cmp.propertyType!, cmp.propertyValue);
-            return <U>(formulaExecutor.bind(this)(formula, cmp.propertyValue, 'execution'));
+           const result = <U>(formulaExecutor2.bind(this)(cmp, formula, "execution"));
+           cmp.propertyValue = this.get_value<U>(cmp.propertyType!, result);
+           return result;
        } catch (e) {
            console.log(e);
            return null;
        }
+    }
+
+    /**
+     * Агрегатор, для отсроченного выполнения функции с привязкой контекста. GETTER
+     * @param componentName Название копопнента
+     * @param propertyName Название свойства
+     * @returns функция getter
+     */
+    getterExecutor (componentName:string, propertyName:string): () => PropertyValue | null {
+        const fun = (): PropertyValue | null => this.getPropertyValue.bind(this)<PropertyValue, string>(componentName, propertyName);
+        return fun;
+    }
+
+    /**
+     * Агрегатор, для отсроченного выполнения функции с привязкой контекста. SETTER
+     * @param componentName Название копопнента
+     * @param propertyName Название свойства
+     * @returns функция setter
+     */
+    setterExecutor(componentName: string, propertyName: string ): (value: PropertyValue) => void {
+        const fun = (value: PropertyValue) => this.setPropertyValue.bind(this)<PropertyValue, string>(componentName, propertyName, value);
+        return fun.bind(this);
     }
 
     /**
@@ -69,11 +109,12 @@ export default class Entity {
                 this.options.components![index].propertyValue = tempValue;
             }
         } catch (e) {
-            console.log(e);
+            console.log('Error setPropertyValue', e);
         }
         return this;
     }
 
+ 
     setPropertyFormula<T extends object | string = string>(
         componentName: T extends string ? string : keyof T,
         propertyName: T extends string ? string : keyof T[keyof T],
@@ -108,16 +149,16 @@ export default class Entity {
     /**
      * Получение данных для редактора формул
      */
-    getPreparationData () {
+    getPreparationData(componentKey: string) {
         if (!this.options.id) return;
-        return formulaExecutor.bind(this)('', null, 'preparation');
+        return formulaExecutor2.bind(this)({ key: componentKey }, '', 'preparation');
     }
     /**
      * Получение родительской сущности.
      * @returns Entity
      */
     getParent(): Entity | undefined {
-        const parentKey = this.options.parentKey;
+        const parentKey = this.options.parentKey;        
         if (!parentKey) return;
         return this.engine.creator().getEntityToKey(parentKey);
     }
@@ -258,6 +299,10 @@ export default class Entity {
             return new Component({ componentName: name, componentDescription: cmps[0].componentDescription||'Описание компонента' },
                 cmps);
         })
+    }
+
+    getDynasty (): Entity [] {
+        return this.engine.creator().getDynasty(this.options.key);
     }
 
     getChildrens(): Entity[] {

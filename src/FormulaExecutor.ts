@@ -53,6 +53,7 @@ export function formulaExecutor(this: Entity, code: string, defaultValue: Proper
             /** Подготовка кнопок для использования на клиенте. */
             //.replace(/[^a-z]/g, '')
             const CMP = cmp_factory(fComp.components);
+
             const BUTTONS = fComp.components.map(component => {
                 const GROUP = `${fComp.entityName} idx: ${fComp.count}`;
                 const COM_DESC = `${component.componentDescription}`
@@ -61,6 +62,7 @@ export function formulaExecutor(this: Entity, code: string, defaultValue: Proper
                 const VALUE = `${component.componentName.toUpperCase()}_${component.propertyName.toUpperCase()}_ID${fComp.id}`; // Привязка к ID или ключу.
                 const TUPLE = <ComponentTuple>[component.componentName!, component.propertyName!];
                 const CODE = `const ${VALUE} = FACS.get('${fComp.entityName} idx: ${fComp.count}')?.CMP(['${TUPLE[0]}', '${TUPLE[1]}']);`;
+
                 return { GROUP, COM_DESC, NAME, VALUE, TUPLE, CODE };
             });
             /** Сборка элемента экзекутора */
@@ -142,8 +144,8 @@ export function formulaExecutor(this: Entity, code: string, defaultValue: Proper
                 ${code}
                 return RESULT;
         }
-        executor();
-        `;
+        executor();`;
+        
         //console.log(baseCode);
 
         if (type === 'execution') return eval(baseCode);
