@@ -130,14 +130,9 @@ export function formulaExecutor2(this: Entity, { componentName, propertyName, pr
         if (type === 'execution') return eval(baseCode);
         const clientButtons: FormulaButton[] = [];
         const executorArr = [...EXECUTORS].map(e => e[1]);
-        const groupSet = [...new Set(executorArr.map(e => {
-            const name = e.ENTITY_NAME;
-            const note = e.ENTITY_NOTE;
-            if (!note || note === '') return name;
-            return `${name} (${note})`;
-        }))];
+        const groupSet = [...new Set(executorArr.map(e => ({name: e.ENTITY_NAME, note: e.ENTITY_NOTE})))];
         for (const group of groupSet) {
-            const componentNames = [...new Set(executorArr.filter(e => e.ENTITY_NAME === group).map(e => e.COMPONENT_NAME))];
+            const componentNames = [...new Set(executorArr.filter(e => e.ENTITY_NAME === group.name).map(e => e.COMPONENT_NAME))];
             const buttons: Array<{ name: string, value: string }> = [];
             const setters: Array<{ name: string, value: string }> = [];
             const components: Array<{
@@ -146,10 +141,10 @@ export function formulaExecutor2(this: Entity, { componentName, propertyName, pr
                 setters: Array<{ name: string, value: string }>
             }> = [];
             for (const componentName of componentNames) {
-                buttons.push(...executorArr.filter(e => e.ENTITY_NAME === group && e.COMPONENT_NAME === componentName)
+                buttons.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.COMPONENT_NAME === componentName)
                         .map(e => ({ name: e.PROPERTY_DESC, value: `${e.GETTER_NAME}${e.IS_CURRENT_PROPERTY ? '' : "()"}`})));
-                setters.push(...executorArr.filter(e => e.ENTITY_NAME === group && e.COMPONENT_NAME === componentName)
-                        .map(e => ({ name: e.PROPERTY_DESC, value: `${e.SETTER_NAME}("ЗНАЧЕНИЕ")`})));
+                setters.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.COMPONENT_NAME === componentName)
+                        .map(e => ({ name: e.PROPERTY_DESC, value: `${e.SETTER_NAME}( /* ЗНАЧЕНИЕ */ )`})));
                 components.push({
                     componentName,
                     buttons,
@@ -157,7 +152,7 @@ export function formulaExecutor2(this: Entity, { componentName, propertyName, pr
                 });
             }
             clientButtons.push({
-                group,
+                group: `${group.name}${(!group.note || group.note === '') ? '' : ' (' + group.note + ')'}`,
                 components
             });
         }
