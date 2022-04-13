@@ -64,7 +64,6 @@ export function formulaExecutor2(this: Entity, { componentName, propertyName, pr
                 const KEY = `Entity ${entity.name} Cmp ${cmp.componentName} Prob ${cmp.propertyName} Id ${cmp.id}`;
                 const IS_CURRENT_PROPERTY = key === cmp.key;
                 const PROPERTY_VALUE = cmp.propertyValue;
-
                 const GETTER = entity.getterExecutor(cmp.componentName, cmp.propertyName);
                 const SETTER = entity.setterExecutor(cmp.componentName, cmp.propertyName);
                 const ENTITY_NAME = entity.name; // Название сущности.
@@ -131,10 +130,10 @@ export function formulaExecutor2(this: Entity, { componentName, propertyName, pr
         const clientButtons: FormulaButton[] = [];
         const executorArr = [...EXECUTORS].map(e => e[1]);
         const groupSet = [...new Set(executorArr.map(e => (e.ENTITY_NAME + '~' + e.ENTITY_NOTE)))]
-                    .map(g => g.split("~")).map(g => ({ name: g[0], note: g[1] }));
-                    
+                    .map(g => g.split("~")).map(g => ({ name: g[0], note: g[1] || '' }));
+
         for (const group of groupSet) {
-            const componentNames = [...new Set(executorArr.filter(e => e.ENTITY_NAME === group.name).map(e => e.COMPONENT_NAME))];
+            const componentNames = [...new Set(executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note ).map(e => e.COMPONENT_NAME))];
             const buttons: Array<{ name: string, value: string }> = [];
             const setters: Array<{ name: string, value: string }> = [];
             const components: Array<{
@@ -143,9 +142,10 @@ export function formulaExecutor2(this: Entity, { componentName, propertyName, pr
                 setters: Array<{ name: string, value: string }>
             }> = [];
             for (const componentName of componentNames) {
-                buttons.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.COMPONENT_NAME === componentName)
+                buttons.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note && e.COMPONENT_NAME === componentName)
                         .map(e => ({ name: e.PROPERTY_DESC, value: `${e.GETTER_NAME}${e.IS_CURRENT_PROPERTY ? '' : "()"}`})));
-                setters.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.COMPONENT_NAME === componentName)
+
+                setters.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note && e.COMPONENT_NAME === componentName)
                         .map(e => ({ name: e.PROPERTY_DESC, value: `${e.SETTER_NAME}( /* ЗНАЧЕНИЕ */ )`})));
                 components.push({
                     componentName,
