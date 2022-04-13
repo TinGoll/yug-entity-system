@@ -140,7 +140,7 @@ export function formulaExecutor2(this: Entity, { componentName, propertyName, pr
             for (const componentName of componentNames) {
                 const buttons: Array<{ name: string, value: string }> = [];
                 const setters: Array<{ name: string, value: string }> = [];
-                buttons.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.COMPONENT_NAME === componentName && e.ENTITY_NOTE === group.note )
+                buttons.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note && e.COMPONENT_NAME === componentName)
                         .map(e => ({ name: e.PROPERTY_DESC, value: `${e.GETTER_NAME}${e.IS_CURRENT_PROPERTY ? '' : "()"}`})));
 
                 setters.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note && e.COMPONENT_NAME === componentName)
