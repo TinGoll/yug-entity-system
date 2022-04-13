@@ -130,7 +130,12 @@ export function formulaExecutor2(this: Entity, { componentName, propertyName, pr
         if (type === 'execution') return eval(baseCode);
         const clientButtons: FormulaButton[] = [];
         const executorArr = [...EXECUTORS].map(e => e[1]);
-        const groupSet = [...new Set(executorArr.map(e => e.ENTITY_NAME + e.ENTITY_NOTE ? ` (${e.ENTITY_NOTE})` : ''))];
+        const groupSet = [...new Set(executorArr.map(e => {
+            const name = e.ENTITY_NAME;
+            const note = e.ENTITY_NOTE;
+            if (!note || note === '') return name;
+            return `${name} (${note})`;
+        }))];
         for (const group of groupSet) {
             const componentNames = [...new Set(executorArr.filter(e => e.ENTITY_NAME === group).map(e => e.COMPONENT_NAME))];
             const buttons: Array<{ name: string, value: string }> = [];
