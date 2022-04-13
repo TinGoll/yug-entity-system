@@ -34,10 +34,12 @@ const creator = engine.creator();
 
 const money = creator.create('component', 'money', { componentDescription: "Деньги" })
   .addProperty({ propertyName: 'price', propertyDescription: 'Цена', propertyValue: 1000, propertyType: 'number' });
+const color = creator.create('component', 'finishing', { componentDescription: 'Цвет' })
+  .addProperty({propertyName: 'color', propertyDescription: 'Цвет', propertyValue: 'Красный', propertyType: 'string'})
 
-const entity = creator.create('entity', 'БАТЯ', { category: 'Род сущ' }).addComponent(money);
-const entity2 = creator.create('entity', 'СЫН').addComponent(money);
-const entity3 = creator.create('entity', 'ВНУЧА').addComponent(money);
+const entity = creator.create('entity', 'БАТЯ', { category: 'Род сущ', note: 'Главный' }).addComponent(money).addComponent(color);
+const entity2 = creator.create('entity', 'СЫН', { note: 'Средний' }).addComponent(money);
+const entity3 = creator.create('entity', 'ВНУЧА', { note: 'Младшая' }).addComponent(money);
 
 const container = creator.create('entity', 'CONTAINER', { category: 'Род сущ', id: 777 }).addComponent(money);
 
@@ -73,11 +75,11 @@ const res =  cld2.setPropertyFormula('money', 'price', `
       C = THIS;
       RESULT = RUB(A + B + C)
 `)
-.getPropertyValue('money', 'price');
+//.getPropertyValue('money', 'price');
 
 
 
-console.log(res);
+console.log(JSON.stringify(cld2.getPreparationData(cld2.getComponents()[0].build()[0].key).clientButtons, null, 2));
 
 */
 

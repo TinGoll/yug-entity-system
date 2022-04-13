@@ -125,28 +125,25 @@ export function formulaExecutor2(this: Entity, { componentName, propertyName, pr
                 return RESULT;
         }
         executor();`;
-
         if (type === 'execution') return eval(baseCode);
         const clientButtons: FormulaButton[] = [];
         const executorArr = [...EXECUTORS].map(e => e[1]);
         const groupSet = [...new Set(executorArr.map(e => (e.ENTITY_NAME + '~' + e.ENTITY_NOTE)))]
                     .map(g => g.split("~")).map(g => ({ name: g[0], note: g[1] || '' }));
-
         for (const group of groupSet) {
             const componentNames = [...new Set(executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note ).map(e => e.COMPONENT_NAME))];
-            const buttons: Array<{ name: string, value: string }> = [];
-            const setters: Array<{ name: string, value: string }> = [];
             const components: Array<{
                 componentName: string,
                 buttons: Array<{ name: string, value: string }>
                 setters: Array<{ name: string, value: string }>
             }> = [];
             for (const componentName of componentNames) {
-                buttons.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note && e.COMPONENT_NAME === componentName)
+                const buttons: Array<{ name: string, value: string }> = [];
+                const setters: Array<{ name: string, value: string }> = [];
+                buttons.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.COMPONENT_NAME === componentName )
                         .map(e => ({ name: e.PROPERTY_DESC, value: `${e.GETTER_NAME}${e.IS_CURRENT_PROPERTY ? '' : "()"}`})));
-
                 setters.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note && e.COMPONENT_NAME === componentName)
-                        .map(e => ({ name: e.PROPERTY_DESC, value: `${e.SETTER_NAME}( /* ЗНАЧЕНИЕ */ )`})));
+                        .map(e => ({ name: e.PROPERTY_DESC, value: `${e.SETTER_NAME}( /*ЗНАЧЕНИЕ*/ )`})));
                 components.push({
                     componentName,
                     buttons,
@@ -164,7 +161,7 @@ export function formulaExecutor2(this: Entity, { componentName, propertyName, pr
         startCode += `/*  ME - Текущий объект, FATHER - родитель,                  */\n`;
         startCode += `/*  CHILDS - детки, BROTHERS - братья, GRAND_FATHER - дед    */\n`;
         startCode += `/*  RESULT - в эту переменную внесите результат.             */\n`;
-        startCode += `/*  Остальное в кнопках на панели                            */\n`;
+        startCode += `/*  Остальное в кнопках на панели. Писать в верхнем регистре.*/\n`;
         startCode += `/*************************************************************/\n`;
         startCode += `// Тут пишите ваш код, удачи!\n\n\n`;
         return { clientButtons, startCode }
