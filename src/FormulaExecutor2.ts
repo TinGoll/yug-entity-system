@@ -141,10 +141,11 @@ export function formulaExecutor2(this: Entity, { componentName, propertyName, pr
                 const buttons: Array<{ name: string, value: string }> = [];
                 const setters: Array<{ name: string, value: string }> = [];
                 buttons.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note && e.COMPONENT_NAME === componentName)
-                        .map(e => ({ name: e.PROPERTY_DESC, value: `${e.GETTER_NAME}${e.IS_CURRENT_PROPERTY ? '' : "()"}`})));
+                        .map(e => ({ name: e.PROPERTY_DESC, value: `${e.GETTER_NAME}${e.IS_CURRENT_PROPERTY ? ' ' : "() "}`})));
 
                 setters.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note && e.COMPONENT_NAME === componentName)
-                        .map(e => ({ name: e.PROPERTY_DESC, value: `${e.SETTER_NAME}( /*ЗНАЧЕНИЕ*/ )`})));
+                        .map(e => ({ name: e.PROPERTY_DESC, value: `${e.SETTER_NAME}( /*ЗНАЧЕНИЕ*/ ) `})));
+                buttons.push({ name: 'RESULT', value: 'RESULT ' })
                 components.push({
                     componentName,
                     buttons,
