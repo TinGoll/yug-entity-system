@@ -20,6 +20,7 @@ interface FormulaExecutor {
     PROPERTY_DESC: string;
     GETTER_NAME: string;
     SETTER_NAME: string;
+    ENTITY_NOTE: string;
     IS_CURRENT_PROPERTY: boolean;
     CODE: string;
 }
@@ -67,6 +68,7 @@ export function formulaExecutor2(this: Entity, { componentName, propertyName, pr
                 const GETTER = entity.getterExecutor(cmp.componentName, cmp.propertyName);
                 const SETTER = entity.setterExecutor(cmp.componentName, cmp.propertyName);
                 const ENTITY_NAME = entity.name; // Название сущности.
+                const ENTITY_NOTE = entity.getNote(); // note :)
                 const COMPONENT_NAME =  cmp.componentName; // Название компонента.
                 const COMPONENT_DESC = cmp.componentDescription; // Название на русском.
                 const PROPERTY_NAME = cmp.propertyName; // Название свойства.
@@ -88,6 +90,7 @@ export function formulaExecutor2(this: Entity, { componentName, propertyName, pr
                     PROPERTY_DESC,
                     GETTER_NAME,
                     SETTER_NAME,
+                    ENTITY_NOTE,
                     IS_CURRENT_PROPERTY,
                     CODE
                 })
@@ -125,10 +128,9 @@ export function formulaExecutor2(this: Entity, { componentName, propertyName, pr
         executor();`;
 
         if (type === 'execution') return eval(baseCode);
-
         const clientButtons: FormulaButton[] = [];
         const executorArr = [...EXECUTORS].map(e => e[1]);
-        const groupSet = [...new Set(executorArr.map(e => e.ENTITY_NAME))];
+        const groupSet = [...new Set(executorArr.map(e => e.ENTITY_NAME + e.ENTITY_NOTE ? ` (${e.ENTITY_NOTE})` : ''))];
         for (const group of groupSet) {
             const componentNames = [...new Set(executorArr.filter(e => e.ENTITY_NAME === group).map(e => e.COMPONENT_NAME))];
             const buttons: Array<{ name: string, value: string }> = [];
