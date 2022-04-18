@@ -311,9 +311,11 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
 
         let startCode = '';
         startCode += `/*************************************************************/\n`;
-        startCode += `/*  ME - Текущий объект, FATHER - родитель,                  */\n`;
-        startCode += `/*  CHILDS - детки, BROTHERS - братья, GRAND_FATHER - дед    */\n`;
         startCode += `/*  RESULT - в эту переменную внесите результат.             */\n`;
+        startCode += `/*  Переменные окружения, позволяют получить доступ к        */\n`;
+        startCode += `/*  свойствам компонентов по названию.                       */\n`;
+        startCode += `/*  THIS - текущее свойство, для получения значения, писать  */\n`;
+        startCode += `/*  скобки не нужно. (RESULT = THIS).                        */\n`;
         startCode += `/*  Остальное в кнопках на панели. Писать в верхнем регистре.*/\n`;
         startCode += `/*************************************************************/\n`;
         startCode += `// Тут пишите ваш код, удачи!\n\n\n\n\n`;
