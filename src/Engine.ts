@@ -242,6 +242,40 @@ export default class Engine {
         return tempArr;
     }
 
+    /** Уникальльное имя, для названий сущностей */
+    public static getUniqueNote (name: string, note: string, apiData: ApiEntity[], startNumber: number = 0): string {
+        let maxNumber: number = 0;
+        for (const api of apiData) {
+            if (api.name?.toUpperCase() === name.toUpperCase()) {
+                const numArr = (api.note || '').match(/[0-9]/ig);
+                if (numArr) {
+                    const tempNum = Number(numArr.join(''));
+                    if (tempNum > maxNumber) maxNumber = tempNum;
+                }
+            }
+        }
+        return Engine.incrementString(note.replace(/\d/g, '') + ` ${maxNumber}`, startNumber).replace(/\s+/g, ' ').trim();
+    }
+
+    /**  */
+    public static incrementString(strng: string, startNumber: number = 0): string {
+        let numbOfString = strng.match(/[0-9]/ig);
+        let number;
+        if (numbOfString && numbOfString.length > 0) {
+            number = +numbOfString.join('');
+            let lastAddValue = startNumber + number + (false ? -1 : 1);
+            return strng.replace(/\d/g, '') + Engine.pad(lastAddValue, numbOfString.length);
+        }
+        return strng + ' ' + Engine.pad(1, 1);
+    }
+
+    /**  */
+    private static pad(num: number, size: number) {
+        let s = num + "";
+        while (s.length < size) s = "0" + s;
+        return s;
+    }
+
     /** Генератор ключей, для объектов */
     public static keyGenerator(pfx?: 'ent:' | 'cmp:'): string {
         //return Date.now().toString(16);

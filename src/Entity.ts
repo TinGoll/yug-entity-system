@@ -1,7 +1,6 @@
 import Component from "./Component";
 import Engine from "./Engine";
-import { formulaExecutor } from "./FormulaExecutor";
-import { formulaExecutor2 } from "./FormulaExecutor2";
+import { formulaExecutor3 } from "./FormulaExecutor3";
 import { ApiComponent, ApiEntity, PropertyTypes, PropertyValue } from "./types/engine-types";
 
 export default class Entity {
@@ -21,7 +20,7 @@ export default class Entity {
             c.propertyName === propertyName
         )
         if (!cmp) return null;
-        console.log(JSON.stringify(formulaExecutor2.bind(this)(cmp, '', 'preparation'), null, 2));
+        console.log(JSON.stringify(formulaExecutor3.bind(this)(cmp, '', 'preparation'), null, 2));
         
         return null;
     }
@@ -39,7 +38,7 @@ export default class Entity {
             if (!cmp) return null;
             const formula = cmp.propertyFormula;
             if (!formula) return this.get_value<U>(cmp.propertyType!, cmp.propertyValue);
-           const result = <U>(formulaExecutor2.bind(this)(cmp, formula, "execution"));
+           const result = <U>(formulaExecutor3.bind(this)(cmp, formula, "execution"));
            cmp.propertyValue = this.get_value<U>(cmp.propertyType!, result);
            return result;
        } catch (e) {
@@ -151,7 +150,7 @@ export default class Entity {
      */
     getPreparationData(componentKey: string) {
         if (!this.options.id) return;
-        return formulaExecutor2.bind(this)({ key: componentKey }, '', 'preparation');
+        return formulaExecutor3.bind(this)({ key: componentKey }, '', 'preparation');
     }
     /**
      * Получение родительской сущности.
@@ -209,6 +208,27 @@ export default class Entity {
     produceAndRetutning(): Entity {
         throw new Error('Не реализовано')
     }
+    /**
+     * Получение вложенной сущности по name и note.
+     * @returns Entity или null
+     */
+    getHeirByName({ name, note }: { name: string; note?: string; }): Entity | null {
+        try {
+            const apiData = this.build();
+            const api = apiData.find(e => {
+                if (!note || note === '') {
+                    return e.name?.toUpperCase() === name;
+                }
+                return e.name?.toUpperCase() === name.toUpperCase()
+                    && e.note?.toUpperCase() === note?.toUpperCase();
+            });
+            if (!api) return null;
+            return this.engine.creator().getEntityToKey(api.key) ||  null;
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
 
     /**
      * Добавление дочерней сущности. Принцип основан на копировании передаваемой сущности.
@@ -216,16 +236,27 @@ export default class Entity {
      * @param children Либо объект класса Entity либо api данные.
      * @returns This
      */
-    addChild (children: ApiEntity[] | Entity): Entity {
-        let candidateChildren: ApiEntity[] = []
-        if (children instanceof Entity ) {
-            candidateChildren.push(...children.build())
+    addChild(children: ApiEntity[] | Entity): Entity {
+        try {
+            let candidateChildren: ApiEntity[] = []
+            let tempChildren: ApiEntity[] = [];
+            let i = 0;
+            let buildData = this.build();
+            if (children instanceof Entity) tempChildren = children.build();
+            else tempChildren = children;
+            for (const cld of tempChildren) {
+                if (this.getHeirByName({ name: cld.name || '', note: cld.note })) {
+                    if (this.key !== cld.key) {
+                        cld.note = Engine.getUniqueNote(cld.name || '', cld.note || '', buildData, i++);
+                    }
+                }
+            }
+            candidateChildren.push(...<ApiEntity[]>tempChildren);
+            this.engine.cloneApiEntityBuildData(candidateChildren, this.options.key);
+            return this;
+        } catch (e) {
+            throw e;
         }
-        if (children && (<ApiEntity[]>children).length && (<ApiEntity[]>children)[0].name) {
-            candidateChildren.push(...<ApiEntity[]>children);
-        }
-        this.engine.cloneApiEntityBuildData(candidateChildren, this.options.key);
-        return this;
     }
 
     addComponent (component: ApiComponent[] | Component): Entity {
@@ -356,6 +387,9 @@ export default class Entity {
     /** Название сущности. */
     get name(): string {
         return this.getName();
+    }
+    get note(): string {
+        return this.getNote();
     }
     /** Уникальный ключ сущности. */
     get key(): string {

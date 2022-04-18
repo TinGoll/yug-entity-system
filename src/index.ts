@@ -10,6 +10,8 @@ EngineObjectType,
 } from "./types/engine-types";
 const createEngine = (): Engine => new Engine();
 
+
+
 // функция присвоения id 
 
 /*
@@ -28,6 +30,8 @@ const save = (apiEntity: ApiEntity[]): ApiEntity[] => {
   return apiEntity;
 }
 
+console.time('FirstWay');
+
 
 const engine = createEngine();
 const creator = engine.creator();
@@ -38,13 +42,18 @@ const color = creator.create('component', 'finishing', { componentDescription: '
   .addProperty({propertyName: 'color', propertyDescription: 'Цвет', propertyValue: 'Красный', propertyType: 'string'})
 
 const entity = creator.create('entity', 'БАТЯ', { category: 'Род сущ', note: 'Главный' }).addComponent(money).addComponent(color);
-const entity2 = creator.create('entity', 'СЫН', { note: 'Средний' }).addComponent(money);
+const entity2 = creator.create('entity', 'СЫН', { note: 'Средний', }).addComponent(money);
 const entity3 = creator.create('entity', 'ВНУЧА', { note: 'Младшая' }).addComponent(money);
 
 const container = creator.create('entity', 'CONTAINER', { category: 'Род сущ', id: 777 }).addComponent(money);
 
 entity2.addChild(entity3.build());
 entity.addChild(entity2.build());
+entity.addChild(entity2.build());
+entity.addChild(entity2.build());
+//entity.addChild(entity2.build());
+//entity.addChild(entity2.build());
+
 
 const saveData = save(entity.build());
 
@@ -63,7 +72,7 @@ cld1.setPropertyFormula('money', 'price', `
     A = G_PRICE_ID1();
     C = THIS;
     RESULT = A + C;
-`)
+`);
 // Формула рубашки, с последующим вычислением.
 // Далее по цепи, что бы вычислить стоимость,  вычисляется стоимость филенки, 
 // которая провоцирует вычисление фасада и результат выводиться в лог
@@ -74,14 +83,22 @@ const res =  cld2.setPropertyFormula('money', 'price', `
       B = G_PRICE_ID2();
       C = THIS;
       RESULT = RUB(A + B + C)
-`)
+`);
+
+console.timeEnd('FirstWay');
+
+console.log(cld2.name, JSON.stringify(cld2.getPreparationData(cld2.getApiComponents()[0].key), null, 2));
+*/
+
+//console.log((fasad.build().map(e => ({name: e.name, note: e.note}))));
+
+
+
+
+
 //.getPropertyValue('money', 'price');
 
-
-
-console.log(JSON.stringify(cld2.getPreparationData(cld2.getComponents()[0].build()[0].key).clientButtons, null, 2));
-
-*/
+//console.log(JSON.stringify(cld2.getPreparationData(cld2.getComponents()[0].build()[0].key).clientButtons, null, 2));
 
 //************************************************************ */
 //const GETAGGREGATOR = fasad.getterExecutor<number>('money', 'price')

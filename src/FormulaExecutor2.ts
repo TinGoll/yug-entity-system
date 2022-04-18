@@ -55,6 +55,7 @@ export function formulaExecutor2(this: Entity, { componentName, propertyName, pr
         const entities = GRAND_FATHER?.getDynasty() || ME.getDynasty();
 
         const EXECUTORS = new Map<string, FormulaExecutor> ();
+        
         const DUMMY_GET = () => null; // Пустышка геттер
         const DUMMY_SET = (value: string) => console.log('Недоступное свойство.'); // Пустышка сеттер.
 
@@ -64,18 +65,23 @@ export function formulaExecutor2(this: Entity, { componentName, propertyName, pr
                 const KEY = `Entity ${entity.name} Cmp ${cmp.componentName} Prob ${cmp.propertyName} Id ${cmp.id}`;
                 const IS_CURRENT_PROPERTY = key === cmp.key;
                 const PROPERTY_VALUE = cmp.propertyValue;
+
                 const GETTER = entity.getterExecutor(cmp.componentName, cmp.propertyName);
                 const SETTER = entity.setterExecutor(cmp.componentName, cmp.propertyName);
+
                 const ENTITY_NAME = entity.name; // Название сущности.
-                const ENTITY_NOTE = entity.getNote(); // note :)
+                const ENTITY_NOTE = entity.note; // note :)
+
                 const COMPONENT_NAME =  cmp.componentName; // Название компонента.
                 const COMPONENT_DESC = cmp.componentDescription; // Название на русском.
                 const PROPERTY_NAME = cmp.propertyName; // Название свойства.
                 const PROPERTY_DESC =  cmp.propertyDescription; // Название свойства на русском.
+
                 const GETTER_NAME = IS_CURRENT_PROPERTY ? `THIS` : `G_${PROPERTY_NAME.toUpperCase()}_ID${cmp.id}`;
                 const SETTER_NAME = `S_${PROPERTY_NAME.toUpperCase() }_ID${cmp.id}`;
+
                 const CODE = IS_CURRENT_PROPERTY 
-                    ? `const ${GETTER_NAME} = ${PROPERTY_VALUE}; const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_SET;`
+                    ? `const ${GETTER_NAME} = ${PROPERTY_VALUE}; const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_GET;`
                     : `const ${GETTER_NAME} = EXECUTORS.get("${KEY}")?.GETTER || DUMMY_GET; const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_SET;`
 
                 EXECUTORS.set(KEY, {
@@ -145,7 +151,7 @@ export function formulaExecutor2(this: Entity, { componentName, propertyName, pr
 
                 setters.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note && e.COMPONENT_NAME === componentName)
                         .map(e => ({ name: e.PROPERTY_DESC, value: `${e.SETTER_NAME}( /*ЗНАЧЕНИЕ*/ ) `})));
-                buttons.push({ name: 'RESULT', value: 'RESULT ' })
+                buttons.push({ name: 'РЕЗУЛЬТАТ', value: 'RESULT = ' })
                 components.push({
                     componentName,
                     buttons,
