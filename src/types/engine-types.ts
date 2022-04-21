@@ -18,6 +18,8 @@ export interface ApiEntity extends ISerializable {
     parentKey?: string;
     components?: ApiComponent[];
     children?: ApiEntity[];
+    isChange?: boolean;
+    sortIndex?: number;
 }
 /** Модель компонента */
 export interface ApiComponent extends ISerializable {
@@ -34,6 +36,8 @@ export interface ApiComponent extends ISerializable {
     propertyType?: PropertyTypes;
     attributes?: string;
     bindingToList?: boolean;
+    isChange?: boolean;
+    sortIndex?: number;
 }
 
 export interface ISerializable {

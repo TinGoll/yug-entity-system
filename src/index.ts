@@ -10,8 +10,6 @@ EngineObjectType,
 } from "./types/engine-types";
 const createEngine = (): Engine => new Engine();
 
-
-
 // функция присвоения id 
 
 /*
@@ -61,12 +59,14 @@ const [fasad] = engine.loadAndReturning(saveData);
 const [cld1] = fasad.getChildrens();
 const [cld2] = cld1.getChildrens();
 
+
 // Изначальная цена у всех сущностей 1000.
 // Формула фасада
 fasad.setPropertyFormula('money', 'price', `
     A = THIS;
     RESULT = A * 2;
 `);
+
 // Формула филенки
 cld1.setPropertyFormula('money', 'price', `
     A = GF_PRICE();
@@ -87,16 +87,16 @@ const res =  cld2.setPropertyFormula('money', 'price', `
 
 console.timeEnd('FirstWay');
 
-console.log(cld2.getPropertyValue("money", "price"));
+console.log(fasad.getChangedEntities());
+*/
+
+//console.log(cld2.getPropertyValue("money", "price"));
 
 
 //console.log(cld2.name, JSON.stringify(cld2.getPreparationData(cld2.getApiComponents()[0].key), null, 2));
 
 
 //console.log((fasad.build().map(e => ({name: e.name, note: e.note}))));
-
-*/
-
 
 
 //.getPropertyValue('money', 'price');

@@ -6,45 +6,102 @@ import { ApiComponent, ApiEntity, PropertyTypes, PropertyValue } from "./types/e
 export default class Entity {
     private options: ApiEntity;
     private engine: Engine;
+
     constructor(options: ApiEntity, engine: Engine) {
         this.engine = engine;
         this.options =  options;
     }
 
-    testNewFormula<U extends PropertyValue = string, T extends object | string = string>(
-        componentName: T extends string ? string : keyof T,
-        propertyName: T extends string ? string : keyof T[keyof T]
-    ): U | null {
-        const cmp = this.options.components?.find(c =>
-            c.componentName === componentName &&
-            c.propertyName === propertyName
-        )
-        if (!cmp) return null;
-        console.log(JSON.stringify(formulaExecutor3.bind(this)(cmp, '', 'preparation'), null, 2));
-        
-        return null;
+    /**
+     * Получени измененных сущностей, включая дочерние.
+     * @returns Массив Сущностей (Entity[])
+     */
+    getChangedEntities(): Entity[] {
+        try {
+            const tempEntity: Entity [] = [];
+            if (this.options.isChange) tempEntity.push(this);
+            for (const cld of this.getChildren()) {
+                tempEntity.push(...cld.getChangedEntities())
+            }
+            return tempEntity;
+        } catch (e) {
+            console.log(e);
+            return [];
+        }
     }
 
+    /**
+     * Получение всех измененных компонентов, 
+     * включая компоненты дочерних сущностей.
+     * @returns массив ApiComponets
+     */
+    getChangedComponents(): ApiComponent[] {
+        try {
+            const apiComponents: ApiComponent[] = [];
+            const entities = this.getChangedEntities();
+            for (const ent of entities) {
+                for (const cmp of ent.getApiComponents()) {
+                    if (cmp.isChange) apiComponents.push(cmp);
+                }
+            }
+            return apiComponents;
+        } catch (e) {
+            console.log(e);
+            return []
+        }
+    }
+    
+    /**
+     * Сброс отметки об изменении.
+     * @returns this
+     */
+    resetСheckСhanges (): Entity {
+        try {
+            this.options.isChange = false;
+            for (const cmp of this.getApiComponents()) {
+                cmp.isChange = false;
+            }
+            for (const cld of this.getChildren()) {
+                cld.resetСheckСhanges();
+            }
+            return this;
+        } catch (e) {
+            console.log( e);
+            return this;
+        }
+    }
 
+    /**
+     * Получение значения компонента, если присутствует формула, производится вычисление.
+     * @param componentName 
+     * @param propertyName 
+     * @returns 
+     */
     getPropertyValue<U extends PropertyValue = string, T extends object | string = string>(
         componentName: T extends string ? string : keyof T,
         propertyName: T extends string ? string : keyof T[keyof T]
     ): U | null {
-       try {
-            const cmp = this.options.components?.find(c => 
-                c.componentName === componentName &&
-                c.propertyName === propertyName
-            )
-            if (!cmp) return null;
-            const formula = cmp.propertyFormula;
-            if (!formula) return this.get_value<U>(cmp.propertyType!, cmp.propertyValue);
-           const result = <U>(formulaExecutor3.bind(this)(cmp, formula, "execution"));
-           cmp.propertyValue = this.get_value<U>(cmp.propertyType!, result);
-           return result;
-       } catch (e) {
-           console.log(e);
-           return null;
-       }
+        try {
+                const cmp = this.options.components?.find(c => 
+                    c.componentName === componentName &&
+                    c.propertyName === propertyName
+                )
+                if (!cmp) return null;
+                const formula = cmp.propertyFormula;
+                if (!formula) return this.get_value<U>(cmp.propertyType!, cmp.propertyValue);
+            const result = <U>(formulaExecutor3.bind(this)(cmp, formula, "execution"));
+            const newData = this.get_value<U>(cmp.propertyType!, result);
+            // Отслеживание изменений
+            if (cmp.propertyValue !== newData) {
+                this.options.isChange = true;
+                cmp.isChange = true;
+            }
+            cmp.propertyValue = newData;
+            return result;
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
     }
 
     /**
@@ -105,6 +162,11 @@ export default class Entity {
                     default:
                         throw new Error("Неизвестный тип копонента")
                 }
+                // Отслеживание изменений.
+                if (this.options.components![index].propertyValue !== tempValue) {
+                    this.options.components![index].isChange = true;
+                    this.options.isChange = true;
+                }
                 this.options.components![index].propertyValue = tempValue;
             }
         } catch (e) {
@@ -113,7 +175,13 @@ export default class Entity {
         return this;
     }
 
- 
+    /**
+     * Установка новой формулы.
+     * @param componentName Название компонента
+     * @param propertyName Название свойства
+     * @param formula Формула
+     * @returns Entity
+     */
     setPropertyFormula<T extends object | string = string>(
         componentName: T extends string ? string : keyof T,
         propertyName: T extends string ? string : keyof T[keyof T],
@@ -126,6 +194,10 @@ export default class Entity {
             )
             if (!cmp) throw new Error("Свойство компонента не найдено");
             if (!formula) cmp.propertyFormula = undefined;
+            if (cmp.propertyFormula !== String(formula)) {
+                cmp.isChange = true;
+                this.options.isChange = true;
+            }
             cmp.propertyFormula = String(formula);
         } catch (e) {
             console.log(e);
@@ -267,7 +339,6 @@ export default class Entity {
     }
 
     addComponent (component: ApiComponent[] | Component): Entity {
-
         let addedComponents: ApiComponent[] = [];
         if (component instanceof Component) addedComponents =  component.build();
         if (component && (<ApiComponent[]>component)[0]?.propertyName) addedComponents = (<ApiComponent[]>component);
@@ -290,6 +361,7 @@ export default class Entity {
                 this.options.components.push({...cmp})
             } 
         }
+        this.options.isChange = true;
         return this;
     }
 
@@ -356,15 +428,18 @@ export default class Entity {
 
     setName(value: string): Entity {
         this.options.name = value;
+        this.options.isChange = true;
         return this;
     }
     setNote(value: string ): Entity {
         this.options.note = value;
+        this.options.isChange = true;
        return this; 
     }
 
     setCategory(value: string): Entity {
         this.options.category = value;
+        this.options.isChange = true;
         return this;
     }
 
