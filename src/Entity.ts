@@ -12,6 +12,22 @@ export default class Entity {
         this.options =  options;
     }
 
+    recalculationFormulas () {
+        try {
+            const comps = this.getApiComponents();
+            for (const cmp of comps) {
+                if (cmp.propertyFormula) {
+                    this.getPropertyValue<PropertyValue, string>(cmp.componentName, cmp.propertyName)
+                }
+            }
+            for (const cld of this.getChildren()) {
+                cld.recalculationFormulas();
+            }
+        } catch (e) {
+            throw e;
+        }
+    }
+
     /**
      * Получени измененных сущностей, включая дочерние.
      * @returns Массив Сущностей (Entity[])
