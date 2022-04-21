@@ -187,6 +187,7 @@ export default class Entity {
             }
         } catch (e) {
             console.log('Error setPropertyValue', e);
+            throw e;
         }
         return this;
     }
