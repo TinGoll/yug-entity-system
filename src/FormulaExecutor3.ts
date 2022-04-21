@@ -201,7 +201,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                 const PROPERTY_NAME = `${getNameExcutor(THIS_IS, entity, cmp)}`; // Название свойства.
                 const PROPERTY_DESC = cmp.propertyDescription; // Название свойства на русском.
                 const GETTER_NAME = IS_CURRENT_PROPERTY ? `THIS` : `${PROPERTY_NAME.toUpperCase()}`;
-                const SETTER_NAME = IS_CURRENT_PROPERTY ? `/* Используйте RESULT */` : `S_${PROPERTY_NAME.toUpperCase()}`; 
+                const SETTER_NAME = IS_CURRENT_PROPERTY ? `S_${PROPERTY_NAME.toUpperCase()}` : `S_${PROPERTY_NAME.toUpperCase()}`; 
                 const CODE = IS_CURRENT_PROPERTY
                     ? `const ${GETTER_NAME} = ${PROPERTY_VALUE}; const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_GET;`
                     : `const ${GETTER_NAME} = EXECUTORS.get("${KEY}")?.GETTER || DUMMY_GET; const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_SET;`
@@ -252,6 +252,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                 return RESULT;
         }
         executor();`;
+        
         if (type === 'execution') return eval(baseCode);
         const clientButtons: FormulaButton[] = [];
         const executorArr = [...EXECUTORS].map(e => e[1]);
@@ -271,7 +272,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                     .map(e => ({ name: e.PROPERTY_DESC, value: `${e.GETTER_NAME}${e.IS_CURRENT_PROPERTY ? ' ' : "() "}` })));
 
                 setters.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note && e.COMPONENT_NAME === componentName)
-                    .map(e => ({ name: e.PROPERTY_DESC, value: e.IS_CURRENT_PROPERTY ?  e.SETTER_NAME : `${e.SETTER_NAME}( /*ЗНАЧЕНИЕ*/ ) `})));
+                    .map(e => ({ name: e.PROPERTY_DESC, value: e.IS_CURRENT_PROPERTY ?  '/* Используйте RESULT */' : `${e.SETTER_NAME}( /*ЗНАЧЕНИЕ*/ ) `})));
                 buttons.push({ name: 'РЕЗУЛЬТАТ', value: 'RESULT = ' })
 
                 components.push({
@@ -326,5 +327,8 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
         return null;
     }
 }
+
+
+
 
 

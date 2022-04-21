@@ -69,7 +69,7 @@ fasad.setPropertyFormula('money', 'price', `
 `);
 // Формула филенки
 cld1.setPropertyFormula('money', 'price', `
-    A = G_PRICE_ID1();
+    A = GF_PRICE();
     C = THIS;
     RESULT = A + C;
 `);
@@ -79,20 +79,23 @@ cld1.setPropertyFormula('money', 'price', `
 
 
 const res =  cld2.setPropertyFormula('money', 'price', `
-      A = G_PRICE_ID1();
-      B = G_PRICE_ID2();
+      A = GF_PRICE();
+      B = F_PRICE();
       C = THIS;
       RESULT = RUB(A + B + C)
 `);
 
 console.timeEnd('FirstWay');
 
-console.log(cld2.name, JSON.stringify(cld2.getPreparationData(cld2.getApiComponents()[0].key), null, 2));
-*/
+console.log(cld2.getPropertyValue("money", "price"));
+
+
+//console.log(cld2.name, JSON.stringify(cld2.getPreparationData(cld2.getApiComponents()[0].key), null, 2));
+
 
 //console.log((fasad.build().map(e => ({name: e.name, note: e.note}))));
 
-
+*/
 
 
 

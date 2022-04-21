@@ -197,14 +197,21 @@ export default class Entity {
         return this.engine.cloneEntity(this.options.key, this.options.parentKey)!
     }
 
-    produce (): ApiEntity [] {
-        return [];
+    
+    /**
+     * Пересчет формул, согласно списку указанном в определении.
+     */
+    definition () {
+
     }
 
-    cloneAndRetutning (): Entity {
+    cloneAndRetutning(): Entity {
         return new Entity(this.engine.cloneEntity(this.options.key, this.options.parentKey)!, this.engine);
     }
 
+    produce(): ApiEntity[] {
+        return [];
+    }
     produceAndRetutning(): Entity {
         throw new Error('Не реализовано')
     }
