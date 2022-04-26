@@ -2,15 +2,63 @@ import { ApiComponent, ApiEntity, ISerializable } from "./types/engine-types";
 import uuid from 'uuid-random'
 import Entity from "./Entity";
 import Creator from "./Creator";
+import EventEmitter from "events"
+
+interface ExtraData {
+    isChange: boolean;
+    data: object;
+}
 
 export default class Engine {
     private static instance?: Engine;
     private entityList: Map<string, ApiEntity> = new Map <string, ApiEntity> ();
+    private extraData: Map<string, ExtraData> = new Map<string, ExtraData>();
     private _creator?: Creator;
+    private static _mode: "PROD" | "DEV" = "PROD";
     constructor() {
         if (Engine.instance) { return Engine.instance; }
         Engine.instance = this;
     }
+
+
+    static setMode(mode: "PROD" | "DEV") {
+        Engine._mode = mode;
+    }
+
+    static getMode(): "PROD" | "DEV" {
+        return Engine._mode;
+    }
+
+    /**
+     * Запись дополнительных данных
+     * @param key Ключ данных
+     * @param data Данные
+     */
+    setKtx <T extends object = object> (key: string, data: T) {
+        try {
+            if (this.extraData.has(key)) {
+                this.extraData.get(key)!.data = { ...data };
+                this.extraData.get(key)!.isChange = true;
+            }else{
+                this.extraData.set(key, {data, isChange: true});
+            }
+            return this;
+        } catch (e) {
+            throw e;
+        }
+    }
+    /**
+     * Получение дополнительных данных по ключу.
+     * @param key Ключ данных
+     */
+    getKtx<T extends object = object>(key: string): T | null {
+        try {
+            return (<T> this.extraData.get(key)?.data )|| null;
+        } catch (e) {
+            return null;
+        }
+    }
+
     /**
      * Модуль создания объектов.
      * @returns Creator;
@@ -159,7 +207,7 @@ export default class Engine {
         tempArr.push(apiEntity);
         tempArr.push(...this.getAllDescendants(this.getСhildren(key)));
         return tempArr;
-    }  
+    }
 
     /**
      * Собираем сущность с вложениями, на выходе получим объект ApiEntity с дочерними сущностями во вложении.

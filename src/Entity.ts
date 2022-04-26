@@ -1,7 +1,7 @@
 import Component from "./Component";
 import Engine from "./Engine";
 import { formulaExecutor3 } from "./FormulaExecutor3";
-import { ApiComponent, ApiEntity, PropertyTypes, PropertyValue } from "./types/engine-types";
+import { ApiComponent, ApiEntity, PropertyAttribute, PropertyTypes, PropertyValue } from "./types/engine-types";
 
 export default class Entity {
     private options: ApiEntity;
@@ -12,6 +12,80 @@ export default class Entity {
         this.options =  options;
     }
 
+    /**
+     * Получение контекстных данных по ключу.
+     * @param key Ключ
+     */
+    getKtx<T extends object = object>(key: string): T | null {
+        try {
+            return this.engine.getKtx<T>(`${this.options.key}_${key}`);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Присвоение контекстных данных по ключу.
+     * @param key ключ
+     * @param data данные
+     * @returns 
+     */
+    setKtx<T extends object = object>(key: string, data: T) {
+        try {
+            this.engine.setKtx(`${this.options.key}_${key}`, data);
+            return this;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Просчет необходимых для вывода данных, вывод данных 
+     * по фильтру, аттрибутов компонента.
+     * Выводится родительская сущность и дочерние.
+     */
+    getBuildProductionData({ attributes }: { attributes?: PropertyAttribute[], } = {}): ApiEntity[] {
+        try {
+            const tempArr: ApiEntity[] = [];
+            this.recalculationFormulas();
+            const cmps = this.getApiComponents({ attributes }).map(c => ({...c}));
+            const entityApi: ApiEntity = { ...this.options, components: cmps };
+            tempArr.push(entityApi);
+
+            for (const cld of this.getChildren()) {
+                const cldCmps = cld.getApiComponents({ attributes }).map(c => ({ ...c }));
+                const cldOpt: ApiEntity = { ...cld.getOptions(), components: cldCmps };
+                if (cldCmps.length) tempArr.push(cldOpt);
+            }
+            return tempArr;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * @param componentName Название компонента
+     * @param propertyName Название свойства
+     * @param attribute Искомые атрибуты, массив
+     * @returns boolean
+     */
+    existAttribute(componentName: string, propertyName: string, attribute: PropertyAttribute ): boolean {
+        try {
+            if (!componentName || !propertyName || !attribute) return false;
+            const findAtt = attribute?.replace(/\s+/g, '').replace(/\;/g, "");
+            const cmp = (this.options.components || [])
+                .find(c => c.componentName === componentName && c.propertyName === propertyName);
+            if (!cmp) return false;
+            const attributeArr = (cmp.attributes?.replace(/\s+/g, "").split(";")) || [];
+            return !!(attributeArr.find(a => a.toUpperCase() === findAtt.toUpperCase()));
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Пересчет формул.
+     */
     recalculationFormulas () {
         try {
             const comps = this.getApiComponents();
@@ -286,7 +360,6 @@ export default class Entity {
         return this.engine.cloneEntity(this.options.key, this.options.parentKey)!
     }
 
-    
     /**
      * Пересчет формул, согласно списку указанном в определении.
      */
@@ -301,7 +374,33 @@ export default class Entity {
     produce(): ApiEntity[] {
         return [];
     }
-    produceAndRetutning(): Entity {
+
+    /**
+     * Переопределение свойств сщности и ее дочерних чущностей.
+     * Переопределение будет только в том случае, если такое свойство существует.
+     * @param entity Переопределыемая сущность
+     * @returns Переопределенная сущность.
+     */
+    propertyPredefinition(entity: Entity): Entity {
+        const cmps = this.options.components || [];
+        const entities = entity.getDynasty();
+
+        entity.setParentKey(this.options.key); // Присвоение родительского ключа
+        entity.setParenttId(this.getId()); // Присовение родительского ID
+
+        for (const ent of entities) {
+            for (const cmp of ent.getApiComponents()) {
+                const index = cmps.findIndex(c => c.componentName === cmp.componentName 
+                    && c.propertyName === cmp.propertyName);
+                if (index > -1) {
+                    cmp.propertyValue = cmps[index].propertyValue;
+                }
+            }
+        }
+        return entity;
+    }
+
+    produceAndRetutning(entity: Entity): Entity {
         throw new Error('Не реализовано')
     }
     /**
@@ -423,8 +522,11 @@ export default class Entity {
         const componentNames = [...new Set((this.options.components||[]).map(c => c.componentName))];
         return (componentNames||[]).map(name => {
             const cmps = (this.options.components || []).filter(c => c.componentName === name);
-            return new Component({ componentName: name, componentDescription: cmps[0].componentDescription||'Описание компонента' },
-                cmps);
+            return new Component({ 
+                componentName: name, 
+                componentDescription: cmps[0].componentDescription||'Описание компонента' },
+                cmps
+            );
         })
     }
 
@@ -460,7 +562,6 @@ export default class Entity {
         return this;
     }
 
-
     setParentKey(value: string): Entity {
         this.options.parentKey = value;
         return this;
@@ -476,12 +577,33 @@ export default class Entity {
         return this;
     }
 
-    getApiComponents (): ApiComponent[] {
-        return this.options.components||[];
+    getApiComponents({ attributes }: { attributes?: PropertyAttribute[], } = {}): ApiComponent[] {
+        try {
+            if (attributes && attributes?.length) {
+                return (this.options.components || []).filter(c => {
+                    let check: boolean = false;
+                    const cmpAtt = (c.attributes || "").split(";");
+                    for (const att of attributes) {
+                        if (cmpAtt.find(ct => ct === att)) {
+                            check = true;
+                            break;
+                        }
+                    }
+                    return check;
+                });
+            }
+            return this.options.components||[];
+        } catch (e) {
+            return [];
+        }
     }
 
     /************************************************************************************ */
     /** GETERS */
+    /** Получение Id */
+    get id(): number {
+        return this.getId()
+    }
 
     /** Название сущности. */
     get name(): string {

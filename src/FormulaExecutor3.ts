@@ -1,5 +1,6 @@
+import Engine from "./Engine";
 import Entity from "./Entity";
-import { ApiComponent, PropertyTypes, PropertyValue } from "./types/engine-types";
+import { ApiComponent, PropertyValue } from "./types/engine-types";
 
 
 interface FormulaComponentOptions extends Partial<ApiComponent> {
@@ -234,6 +235,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
         function COSINUS(number: number) {
             return Math.cos(number * Math.PI / 180);
         }
+
         /** **************************************** */
         /** **************************************** */
 
@@ -247,11 +249,14 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                 ${arrCode.join('\n')}
                 let Q,W,E,R,T,Y,U,I,O,P,A,S,D,F,G,H,J,K,L,X,C,V,B,N,M;
                 let PI = Math.PI;
-                let RESULT = currentPropertyValue; // Результат
+                let RESULT = currentPropertyValue;
                 ${code}
                 return RESULT;
         }
         executor();`;
+
+        if (Engine.getMode() === "DEV") console.log('baseCode', baseCode);
+        
         
         if (type === 'execution') return eval(baseCode);
         const clientButtons: FormulaButton[] = [];

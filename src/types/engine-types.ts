@@ -2,7 +2,7 @@
 export type PropertyValue = string | number | Date | boolean;
 export type PropertyTypes = 'number' | 'string' | 'date' | 'boolean';
 export type EngineObjectType = 'entity' | 'component';
-
+export type PropertyAttribute = 'required' | 'readonly' | 'show';
 
 /** Модель сущность */
 export interface ApiEntity extends ISerializable {
