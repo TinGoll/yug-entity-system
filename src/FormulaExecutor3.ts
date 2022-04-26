@@ -170,6 +170,8 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
             }
         }
 
+        const THIS = currentPropertyValue;
+
         /** **************************************** */
         /** **************************************** */
         /** **************************************** */
@@ -189,7 +191,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                 if (me.key === entity.key) THIS_IS = "me";
                 if (father?.key === entity.key) THIS_IS = "father";
                 if (grand_father?.key === entity.key) THIS_IS = "grand_father";
-                const KEY = `Entity ${entity.name} Cmp ${cmp.componentName} Prob ${cmp.propertyName} Id ${cmp.id}`;
+                const KEY = `Entity ${entity.name} Cmp ${cmp.componentName} Prob ${cmp.propertyName}`;
                 const IS_CURRENT_PROPERTY = key === cmp.key;
             
                 const PROPERTY_VALUE = cmp.propertyValue;
@@ -204,7 +206,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                 const GETTER_NAME = IS_CURRENT_PROPERTY ? `THIS` : `${PROPERTY_NAME.toUpperCase()}`;
                 const SETTER_NAME = IS_CURRENT_PROPERTY ? `S_${PROPERTY_NAME.toUpperCase()}` : `S_${PROPERTY_NAME.toUpperCase()}`; 
                 const CODE = IS_CURRENT_PROPERTY
-                    ? `const ${GETTER_NAME} = ${PROPERTY_VALUE}; const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_GET;`
+                    ? `const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_GET;`
                     : `const ${GETTER_NAME} = EXECUTORS.get("${KEY}")?.GETTER || DUMMY_GET; const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_SET;`
                 EXECUTORS.set(KEY, {
                     KEY,
