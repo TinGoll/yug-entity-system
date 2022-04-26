@@ -13,6 +13,38 @@ export default class Entity {
     }
 
     /**
+     * Усыновление сущности.
+     */
+    adoptEntity(entity: Entity): Entity {
+        try {
+            return entity.setParentKey(this.options.key).setParentId(this.options.id||0);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Переопределение свойств компонентов.
+     */
+    overridingProperties (entity: Entity): Entity {
+        try {
+            const dynasty = entity.getDynasty();
+            for (const ent of dynasty) {
+                for (const cmp of ent.getApiComponents()) {
+                    const candidat = (this.options.components||[])
+                        .find(c => c.componentName === cmp.componentName && c.propertyName === cmp.propertyName);
+                    if (candidat) {
+                        cmp.propertyValue = candidat.propertyValue;
+                    }
+                }
+            }
+            return entity;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Получение контекстных данных по ключу.
      * @param key Ключ
      */
@@ -386,7 +418,7 @@ export default class Entity {
         const entities = entity.getDynasty();
 
         entity.setParentKey(this.options.key); // Присвоение родительского ключа
-        entity.setParenttId(this.getId()); // Присовение родительского ID
+        entity.setParentId(this.getId()); // Присовение родительского ID
 
         for (const ent of entities) {
             for (const cmp of ent.getApiComponents()) {
@@ -567,7 +599,7 @@ export default class Entity {
         return this;
     }
 
-    setParenttId(value: number): Entity {
+    setParentId(value: number): Entity {
         this.options.parentId = value;
         return this;
     }

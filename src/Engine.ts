@@ -20,13 +20,32 @@ export default class Engine {
         Engine.instance = this;
     }
 
-
     static setMode(mode: "PROD" | "DEV") {
         Engine._mode = mode;
     }
 
     static getMode(): "PROD" | "DEV" {
         return Engine._mode;
+    }
+    /**
+     * Удаление сущности и ее дочерних сущностей по ключу.
+     * @param key ключ сущности
+     * @returns ключ сущности или null в случае, когда сущность не найдена.
+     */
+    removeToKey (key: string) {
+        try {
+            if (this.has(key)) {
+                const dynasty = this.getAllDescendants(this.getСhildren(key));
+                this.entityList.delete(key);
+                for (const api of dynasty) {
+                    this.entityList.delete(api.key);
+                }
+            }else {
+                return null;
+            }
+        } catch (e) {
+            throw e;
+        }
     }
 
     /**
@@ -115,6 +134,7 @@ export default class Engine {
            throw e;
        }
     }
+    
     /**
      * Получаем сущность из памяти движка по ключу.
      * @param key  ключ сущности.
@@ -124,6 +144,7 @@ export default class Engine {
         if (!this.entityList.has(key)) return;
         return this.entityList.get(key);
     }
+
     /**
      * Сущетсвует ли требуемая сущность в памяти движка.
      * @param key ключ сущности.
