@@ -134,7 +134,7 @@ export default class Engine {
            throw e;
        }
     }
-    
+
     /**
      * Получаем сущность из памяти движка по ключу.
      * @param key  ключ сущности.
@@ -282,6 +282,7 @@ export default class Engine {
         this.deassembleObject(entity);
         return new Entity(this.get(entity.key)!, this);
     }
+    
     /**
      * Получение всех потомков. Передавая дочерние сущности, 
      * получаем массив этих сущностей, а так же их дочерние сущности,
