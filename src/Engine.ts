@@ -364,6 +364,26 @@ export default class Engine {
         if (!object.key) object.key = Engine.keyGenerator(prefix);
         return <T>object
     }
+    /**
+     * Получение сущности по ключу компонента.
+     * @param propertyKey 
+     */
+    getEntityByComponentKey (propertyKey: string): Entity | null {
+        try {
+            let entityKey: string | undefined;
+            for (const api of this.entityList.values()) {
+                const candidate = api.components?.find(c => c.key === propertyKey);
+                if (candidate) {
+                    entityKey = candidate.entityKey;
+                    break;
+                }
+            }
+            if (entityKey) return this._creator?.getEntityToKey(entityKey) || null;
+            return null;
+        } catch (e) {
+            throw e;
+        }
+    }
 
     /**
      * Уничтожение объекта движка.
