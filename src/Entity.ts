@@ -152,6 +152,14 @@ export default class Entity {
         }
     }
 
+    deleteComponentPropertyToKey (propertyKey: string) {
+        try {
+            this.options.components = this.options.components?.filter(c => c.key !== propertyKey);
+        } catch (e) {
+            throw e;
+        }
+    }
+
     /**
      * Получение всех измененных компонентов, 
      * включая компоненты дочерних сущностей.

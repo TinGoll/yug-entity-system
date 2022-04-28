@@ -126,6 +126,8 @@ export default class Engine {
                 candidate.dateCreation = entity.dateCreation;
                 candidate.dateUpdate = entity.dateUpdate;
                 candidate.parentKey = entity.parentKey;
+                candidate.isChange = entity.isChange;
+                candidate.sortIndex = entity.sortIndex;
             }else {
                 this.entityList.set(entity.key, entity);
             }
@@ -282,7 +284,7 @@ export default class Engine {
         this.deassembleObject(entity);
         return new Entity(this.get(entity.key)!, this);
     }
-    
+
     /**
      * Получение всех потомков. Передавая дочерние сущности, 
      * получаем массив этих сущностей, а так же их дочерние сущности,
