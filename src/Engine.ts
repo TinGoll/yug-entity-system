@@ -378,7 +378,7 @@ export default class Engine {
                     break;
                 }
             }
-            if (entityKey) return this._creator?.getEntityToKey(entityKey) || null;
+            if (entityKey) return this.creator().getEntityToKey(entityKey) || null;
             return null;
         } catch (e) {
             throw e;
