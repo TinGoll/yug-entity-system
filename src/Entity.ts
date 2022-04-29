@@ -118,7 +118,7 @@ export default class Entity {
     /**
      * Пересчет формул.
      */
-    recalculationFormulas () {
+    recalculationFormulas (): Entity {
         try {
             const comps = this.getApiComponents();
             for (const cmp of comps) {
@@ -129,6 +129,7 @@ export default class Entity {
             for (const cld of this.getChildren()) {
                 cld.recalculationFormulas();
             }
+            return this;
         } catch (e) {
             throw e;
         }
