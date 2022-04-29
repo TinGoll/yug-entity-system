@@ -440,8 +440,8 @@ export default class Entity {
         return entity;
     }
 
-    produceAndRetutning(entity: Entity): Entity {
-        throw new Error('Не реализовано')
+    produceAndRetutning(): Entity {
+        return this.cloneAndRetutning().setSampleId(this.options.id||0);
     }
     /**
      * Получение вложенной сущности по name и note.
