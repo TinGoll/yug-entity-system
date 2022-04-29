@@ -162,6 +162,17 @@ export default class Entity {
         }
     }
 
+    deleteChildByKey (key: string): Entity {
+        try {
+            const candidate = this.getChildren().find(e => e.getKey() === key);
+            if (!candidate) throw new Error("Сущность не найдена")
+            this.engine.removeToKey(candidate?.key);
+            return this;
+        } catch (e) {
+            throw e;
+        }
+    }
+
     /**
      * Получение всех измененных компонентов, 
      * включая компоненты дочерних сущностей.
