@@ -134,7 +134,7 @@ export default class Entity {
             throw e;
         }
     }
-    
+
 
     /**
      * Получени измененных сущностей, включая дочерние.
@@ -382,6 +382,18 @@ export default class Entity {
         return this.engine.creator().getEntityChildren(this.options.key);
     }
 
+    /**
+     * Получить дочернюю сущность по ключу.
+     * @param key 
+     */
+    getChildrenToKey (key: string): Entity | null {
+        try {
+            return this.getChildren().find(e => e.key === key) || null;
+        } catch (e) {
+            throw e;
+        }
+    }
+
     getOptions () : ApiEntity {
         return {...this.options};
     }
@@ -575,11 +587,12 @@ export default class Entity {
     getDynasty (): Entity [] {
         return this.engine.creator().getDynasty(this.options.key);
     }
-
+    /*
     getChildrens(): Entity[] {
         const chlds = this.engine.getСhildren(this.options.key);
         return chlds.map(e => new Entity(e, this.engine));
     }
+    */
 
     getSampleId (): number {
         return this.options.sampleId||0;

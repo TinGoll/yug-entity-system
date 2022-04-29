@@ -191,7 +191,9 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                 if (me.key === entity.key) THIS_IS = "me";
                 if (father?.key === entity.key) THIS_IS = "father";
                 if (grand_father?.key === entity.key) THIS_IS = "grand_father";
+                
                 const KEY = `Entity ${entity.name} Cmp ${cmp.componentName} Prob ${cmp.propertyName}`;
+
                 const IS_CURRENT_PROPERTY = key === cmp.key;
             
                 const PROPERTY_VALUE = cmp.propertyValue;

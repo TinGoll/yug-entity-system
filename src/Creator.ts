@@ -51,7 +51,7 @@ export default class Creator {
         const entity = this.getEntityToKey(key);
         if (!entity) return tempEntities;
         tempEntities.push(entity);
-        tempEntities.push(...this.get_all_connections(entity.getChildrens()));
+        tempEntities.push(...this.get_all_connections(entity.getChildren()));
         return tempEntities;
     }
 
@@ -59,7 +59,7 @@ export default class Creator {
         const tempEntities: Entity[] = [];
         tempEntities.push(...children);
         for (const child of children) {
-            tempEntities.push(...this.get_all_connections(child.getChildrens()));
+            tempEntities.push(...this.get_all_connections(child.getChildren()));
         }
         return tempEntities;
     }
