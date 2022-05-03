@@ -145,9 +145,11 @@ export default class Entity {
             const tempEntity: Entity [] = [];
             if (this.options.isChange) tempEntity.push(this);
             for (const cld of this.getChildren()) {
-                tempEntity.push(...cld.getChangedEntities())
+                for (const ch of cld.getChangedEntities()) {
+                    tempEntity.push(ch);
+                }
             }
-            return tempEntity;
+            return tempEntity;              
         } catch (e) {
             console.log(e);
             return [];
