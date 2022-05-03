@@ -161,7 +161,11 @@ export default class Entity {
             throw e;
         }
     }
-
+    /**
+     * Удаление дочернего объекта по ключу
+     * @param key 
+     * @returns 
+     */
     deleteChildByKey (key: string): Entity {
         try {
             const candidate = this.getChildren().find(e => e.getKey() === key);
@@ -267,6 +271,16 @@ export default class Entity {
     setterExecutor(componentName: string, propertyName: string ): (value: PropertyValue) => void {
         const fun = (value: PropertyValue) => this.setPropertyValue.bind(this)<PropertyValue, string>(componentName, propertyName, value);
         return fun.bind(this);
+    }
+
+    setPropertyValueToKey(propertyKey: string, value: PropertyValue): Entity {
+        try {
+            const cmp = this.options.components?.find(c => c.key === propertyKey);
+            if (!cmp) throw new Error("Свойство с таким ключем не существует.")
+            return this.setPropertyValue<PropertyValue, string>(cmp.componentName, cmp.propertyName, value);
+        } catch (e) {
+            throw e;
+        }
     }
 
     /**
