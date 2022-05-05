@@ -457,9 +457,10 @@ export default class Entity {
                     tempValue = String(value);
             }
             if (tempValue != previusValue) {
-                console.log("options.isChange", this.options.isChange);
+                
                 
                 this.options.isChange = true;
+                console.log(this.name, "options.isChange", this.options.isChange);
                 cmp.isChange = true;
                 this.historyRepository
                     .push(`изменение свойства "${cmp.propertyDescription}": ${previusValue} => ${tempValue}`, 
