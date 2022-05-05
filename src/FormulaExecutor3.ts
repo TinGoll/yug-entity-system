@@ -69,7 +69,7 @@ function strtr(str: string): string {
 /** ***************************************************** */
 
 
-export function formulaExecutor3(this: Entity, { componentName, propertyName, propertyValue, key }: FormulaComponentOptions, code: string = '', type: 'execution' | 'preparation' = 'execution') {
+export function formulaExecutor3(this: Entity, { componentName, propertyName, propertyValue, key }: FormulaComponentOptions, code: string = '', type: 'execution' | 'preparation' = 'execution', err?: (e: Error) => void) {
     try {
         /** **************************************** */
         /** ********** Текущие значения ************ */
@@ -332,7 +332,8 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
         return { clientButtons, startCode }
 
     } catch (e) {
-        console.log(e);
+        //console.log(e);
+        if (err) err(e as Error)
         return null;
     }
 }

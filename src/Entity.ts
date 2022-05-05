@@ -14,12 +14,68 @@ export default class Entity {
         this.options =  options;
         this._history = new History();
     }
+
+    //***************************************** */
+    //*********** Поиск сущностей ************* */
+    //***************************************** */
+
+    findToKey (key: string): Entity|null {
+        try {
+            if (this.key === key) return this;
+            return this.getChildrenToKey(key)
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    findToName (name: string): Entity|null {
+        try {
+            if (this.name.toUpperCase() === name.toUpperCase()) return this;
+            return this.getChildren().find(c => c.name.toUpperCase() === name.toUpperCase())||null;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    private get_entity_to_key (key: string): Entity|null {
+        return this.engine.creator().getEntityToKey(key)||null
+    }
+
+    //***************************************** */
+    //***************************************** */
+    //***************************************** */
+
+
+    //***************************************** */
+    //************ Блок истории *************** */
+    //***************************************** */
     /**
      * Хранилище истории.
+     */
+    /**
+     * Хранилище истории
      */
     get historyRepository () {
         return this._history;
     }
+    /**
+     * Получить историю по текущей сущности
+     * @returns IHistory[]
+     */
+    getHistory(){
+        return this.historyRepository.getActions();
+    }
+    /**
+     * Получить историю по текущей сущности и очистить
+     * @returns IHistory[]
+     */
+    getHistoryAndClear() {
+        return this.historyRepository.getActionsAndClear();
+    }
+   
+    //***************************************** */
+    //***************************************** */
+    //***************************************** */
 
     /**
      * Усыновление сущности.
@@ -138,13 +194,15 @@ export default class Entity {
     recalculationFormulas (): Entity {
         try {
             const comps = this.getApiComponents();
+
             for (const cmp of comps) {
-                if (cmp.propertyFormula) {
-                    this.getPropertyValue<PropertyValue, string>(cmp.componentName, cmp.propertyName)
+                if (cmp.propertyFormula && cmp.propertyFormula != '') {
+                   this.getPropertyValue<PropertyValue, string>(cmp.componentName, cmp.propertyName);
                 }
             }
             for (const cld of this.getChildren()) {
                 cld.recalculationFormulas();
+                this.historyRepository.addHistory(...cld.getHistoryAndClear())
             }
             return this;
         } catch (e) {
@@ -223,10 +281,12 @@ export default class Entity {
      */
     resetСheckСhanges (): Entity {
         try {
+
             this.options.isChange = false;
             for (const cmp of this.getApiComponents()) {
                 cmp.isChange = false;
             }
+
             for (const cld of this.getChildren()) {
                 cld.resetСheckСhanges();
             }
@@ -237,9 +297,16 @@ export default class Entity {
         }
     }
 
-    getPropertyValueToKey (propertyKey: string) {
+    /*************************************** */
+    /********** Получение свойства ********* */
+    /*************************************** */
+
+
+    getPropertyValueToKey<U extends PropertyValue = string> (propertyKey: string) {
         try {
-            
+            const cmp = this.options.components?.find(c => c.key === propertyKey);
+            if (!cmp) throw new Error("Свойство не найдено.");
+            return <U>this.get_property_value(cmp);
         } catch (e) {
             console.log(e);
             return null;
@@ -257,27 +324,49 @@ export default class Entity {
         propertyName: T extends string ? string : keyof T[keyof T]
     ): U | null {
         try {
-                const cmp = this.options.components?.find(c => 
-                    c.componentName === componentName &&
-                    c.propertyName === propertyName
-                )
-                if (!cmp) return null;
-                const formula = cmp.propertyFormula;
-                if (!formula) return this.get_value<U>(cmp.propertyType!, cmp.propertyValue);
-            const result = <U>(formulaExecutor3.bind(this)(cmp, formula, "execution"));
-            const newData = this.get_value<U>(cmp.propertyType!, result);
-            // Отслеживание изменений
-            if (cmp.propertyValue !== newData) {
-                this.options.isChange = true;
-                cmp.isChange = true;
-            }
-            cmp.propertyValue = newData;
-            return result;
+            const cmp = this.options.components?.find(c => 
+                c.componentName === componentName &&
+                c.propertyName === propertyName
+            );
+            if (!cmp) throw new Error("Свойство не найдено.");
+            return <U> this.get_property_value(cmp);
         } catch (e) {
             console.log(e);
             return null;
         }
     }
+
+    private get_property_value (cmp: ApiComponent): PropertyValue | null {
+        try {
+            if (!cmp) throw new Error("Некорректное свойство компонента.")
+            const type: PropertyTypes = cmp.propertyType|| 'string';
+            const previusValue = cmp.propertyValue;
+            const formula = cmp.propertyFormula;
+            let value:PropertyValue;
+            if (formula && formula != '') {
+                const result = <PropertyValue | null> (formulaExecutor3.bind(this)(cmp, formula, "execution", (err) => {
+                    this.historyRepository.push(`<${this.name}> Ошибка вычисления формулы, свойство ${cmp.propertyDescription}, комопнента ${cmp.componentDescription}: ${err.message}`,
+                    { entityKey: this.key, componentKey: cmp.key }, "error")
+                }));
+                value = this.get_value(type, result || previusValue)
+                this.historyRepository
+                    .push(`просчет формулы свойства "${cmp.propertyDescription}", комопнента "${cmp.componentDescription}", рузультат: ${String(result)}${!result ? ' (возможно ошибка в формуле, будет присвоено прежнее значение)': ''}`, 
+                    {entityKey: this.key, componentKey: cmp.key }, "low")
+                this.setPropertyValueToKey(cmp.key, value)
+            }else{
+                value = this.get_value(type, previusValue);
+            }
+            return value;
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
+
+    /*************************************** */
+    /*************************************** */
+    /*************************************** */
+
 
 
     /*************************************** */
@@ -293,10 +382,10 @@ export default class Entity {
      */
     setPropertyValueToKey(propertyKey: string, value: PropertyValue, prod: boolean = true): Entity {
         try {
-            const components = this.getApiComponents()
+            const components = this.getApiComponents();
             const cmp = components.find(c => c.key === propertyKey);
-            if (!cmp) throw new Error("Свойство не найдено.")
-            return this.set_property(cmp, value, prod)
+            if (!cmp) throw new Error("Свойство не найдено.");
+            return this.set_property(cmp, value, prod);
         } catch (e) {
             throw e;
         }
@@ -315,13 +404,13 @@ export default class Entity {
         value: U, prod: boolean = true
     ): Entity {
         try {
-            const components = this.getApiComponents()
+            const components = this.getApiComponents();
             const cmp = components.find(c =>
                 c.componentName === componentName &&
                 c.propertyName === propertyName
             );
-            if (!cmp) throw new Error("Свойство не найдено.")
-            return this.set_property(cmp, value, prod)
+            if (!cmp) throw new Error("Свойство не найдено.");
+            return this.set_property(cmp, value, prod);
         } catch (e) {
             console.log('Error setPropertyValue', e);
             throw e;
@@ -362,8 +451,11 @@ export default class Entity {
             if (tempValue != previusValue) {
                 this.options.isChange = true;
                 cmp.isChange = true;
+                this.historyRepository
+                    .push(`изменение свойства "${cmp.propertyDescription}": ${previusValue} => ${tempValue}`, 
+                        {entityKey: this.key, componentKey: cmp.key}, "low");
+                cmp.propertyValue = tempValue;
             }
-            cmp.propertyValue = tempValue;
             return this;
         } catch (e) {
             throw e;
@@ -414,6 +506,7 @@ export default class Entity {
             )
             if (!cmp) throw new Error("Свойство компонента не найдено");
             if (!formula) cmp.propertyFormula = undefined;
+
             if (cmp.propertyFormula !== String(formula)) {
                 cmp.isChange = true;
                 this.options.isChange = true;
@@ -482,7 +575,7 @@ export default class Entity {
     }
 
     getOptions () : ApiEntity {
-        return {...this.options};
+        return this.options;
     }
 
     getEngine(): Engine {

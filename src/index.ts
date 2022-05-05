@@ -13,8 +13,6 @@ const createEngine = (): Engine => new Engine();
 
 // функция присвоения id 
 
-/*
-
 const save = (apiEntity: ApiEntity[]): ApiEntity[] => {
   let genEntId = 1;
   let genCmpId = 1;
@@ -44,61 +42,50 @@ const entity = creator.create('entity', 'БАТЯ', { category: 'Род сущ',
 const entity2 = creator.create('entity', 'СЫН', { note: 'Средний', }).addComponent(money);
 const entity3 = creator.create('entity', 'ВНУЧА', { note: 'Младшая' }).addComponent(money);
 
-const entity4 = creator.create('entity', 'ДЯДЯ', { note: 'Дальний' }).addComponent(money);
-
 entity2.addChild(entity3.build());
 entity.addChild(entity2.build());
-
 
 const saveData = save(entity.build());
 
 const [fasad] = engine.loadAndReturning(saveData);
-const [cld1] = fasad.getChildren();
-const [cld2] = cld1.getChildren();
-
-fasad.resetСheckСhanges()
-
+const cld1 = fasad.findToName("СЫН")!;
+const cld2 = cld1.findToName("ВНУЧА")!;
 
 // Изначальная цена у всех сущностей 1000.
 // Формула фасада
+/*
 fasad.setPropertyFormula('money', 'price', `
-    A = THIS;
-    RESULT = A * 2;
+    //A = THIS;
+    RESULT = 3000;
 `);
+*/
 
 // Формула филенки
 cld1.setPropertyFormula('money', 'price', `
-    A = GF_PRICE();
-    C = THIS;
-    RESULT = A + C;
+   A = GF_PRICE();
+   RESULT = A + 1000;
 `);
 // Формула рубашки, с последующим вычислением.
 // Далее по цепи, что бы вычислить стоимость,  вычисляется стоимость филенки, 
 // которая провоцирует вычисление фасада и результат выводиться в лог
 
 const res =  cld2.setPropertyFormula('money', 'price', `
-      A = GF_PRICE();
-      B = F_PRICE();
-      C = THIS;
-      RESULT = RUB(A + B + C)
+    A = GF_PRICE();
+    B = F_PRICE();
+    grgrf
+    RESULT = A + B;
 `);
 
-//console.log(fasad.getApiComponents()[0]);
+fasad.resetСheckСhanges()
 
-fasad.resetСheckСhanges();
+fasad.recalculationFormulas()
 
-console.log("очистка");
+//console.log(fasad.getChangedEntities());
 
-console.log(fasad.getChangedComponents());
-
-fasad.setPropertyValueToKey(fasad.getApiComponents()[0].key, 100500);
-
-console.log(fasad.getChangedEntities());
+console.log(fasad.getHistoryAndClear());
 
 
 console.timeEnd('FirstWay');
-
-*/
 
 export default createEngine;
 export {

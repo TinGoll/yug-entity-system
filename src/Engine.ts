@@ -27,6 +27,11 @@ export default class Engine {
     static getMode(): "PROD" | "DEV" {
         return Engine._mode;
     }
+
+    getApiEntities(): ApiEntity[] {
+        return [...this.entityList.values()]
+    }
+
     /**
      * Удаление сущности и ее дочерних сущностей по ключу.
      * @param key ключ сущности
