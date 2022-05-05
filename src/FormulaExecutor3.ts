@@ -332,7 +332,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
         return { clientButtons, startCode }
 
     } catch (e) {
-       // console.log(e);
+        console.log(e);
         return null;
     }
 }

@@ -14,6 +14,7 @@ const createEngine = (): Engine => new Engine();
 // функция присвоения id 
 
 /*
+
 const save = (apiEntity: ApiEntity[]): ApiEntity[] => {
   let genEntId = 1;
   let genCmpId = 1;
@@ -35,7 +36,7 @@ const engine = createEngine();
 const creator = engine.creator();
 
 const money = creator.create('component', 'money', { componentDescription: "Деньги" })
-  .addProperty({ propertyName: 'price', propertyDescription: 'Цена', propertyValue: 1000, propertyType: 'number', attributes: "required" });
+  .addProperty({ propertyName: 'price', propertyDescription: 'Цена', propertyValue: 1000, propertyType: 'number', attributes: "required;" });
 const color = creator.create('component', 'finishing', { componentDescription: 'Цвет' })
   .addProperty({ propertyName: 'color', propertyDescription: 'Цвет', propertyValue: 'Красный', propertyType: 'string', attributes: "show;required;"})
 
@@ -45,8 +46,6 @@ const entity3 = creator.create('entity', 'ВНУЧА', { note: 'Младшая' 
 
 const entity4 = creator.create('entity', 'ДЯДЯ', { note: 'Дальний' }).addComponent(money);
 
-const container = creator.create('entity', 'CONTAINER', { category: 'Род сущ', id: 777 }).addComponent(money);
-
 entity2.addChild(entity3.build());
 entity.addChild(entity2.build());
 
@@ -54,8 +53,10 @@ entity.addChild(entity2.build());
 const saveData = save(entity.build());
 
 const [fasad] = engine.loadAndReturning(saveData);
-const [cld1] = fasad.getChildrens();
-const [cld2] = cld1.getChildrens();
+const [cld1] = fasad.getChildren();
+const [cld2] = cld1.getChildren();
+
+fasad.resetСheckСhanges()
 
 
 // Изначальная цена у всех сущностей 1000.
@@ -82,15 +83,23 @@ const res =  cld2.setPropertyFormula('money', 'price', `
       RESULT = RUB(A + B + C)
 `);
 
+//console.log(fasad.getApiComponents()[0]);
+
+fasad.resetСheckСhanges();
+
+console.log("очистка");
+
+console.log(fasad.getChangedComponents());
+
+fasad.setPropertyValueToKey(fasad.getApiComponents()[0].key, 100500);
+
+console.log(fasad.getChangedEntities());
+
+
 console.timeEnd('FirstWay');
 
-fasad.setPropertyValue('money', 'price', 150000)
-
-fasad.propertyPredefinition(entity4)
-
-console.log(JSON.stringify(fasad.getChildren(), null, 2));
-
 */
+
 export default createEngine;
 export {
   Engine,

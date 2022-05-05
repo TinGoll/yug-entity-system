@@ -1,15 +1,24 @@
 import Component from "./Component";
 import Engine from "./Engine";
 import { formulaExecutor3 } from "./FormulaExecutor3";
+import { History } from "./History";
 import { ApiComponent, ApiEntity, PropertyAttribute, PropertyTypes, PropertyValue } from "./types/engine-types";
 
 export default class Entity {
     private options: ApiEntity;
+    private _history: History;
     private engine: Engine;
 
     constructor(options: ApiEntity, engine: Engine) {
         this.engine = engine;
         this.options =  options;
+        this._history = new History();
+    }
+    /**
+     * Хранилище истории.
+     */
+    get historyRepository () {
+        return this._history;
     }
 
     /**
@@ -45,6 +54,8 @@ export default class Entity {
     }
 
     /**
+     * **************************************
+     * **************************************
      * Получение контекстных данных по ключу.
      * @param key Ключ
      */
@@ -71,6 +82,10 @@ export default class Entity {
         }
     }
 
+    //***************************************
+    //***************************************
+    //***************************************
+
     /**
      * Просчет необходимых для вывода данных, вывод данных 
      * по фильтру, аттрибутов компонента.
@@ -96,6 +111,7 @@ export default class Entity {
     }
 
     /**
+     * Существует ли атрибут
      * @param componentName Название компонента
      * @param propertyName Название свойства
      * @param attribute Искомые атрибуты, массив
@@ -117,6 +133,7 @@ export default class Entity {
 
     /**
      * Пересчет формул.
+     * 
      */
     recalculationFormulas (): Entity {
         try {
@@ -220,6 +237,15 @@ export default class Entity {
         }
     }
 
+    getPropertyValueToKey (propertyKey: string) {
+        try {
+            
+        } catch (e) {
+            console.log(e);
+            return null;
+        }
+    }
+
     /**
      * Получение значения компонента, если присутствует формула, производится вычисление.
      * @param componentName 
@@ -253,6 +279,100 @@ export default class Entity {
         }
     }
 
+
+    /*************************************** */
+    /*** Установка свойства компонента ***** */
+    /*************************************** */
+    /*************************************** */
+
+    /**
+     * Изменение свойства по ключу.
+     * @param propertyKey 
+     * @param value 
+     * @returns 
+     */
+    setPropertyValueToKey(propertyKey: string, value: PropertyValue, prod: boolean = true): Entity {
+        try {
+            const components = this.getApiComponents()
+            const cmp = components.find(c => c.key === propertyKey);
+            if (!cmp) throw new Error("Свойство не найдено.")
+            return this.set_property(cmp, value, prod)
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * Задает свойство копонента
+     * @param componentName Название копопнента
+     * @param propertyName Название свойства
+     * @param value значение, согласно типа свойства
+     * @returns Entity
+     */
+    setPropertyValue<U extends PropertyValue = PropertyValue, T extends object | string = string>(
+        componentName: T extends string ? string : keyof T,
+        propertyName: T extends string ? string : keyof T[keyof T],
+        value: U, prod: boolean = true
+    ): Entity {
+        try {
+            const components = this.getApiComponents()
+            const cmp = components.find(c =>
+                c.componentName === componentName &&
+                c.propertyName === propertyName
+            );
+            if (!cmp) throw new Error("Свойство не найдено.")
+            return this.set_property(cmp, value, prod)
+        } catch (e) {
+            console.log('Error setPropertyValue', e);
+            throw e;
+        }
+    }
+    /**
+     * Приватный метод, для изменения свойств сущности. 
+     * @param cmp Свойство
+     * @param value Новое значение
+     * @param prod Mode , в случае false, будут игнорироватся атрибуты
+     * @returns this;
+     */
+    private set_property (cmp: ApiComponent, value: PropertyValue, prod: boolean = true): Entity {
+        try {
+            if (!cmp) throw new Error("Некорректный объект компонента.");
+            const isReadonly = this.existAttribute(cmp.componentName, cmp.propertyName, "readonly");
+            const previusValue: PropertyValue = cmp.propertyValue;
+            const type = cmp.propertyType;
+            let tempValue: PropertyValue;
+            if (isReadonly && prod) throw new Error("Изменение свойства запрещено, так как установлен 'readonly' атрибут.");
+            
+            switch (type) {
+                case 'string':
+                    tempValue = String(value);
+                    break;
+                case 'boolean':
+                    tempValue = Boolean(value);
+                    break;
+                case 'number':
+                    tempValue = Number(value);
+                    break;
+                case 'date':
+                    tempValue = new Date(<string>value);
+                    break;
+                default:
+                    tempValue = String(value);
+            }
+            if (tempValue != previusValue) {
+                this.options.isChange = true;
+                cmp.isChange = true;
+            }
+            cmp.propertyValue = tempValue;
+            return this;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+
+
+
     /**
      * Агрегатор, для отсроченного выполнения функции с привязкой контекста. GETTER
      * @param componentName Название копопнента
@@ -273,66 +393,6 @@ export default class Entity {
     setterExecutor(componentName: string, propertyName: string ): (value: PropertyValue) => void {
         const fun = (value: PropertyValue) => this.setPropertyValue.bind(this)<PropertyValue, string>(componentName, propertyName, value);
         return fun.bind(this);
-    }
-
-    setPropertyValueToKey(propertyKey: string, value: PropertyValue): Entity {
-        try {
-            const cmp = this.options.components?.find(c => c.key === propertyKey);
-            if (!cmp) throw new Error("Свойство с таким ключем не существует.")
-            return this.setPropertyValue<PropertyValue, string>(cmp.componentName, cmp.propertyName, value);
-        } catch (e) {
-            throw e;
-        }
-    }
-
-    /**
-     * Задает свойство копонента
-     * @param componentName Название копопнента
-     * @param propertyName Название свойства
-     * @param value значение, согласно типа свойства
-     * @returns Entity
-     */
-    setPropertyValue<U extends PropertyValue = PropertyValue, T extends object | string = string>(
-        componentName: T extends string ? string : keyof T,
-        propertyName: T extends string ? string : keyof T[keyof T],
-        value: U
-    ): Entity {
-        try {
-            const index = (this.options.components || []).findIndex(c => 
-                c.componentName === componentName &&
-                c.propertyName === propertyName
-            );
-            if (index >= 0) {
-                const propertyType = this.options.components![index].propertyType;
-                let tempValue: PropertyValue;
-                switch (propertyType) {
-                    case 'string':
-                        tempValue = String(value);
-                        break;
-                    case 'boolean':
-                        tempValue = Boolean(value);
-                        break;
-                    case 'number':
-                        tempValue = Number(value);
-                        break;
-                    case 'date':
-                        tempValue = new Date(<string>value);
-                        break;
-                    default:
-                        throw new Error("Неизвестный тип копонента")
-                }
-                // Отслеживание изменений.
-                if (this.options.components![index].propertyValue !== tempValue) {
-                    this.options.components![index].isChange = true;
-                    this.options.isChange = true;
-                }
-                this.options.components![index].propertyValue = tempValue;
-            }
-        } catch (e) {
-            console.log('Error setPropertyValue', e);
-            throw e;
-        }
-        return this;
     }
 
     /**
