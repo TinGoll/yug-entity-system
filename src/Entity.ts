@@ -466,7 +466,12 @@ export default class Entity {
             }
             return this;
         } catch (e) {
-            throw e;
+            this.historyRepository.push(
+                `<${this.name}> Ошибка: ${cmp.propertyDescription}, компонент ${cmp.componentDescription} ${(e as Error).message}`,
+                { entityKey: this.key, componentKey: cmp.key },
+                "error"
+            )
+            return this;
         }
     }
 
