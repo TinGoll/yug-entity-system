@@ -12,7 +12,7 @@ import {
 const createEngine = (): Engine => new Engine();
 
 // функция присвоения id 
-
+/*
 const save = (apiEntity: ApiEntity[]): ApiEntity[] => {
   let genEntId = 1;
   let genCmpId = 1;
@@ -53,12 +53,12 @@ const cld2 = cld1.findToName("ВНУЧА")!;
 
 // Изначальная цена у всех сущностей 1000.
 // Формула фасада
-/*
+
 fasad.setPropertyFormula('money', 'price', `
     //A = THIS;
     RESULT = 3000;
 `);
-*/
+
 
 // Формула филенки
 cld1.setPropertyFormula('money', 'price', `
@@ -86,7 +86,7 @@ console.log(fasad.getHistoryAndClear());
 
 
 console.timeEnd('FirstWay');
-
+*/
 export default createEngine;
 export {
   Engine,
