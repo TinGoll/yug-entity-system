@@ -387,7 +387,12 @@ export default class Entity {
             if (!cmp) throw new Error("Свойство не найдено.");
             return this.set_property(cmp, value, prod);
         } catch (e) {
-            throw e;
+            this.historyRepository.push(
+                `<${this.name}> Ошибка: ${(e as Error).message}`, 
+                { entityKey: this.key, componentKey: propertyKey },
+                "error"  
+            )
+            return this;
         }
     }
 
@@ -412,8 +417,12 @@ export default class Entity {
             if (!cmp) throw new Error("Свойство не найдено.");
             return this.set_property(cmp, value, prod);
         } catch (e) {
-            console.log('Error setPropertyValue', e);
-            throw e;
+            this.historyRepository.push(
+                `<${this.name}> Ошибка: ${(e as Error).message}`,
+                { entityKey: this.key },
+                "error"
+            )
+            return this;
         }
     }
     /**
