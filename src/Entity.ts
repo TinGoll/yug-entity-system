@@ -457,6 +457,8 @@ export default class Entity {
                     tempValue = String(value);
             }
             if (tempValue != previusValue) {
+                console.log("options.isChange", this.options.isChange);
+                
                 this.options.isChange = true;
                 cmp.isChange = true;
                 this.historyRepository
