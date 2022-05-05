@@ -1,6 +1,7 @@
 import Component from "./Component";
 import Engine from "./Engine";
 import Entity from "./Entity";
+import { History, IHistory } from "./History";
 import {
   ApiComponent,
   ApiEntity,
@@ -87,6 +88,7 @@ console.log(fasad.getHistoryAndClear());
 
 console.timeEnd('FirstWay');
 */
+
 export default createEngine;
 export {
   Engine,
@@ -97,5 +99,6 @@ export {
   PropertyTypes,
   PropertyValue,
   EngineObjectType,
-  PropertyAttribute
+  PropertyAttribute,
+  IHistory
 };
