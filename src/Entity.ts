@@ -348,11 +348,11 @@ export default class Entity {
                     this.historyRepository.push(`<${this.name}> Ошибка вычисления формулы, свойство ${cmp.propertyDescription}, комопнента ${cmp.componentDescription}: ${err.message}`,
                     { entityKey: this.key, componentKey: cmp.key }, "error")
                 }));
-                value = this.get_value(type, result || previusValue)
+                value = this.get_value(type, result === null ? previusValue : result)
                 this.historyRepository
-                    .push(`просчет формулы свойства "${cmp.propertyDescription}", комопнента "${cmp.componentDescription}", рузультат: ${String(result)}${!result ? ' (возможно ошибка в формуле, будет присвоено прежнее значение)': ''}`, 
+                    .push(`просчет формулы свойства "${cmp.propertyDescription}", комопнента "${cmp.componentDescription}", рузультат: ${String(result)}${result === null ? ' (возможно ошибка в формуле, будет присвоено прежнее значение)': ''}`, 
                     {entityKey: this.key, componentKey: cmp.key }, "low")
-                this.setPropertyValueToKey(cmp.key, value)
+                this.setPropertyValueToKey(cmp.key, value, false)
             }else{
                 value = this.get_value(type, previusValue);
             }

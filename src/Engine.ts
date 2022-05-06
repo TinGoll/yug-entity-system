@@ -95,6 +95,15 @@ export default class Engine {
     clearEntity () {
         this.entityList.clear();
     }
+
+    clearSamples () {
+        for (const ent of this.entityList.values()) {
+            if (!ent.sampleId && ent.parentKey) {
+                this.removeToKey(ent.key)
+            }
+        }
+    }
+
     /** загрузка в хранилище движка сущностей */
     loadEntities (entities: ApiEntity[]): ApiEntity[] {
         return entities.map(e => this.set(e));
