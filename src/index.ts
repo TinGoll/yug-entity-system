@@ -14,6 +14,7 @@ const createEngine = (): Engine => new Engine();
 
 // функция присвоения id 
 /*
+
 const save = (apiEntity: ApiEntity[]): ApiEntity[] => {
   let genEntId = 1;
   let genCmpId = 1;
@@ -81,9 +82,11 @@ fasad.resetСheckСhanges()
 
 fasad.recalculationFormulas()
 
+console.log(JSON.stringify(fasad.getPreparationData(fasad.getApiComponents()[0].key), null, 2));
+
 //console.log(fasad.getChangedEntities());
 
-console.log(fasad.getHistoryAndClear());
+//console.log(fasad.getHistoryAndClear());
 
 
 console.timeEnd('FirstWay');
@@ -100,5 +103,6 @@ export {
   PropertyValue,
   EngineObjectType,
   PropertyAttribute,
-  IHistory
+  IHistory,
+  History
 };

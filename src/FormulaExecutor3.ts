@@ -177,10 +177,11 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
         /** **************************************** */
 
         const getNameExcutor = (thisIs: ThisIs, entity: Entity, cmp: ApiComponent): string => {
-            if (thisIs === "me") return `ME_${cmp.propertyName}`;
-            if (thisIs === "father") return `F_${cmp.propertyName}`;
-            if (thisIs === "grand_father") return `GF_${cmp.propertyName}`;
-            return `${strtr(entity.name)}_${strtr(entity.note)}_${cmp.propertyName}`;
+            const cmpName = cmp.componentName.slice(0, 3); // Добавляем первые три беквы имени компонента
+            if (thisIs === "me") return `ME_${strtr(cmpName)}_${cmp.propertyName}`;
+            if (thisIs === "father") return `F_${strtr(cmpName)}_${cmp.propertyName}`;
+            if (thisIs === "grand_father") return `GF_${strtr(cmpName)}_${cmp.propertyName}`;
+            return `${strtr(entity.name)}_${strtr(entity.note)}_${strtr(cmpName)}_${cmp.propertyName}`;
         }
 
         //Executors
@@ -207,9 +208,11 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                 const PROPERTY_DESC = cmp.propertyDescription; // Название свойства на русском.
                 const GETTER_NAME = IS_CURRENT_PROPERTY ? `THIS` : `${PROPERTY_NAME.toUpperCase()}`;
                 const SETTER_NAME = IS_CURRENT_PROPERTY ? `S_${PROPERTY_NAME.toUpperCase()}` : `S_${PROPERTY_NAME.toUpperCase()}`; 
+
                 const CODE = IS_CURRENT_PROPERTY
                     ? `const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_GET;`
                     : `const ${GETTER_NAME} = EXECUTORS.get("${KEY}")?.GETTER || DUMMY_GET; const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_SET;`
+
                 EXECUTORS.set(KEY, {
                     KEY,
                     GETTER,
