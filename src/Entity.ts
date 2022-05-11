@@ -530,6 +530,31 @@ export default class Entity {
         }
         return this;
     }
+    /**
+     * Установка компонента по ключу, полная замена всех полей.
+     * @param key 
+     * @param apiComponent 
+     * @returns 
+     */
+    setApiComponentToKey(key: string, apiComponent: ApiComponent): Entity {
+        try {
+            const index = this.options.components?.findIndex(c => c.key === key)||-1;
+            if (index === -1) throw new Error("Комопнент с таким ключем не существует.");
+            const cmp = this.options!.components![index]
+            const newDataComponent: ApiComponent = {
+                ...cmp,
+                ...apiComponent,
+                entityId: cmp.entityId,
+                entityKey: cmp.entityKey,
+                isChange: true
+            }
+            this.options!.components![index] = { ...newDataComponent }
+            this.options.isChange = true;
+            return this;
+        } catch (e) {
+            throw e;
+        }
+    }
 
     getPropertyFormula<T extends object | string = string>(
         componentName: T extends string ? string : keyof T,
