@@ -233,14 +233,14 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
 
         /** **************************************** */
         /** ************* Функции **************** */
-        function ROUND(number: number, fixed: number) {
-            return number.toFixed(fixed)
+        function ROUND(number: number = 0, fixed: number = 0) {
+            return Number(number).toFixed(fixed)
         }
-        function RUB(number: number) {
-            return number.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
+        function RUB(number: number = 0) {
+            return Number(number).toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
         }
-        function COSINUS(number: number) {
-            return Math.cos(number * Math.PI / 180);
+        function COSINUS(number: number = 0) {
+            return Math.cos(Number(number) * Math.PI / 180);
         }
 
         /** **************************************** */
