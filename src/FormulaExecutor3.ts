@@ -236,8 +236,8 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
         function ROUND(number: number = 0, fixed: number = 0) {
             return Number(number).toFixed(fixed)
         }
-        function RUB(number: number = 0) {
-            return Number(number).toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
+        function RUB(number: string = '0') {
+            return Number(number.replace(/\D/g, '')).toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
         }
         function COSINUS(number: number = 0) {
             return Math.cos(Number(number) * Math.PI / 180);
