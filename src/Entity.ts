@@ -231,9 +231,12 @@ export default class Entity {
         }
     }
 
-    deleteComponentPropertyToKey (propertyKey: string) {
+    deleteComponentPropertyToKey (propertyKey: string): ApiComponent | undefined {
         try {
+            const cmp = this.options.components?.find(c => c.key !== propertyKey);
+            if (!cmp) return;
             this.options.components = this.options.components?.filter(c => c.key !== propertyKey);
+            return cmp;
         } catch (e) {
             throw e;
         }
@@ -253,6 +256,8 @@ export default class Entity {
             throw e;
         }
     }
+
+
 
     /**
      * Получение всех измененных компонентов, 
@@ -751,6 +756,28 @@ export default class Entity {
         }
         this.options.isChange = true;
         return this;
+    }
+    /**
+     * Создание нового компонента в сущности, возможно использование на продакшене.
+     */
+    createNewComponent (apiComponent: ApiComponent): ApiComponent {
+        try {
+            const candidate = this.options.components?.find(c => c.componentName === apiComponent.componentName 
+                    && c.propertyName === apiComponent.propertyName);
+            if (!candidate) throw new Error(`Такое свойство уже существует в компоненте ${apiComponent.componentName}`);
+            const newComponent: Partial<ApiComponent> = {
+                ...apiComponent,
+                entityKey: this.options.parentKey,
+                entityId: this.options.id,
+                key: undefined,
+                id: undefined
+            }
+            const cmp =  Engine.registration<ApiComponent>(<ApiComponent>newComponent);
+            this.options.components?.push({ ...cmp });
+            return cmp;
+        } catch (e) {
+            throw e;
+        }
     }
 
     /** Geters */
