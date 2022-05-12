@@ -238,6 +238,8 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
         }
         function RUB(number: string = '0') {
             const num = number.replace(/[^0-9,.]/g, '');
+            console.log('NUMBER', num);
+            
             return Number(num).toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
         }
         function COSINUS(number: number = 0) {
