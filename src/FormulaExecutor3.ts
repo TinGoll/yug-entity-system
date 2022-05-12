@@ -237,6 +237,8 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
             return Number(number).toFixed(fixed)
         }
         function RUB(number: string = '0') {
+            console.log('number', number);
+            
             const num = number.replace(/[^0-9,.]/g, '');
             console.log('NUMBER', num);
             
