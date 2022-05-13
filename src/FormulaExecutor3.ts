@@ -177,7 +177,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
         /** **************************************** */
 
         const getNameExcutor = (thisIs: ThisIs, entity: Entity, cmp: ApiComponent): string => {
-            const cmpName = cmp.componentName.slice(0, 3); // Добавляем первые три беквы имени компонента
+            const cmpName = cmp.componentName; // Добавляем первые три беквы имени компонента
             if (thisIs === "me") return `ME_${strtr(cmpName)}_${cmp.propertyName}`;
             if (thisIs === "father") return `F_${strtr(cmpName)}_${cmp.propertyName}`;
             if (thisIs === "grand_father") return `GF_${strtr(cmpName)}_${cmp.propertyName}`;
