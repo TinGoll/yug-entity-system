@@ -543,8 +543,16 @@ export default class Entity {
      */
     setApiComponentToKey(key: string, apiComponent: ApiComponent): Entity {
         try {
-            const index = this.options.components?.findIndex(c => c.key === key)||-1;
+            const index = this.options.components!.findIndex(c => c.key === key);
             if (index === -1) throw new Error("Комопнент с таким ключем не существует.");
+
+            if (Engine.getMode() === "DEV") {
+                this.options.components!.findIndex(c => {
+                    console.log(`${c.key} === ${key}`, c.key === key);
+                    return c.key === key;
+                });
+            }
+
             const cmp = this.options!.components![index]
             const newDataComponent: ApiComponent = {
                 ...cmp,
