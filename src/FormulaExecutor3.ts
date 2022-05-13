@@ -3,6 +3,14 @@ import Entity from "./Entity";
 import { ApiComponent, PropertyValue } from "./types/engine-types";
 
 
+interface AccomulatorOptions {
+    me?: boolean;
+    categories?: Array<string>;
+    names?: Array<string>;
+    valueCondition?: (value: PropertyValue) => boolean;
+    entityCondition?: (ent: Entity) => boolean;
+}
+
 interface FormulaComponentOptions extends Partial<ApiComponent> {
     key: string;
 }
@@ -167,6 +175,38 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                 childs[index].setPropertyValue<PropertyValue, string>(cmpName, probName, value);
             } catch (e) {
                 console.log(e);
+            }
+        }
+
+        const ACCUMULATOR = (componentName: string, propertyName: string, {
+            me = false,
+            categories,
+            names,
+            valueCondition,
+            entityCondition
+        }: AccomulatorOptions) => {
+            try {
+                const meValue = me ? this.getPropertyValue<number>(componentName, propertyName) || 0 : 0;
+                const accResult = childs.reduce<number>((acc, ent) => {
+                    if (categories && categories.length) {
+                        const isCat = categories.map(c=>c.toUpperCase()).includes(ent.getCategory().toUpperCase());
+                        return acc;
+                    }
+                    if (names && names.length) {
+                        const isNam = names.map(c => c.toUpperCase()).includes(ent.name.toUpperCase());
+                        return acc;
+                    }
+                    if (valueCondition 
+                        && typeof valueCondition === "function" 
+                            && !valueCondition(Number(ent.getPropertyValue<number>(componentName, propertyName))))
+                                return acc;
+                    if (entityCondition && typeof entityCondition === "function" && !entityCondition(ent))
+                                return acc;
+                    return acc += Number(ent.getPropertyValue<number>(componentName, propertyName))||0;
+                }, 0);
+                return meValue + accResult;
+            } catch (e) {
+                return 0;
             }
         }
 
