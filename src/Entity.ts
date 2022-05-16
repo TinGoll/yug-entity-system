@@ -785,8 +785,8 @@ export default class Entity {
                 key: undefined,
                 id: undefined
             }
-            const cmp =  Engine.registration<ApiComponent>(<ApiComponent>newComponent);
-            this.options.components?.push({ ...cmp });
+            const cmp =  {...Engine.registration<ApiComponent>(<ApiComponent>newComponent)};
+            this.options.components?.push(cmp);
             return cmp;
         } catch (e) {
             throw e;
