@@ -206,6 +206,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                 }, 0);
                 return meValue + accResult;
             } catch (e) {
+                console.log("ACCUMULATOR", e);
                 return 0;
             }
         }
@@ -217,7 +218,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
         /** **************************************** */
 
         const getNameExcutor = (thisIs: ThisIs, entity: Entity, cmp: ApiComponent): string => {
-            const cmpName = cmp.componentName; // Добавляем первые три беквы имени компонента
+            const cmpName = cmp.componentName; // Имя компонента.
             if (thisIs === "me") return `ME_${strtr(cmpName)}_${cmp.propertyName}`;
             if (thisIs === "father") return `F_${strtr(cmpName)}_${cmp.propertyName}`;
             if (thisIs === "grand_father") return `GF_${strtr(cmpName)}_${cmp.propertyName}`;
