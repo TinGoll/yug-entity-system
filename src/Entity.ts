@@ -787,6 +787,8 @@ export default class Entity {
             }
             const cmp =  {...Engine.registration<ApiComponent>(<ApiComponent>newComponent)};
             this.options.components?.push(cmp);
+            this.options.isChange = true;
+            cmp.isChange = true;
             return cmp;
         } catch (e) {
             throw e;
