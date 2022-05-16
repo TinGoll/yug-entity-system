@@ -18,11 +18,16 @@ export default class Entity {
     //***************************************** */
     //*********** Поиск сущностей ************* */
     //***************************************** */
-
+    /**
+     * Поиск сущности по ключу, в том числе и самой себя
+     * @param key 
+     * @returns 
+     */
     findToKey (key: string): Entity|null {
         try {
             if (this.key === key) return this;
-            return this.getChildrenToKey(key)
+            const ent = this.getDynasty().find(e => e.key === key);
+            return ent || null;
         } catch (e) {
             throw e;
         }
