@@ -449,7 +449,6 @@ export default class Entity {
             const type = cmp.propertyType;
             let tempValue: PropertyValue;
             if (isReadonly && prod) throw new Error("Изменение свойства запрещено, так как установлен 'readonly' атрибут.");
-            
             switch (type) {
                 case 'string':
                     tempValue = String(value);
