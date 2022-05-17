@@ -184,7 +184,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
             names,
             valueCondition,
             entityCondition
-        }: AccomulatorOptions) => {
+        }: AccomulatorOptions = {}) => {
             try {
                 const meValue = me ? this.getPropertyValue<number>(componentName, propertyName) || 0 : 0;
                 const accResult = childs.reduce<number>((acc, ent) => {
@@ -210,6 +210,8 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                 return 0;
             }
         }
+
+        
 
         const THIS = currentPropertyValue;
 
@@ -290,7 +292,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
 
         const arrCode: string[] = [];
         for (const EXCT of EXECUTORS.values()) {
-            arrCode.push(EXCT.CODE)
+           // arrCode.push(EXCT.CODE) удаление импорта
         }
 
         const baseCode = `

@@ -53,36 +53,27 @@ const [fasad] = engine.loadAndReturning(saveData);
 const cld1 = fasad.findToName("СЫН")!;
 const cld2 = cld1.findToName("ВНУЧА")!;
 
-// Изначальная цена у всех сущностей 1000.
-// Формула фасада
-
 fasad.setPropertyFormula('money', 'price', `
-    //A = THIS;
-    RESULT = 3000;
+  RESULT = ACCUMULATOR("money", "price");
 `);
-
 
 // Формула филенки
 cld1.setPropertyFormula('money', 'price', `
-   A = GF_PRICE();
-   RESULT = A + 1000;
+  RESULT = 100;
 `);
-// Формула рубашки, с последующим вычислением.
-// Далее по цепи, что бы вычислить стоимость,  вычисляется стоимость филенки, 
-// которая провоцирует вычисление фасада и результат выводиться в лог
 
 const res =  cld2.setPropertyFormula('money', 'price', `
-    A = GF_PRICE();
-    B = F_PRICE();
-    grgrf
-    RESULT = A + B;
+  RESULT = 100;
 `);
 
-fasad.resetСheckСhanges()
+fasad.recalculationFormulas();
 
-fasad.recalculationFormulas()
+Engine.setMode("DEV")
 
-console.log(JSON.stringify(fasad.getPreparationData(fasad.getApiComponents()[0].key), null, 2));
+console.log(fasad.getPropertyValue("money", "price"));
+
+
+//console.log(JSON.stringify(fasad.getPreparationData(fasad.getApiComponents()[0].key), null, 2));
 
 //console.log(fasad.getChangedEntities());
 
@@ -90,8 +81,8 @@ console.log(JSON.stringify(fasad.getPreparationData(fasad.getApiComponents()[0].
 
 
 console.timeEnd('FirstWay');
-*/
 
+*/
 export default createEngine;
 export {
   Engine,
