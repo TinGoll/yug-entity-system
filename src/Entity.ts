@@ -471,7 +471,7 @@ export default class Entity {
                 cmp.isChange = true;
                 this.historyRepository
                     .push(`изменение свойства "${cmp.propertyDescription}": ${previusValue} => ${tempValue}`, 
-                        {entityKey: this.key, componentKey: cmp.key}, "low");
+                        {entityKey: this.key, componentKey: cmp.key}, "high");
                 cmp.propertyValue = tempValue;
             }
             return this;
