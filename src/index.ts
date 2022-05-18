@@ -1,6 +1,7 @@
 import Component from "./Component";
 import Engine from "./Engine";
 import Entity from "./Entity";
+import { FormulaImport } from "./FormulaImport";
 import { History, IHistory } from "./History";
 import {
   ApiComponent,
@@ -11,6 +12,38 @@ import {
   PropertyAttribute,
 } from "./types/engine-types";
 const createEngine = (): Engine => new Engine();
+
+/*
+
+const formulaImport = new FormulaImport();
+
+formulaImport.push("Утречко");
+formulaImport.push("Утречко");
+formulaImport.push("Хороший денек для рыбалки!");
+formulaImport.push("Не правда ли?");
+formulaImport.push("Не правда ли?");
+
+console.log(formulaImport.build());
+
+interface Obj {
+  importTxt: string;
+  code: string;
+}
+console.log('********* Пример с обектами *********');
+
+const formulaImportObj = new FormulaImport<Obj>();
+
+formulaImportObj.push({ importTxt: "Утречко", code: "A + B" });
+formulaImportObj.push({ importTxt: "Утречко", code: "A + B" });
+formulaImportObj.push({ importTxt: "Хороший денек для рыбалки!", code: "A + B" });
+formulaImportObj.push({ importTxt: "Хороший денек для рыбалки!", code: "A + B" });
+formulaImportObj.push({ importTxt: "Хороший денек для рыбалки!", code: "A + B" });
+formulaImportObj.push({ importTxt: "Не правда ли?", code: "A + B" });
+
+console.log(formulaImportObj.build((element) => element.importTxt));
+
+*/
+
 
 // функция присвоения id 
 /*
@@ -95,5 +128,6 @@ export {
   EngineObjectType,
   PropertyAttribute,
   IHistory,
-  History
+  History,
+  FormulaImport
 };

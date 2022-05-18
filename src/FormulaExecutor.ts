@@ -1,193 +1,60 @@
+import Engine from "./Engine";
 import Entity from "./Entity";
 import { ApiComponent, PropertyValue } from "./types/engine-types";
 
-interface FormulaComponents { 
-    entityName: string, 
-    key: string, 
-    id: number, 
-    components: ApiComponent[], 
-    count: number }
+interface AccomulatorOptions {
+    me?: boolean;
+    categories?: Array<string>;
+    names?: Array<string>;
+    valueCondition?: (value: PropertyValue) => boolean;
+    entityCondition?: (ent: Entity) => boolean;
+}
+
+interface FormulaComponentOptions extends Partial<ApiComponent> {
+    key: string;
+}
+
 interface IKeysMap {
     [index: string]: string;
 }
-interface IFactory {
-    CMP: (componentTuple: ComponentTuple) => PropertyValue | null;
-    BUTTONS: IButtons[];
-}
-interface IButtons {
-    GROUP: string;
-    COM_DESC: string;
-    NAME: string;
-    VALUE: string;
-    TUPLE: ComponentTuple;
+
+type FormulaGetters = () => PropertyValue | null;
+type FormulaSetters = (value: PropertyValue) => void;
+
+interface FormulaExecutor {
+    KEY: string;
+    GETTER: FormulaGetters;
+    SETTER: FormulaSetters;
+    ENTITY_NAME: string
+    COMPONENT_NAME: string;
+    COMPONENT_DESC: string;
+    PROPERTY_NAME: string;
+    PROPERTY_DESC: string;
+    GETTER_NAME: string;
+    SETTER_NAME: string;
+    ENTITY_NOTE: string;
+    IS_CURRENT_PROPERTY: boolean;
     CODE: string;
 }
 
-export interface ComponentTuple {
-    0: string;
-    1: string;
-    length: 2;
-}
-
-interface FormulaPropertyButtons {
+/** Интерфейс кнопок, для отображения в редакторе формул. */
+interface FormulaButton {
     group: string;
-    buttons: Array<{ compName: string; name: string; value: string; }>
+    components: Array<{
+        componentName: string,
+        buttons: Array<{ name: string, value: string }>
+        setters: Array<{ name: string, value: string }>
+    }>;
 }
 
-export function formulaExecutor(this: Entity, code: string, defaultValue: PropertyValue | null = null, type: 'execution' | 'preparation' = 'execution') {
-    try {
-        /************************************************************************************************************************** */
-        const propertiesSet = new Map<string, FormulaPropertyButtons>();
-        const propertyVariable = new Map<string, ComponentTuple[]>();
+type ThisIs = "me" | "father" | "grand_father" | undefined;
 
-        const ME = this as Entity;
-        const NAME = ME.getName();
-        const FATHER = ME?.getParent();
-        const CHILDS = ME?.getChildren() || [];
-        const BROTHERS = FATHER?.getChildren() || [];
-        const GRAND_FATHER = ME.getGrandFather();
-
-        const FACS = new Map<string, IFactory>();
-
-        for (const fComp of GET_COMPONENTS(GRAND_FATHER || ME)) {
-            /** Подготовка кнопок для использования на клиенте. */
-            //.replace(/[^a-z]/g, '')
-            const CMP = cmp_factory(fComp.components);
-
-            const BUTTONS = fComp.components.map(component => {
-                const GROUP = `${fComp.entityName} idx: ${fComp.count}`;
-                const COM_DESC = `${component.componentDescription}`
-                const NAME = `${component.propertyDescription || component.propertyName} [${fComp.count}]`;
-
-                const VALUE = `${component.componentName.toUpperCase()}_${component.propertyName.toUpperCase()}_ID${fComp.id}`; // Привязка к ID или ключу.
-                const TUPLE = <ComponentTuple>[component.componentName!, component.propertyName!];
-                const CODE = `const ${VALUE} = FACS.get('${fComp.entityName} idx: ${fComp.count}')?.CMP(['${TUPLE[0]}', '${TUPLE[1]}']);`;
-
-                return { GROUP, COM_DESC, NAME, VALUE, TUPLE, CODE };
-            });
-            /** Сборка элемента экзекутора */
-            const factoryElement: IFactory = { CMP, BUTTONS };
-            FACS.set(`${fComp.entityName} idx: ${fComp.count}`, factoryElement);
-        }
-
-        /************************************************************************************************************************** */
-        /**
-         * 
-         * @param number Число которое необходимо округлить
-         * @param fixed Число знаков после запятой
-         * @returns Округленное число.
-         */
-        function ROUND(number: number, fixed: number) {
-            return number.toFixed(fixed)
-        }
-        function RUB(number: number) {
-            return number.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
-        }
-        function COSINUS(number: number) {
-            return Math.cos(number * Math.PI / 180);
-        }
-        /**
-         * Функция формирования массива компонетов с привязкой владельцу.
-         * @param object Сущьность, комопнеты которой попадут в массив, а так же компоненты потомков. 
-         * @returns FormulaComponents [];
-         */
-        function GET_COMPONENTS(object: Entity | undefined, count: number = 0): FormulaComponents[] {
-            const objs: FormulaComponents[] = [];
-            if (!object) return objs;
-            count++;
-            objs.push({ entityName: object?.name || '', key: object.key, id: object.getId(), components: object?.getApiComponents(), count });
-            for (const ent of (object?.getChildren() || [])) {
-                objs.push(...GET_COMPONENTS(ent, count));
-            }
-            return objs;
-        }
-       
-        /**
-         * Создает функцию, которая возвращает значение любого компонента, так же выполняет формулу, 
-         * если такая есть в свойстве.
-         * @param components Комопненты сущности.
-         * @returns значение или null
-         */
-        function cmp_factory(components: ApiComponent[]) {
-            return function CMP(componentTuple: ComponentTuple): PropertyValue | null {
-                try {
-                    const cmps = components;
-                    const cmp = cmps.find(c => c.componentName === componentTuple[0] && c.propertyName === componentTuple[1]);
-                    if (!cmp) return null;
-                    const type = cmp.propertyType;
-                    if (type === 'number') return Number(cmp.propertyValue);
-                    if (type === 'boolean') return Boolean(cmp.propertyValue);
-                    if (type === 'date') return new Date(String(cmp.propertyValue));
-                    if (type === 'string') return String(cmp.propertyValue);
-                    return cmp.propertyValue;
-                } catch (e) { return null; }
-            }
-        }
-        /************************************************************************************************************************** */
-
-        //const MCMP = cmp_factory(M_COMPONENTS);
-        //const FCMP = cmp_factory(F_COMPONENTS);
-
-        const arrCodeVar: string[] = [];
-        for (const fac of FACS.values()) {
-            for (const but of fac.BUTTONS) {
-                arrCodeVar.push(but.CODE);
-            }
-        }
-
-        const baseCode = `
-        const executor = () => {
-                ${arrCodeVar.join('\n')}
-                let Q,W,E,R,T,Y,U,I,O,P,A,S,D,F,G,H,J,K,L,X,C,V,B,N,M;
-                let PI = Math.PI;
-                let RESULT = defaultValue; // Результат
-                ${code}
-                return RESULT;
-        }
-        executor();`;
-        
-        //console.log(baseCode);
-
-        if (type === 'execution') return eval(baseCode);
-        const clientButtons: any[] = [];
-        for (const F of FACS) {
-            const compNames = [...new Set(F[1].BUTTONS.map(b => b.COM_DESC))];
-            const tempArr: any[] = [];
-            for (const cname of compNames) {
-                const buttons = F[1].BUTTONS.filter(b => b.COM_DESC === cname)
-                    .map(b => {
-                        return {
-                            name: b.NAME,
-                            value: b.VALUE,
-                        }
-                    })
-                tempArr.push({ componentName: cname, buttons });
-            }
-            const but = {
-                group: F[0],
-                components: [...tempArr]
-            }
-            clientButtons.push(but)
-        }
-
-        let startCode = '';
-        startCode += `/*************************************************************/\n`;
-        startCode += `/*  ME - Текущий объект, FATHER - родитель,                  */\n`;
-        startCode += `/*  CHILDS - детки, BROTHERS - братья, GRAND_FATHER - дед    */\n`;
-        startCode += `/*  RESULT - в эту переменную внесите результат.             */\n`;
-        startCode += `/*  Остальное в кнопках на панели                            */\n`;
-        startCode += `/*************************************************************/\n`;
-        startCode += `// Тут пишите ваш код, удачи!\n\n\n`;
-
-        return { clientButtons, startCode };
-    } catch (e) {
-        console.log(e);
-        return null;
-    }
-}
-
+/** ***************************************************** */
+/** ***************************************************** */
+/** ***************************************************** */
 function strtr(str: string): string {
     let txt = str.toLowerCase();
+    let re = /[ |)|(]/gi;
     const trans: IKeysMap = {
         'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd',
         'е': 'e', 'ё': 'e', 'ж': 'zh', 'з': 'z', 'и': 'i',
@@ -204,6 +71,329 @@ function strtr(str: string): string {
             txt = txt.replace(new RegExp(f, 'g'), r);
         }
     }
-    return txt.replace(/[\s.,%]/g, '').toUpperCase();
+    return txt.replace(/[\s.,%]/g, '').replace(re, '_').toUpperCase();
 }
+/** ***************************************************** */
+/** ***************************************************** */
+
+export function formulaExecutor(this: Entity, { componentName, propertyName, propertyValue, key, formulaImport = '' }: FormulaComponentOptions, code: string = '', type: 'execution' | 'preparation' = 'execution', err?: (e: Error) => void) {
+    try {
+        /** **************************************** */
+        /** ********** Текущие значения ************ */
+        const currentPropertyValue = propertyValue || null;
+        const currentEntity = this;
+        /** **************************************** */
+        /** ****** Дополнительные переменные ******* */
+
+        const me = currentEntity;
+        const father = me.getParent();
+        const childs = me.getChildren() || [];
+        const brothers = father?.getChildren() || [];
+        const grand_father = me.getGrandFather();
+
+        /** **************************************** */
+        const entities = grand_father?.getDynasty() || me.getDynasty();
+
+        const EXECUTORS = new Map<string, FormulaExecutor>();
+
+        const DUMMY_GET = () => null; // Пустышка геттер
+        const DUMMY_SET = (value: string) => console.log('Недоступное свойство.'); // Пустышка сеттер.
+
+        /** **************************************** */
+        /** *********** Функции окружения ********** */
+        /** **************************************** */
+        
+        const ME = (cmpName: string, probName: string): PropertyValue|null => {
+            try {return me.getPropertyValue<PropertyValue, string>(cmpName, probName);
+            } catch (e) {console.log(e); return null;}
+        }
+        const S_ME = (cmpName: string, probName: string, value: PropertyValue): void => {
+            try {me.setPropertyValue<PropertyValue, string>(cmpName, probName, value, false);} 
+            catch (e) {console.log(e);}
+        }
+        const FATHER = (cmpName: string, probName: string): PropertyValue | null => {
+            try {return father?.getPropertyValue<PropertyValue, string>(cmpName, probName)||null;
+            } catch (e) { console.log(e); return null; }
+        }
+        const S_FATHER = (cmpName: string, probName: string, value: PropertyValue): void => {
+            try { if (!father) throw new Error("Родительский объект не существует."); me.setPropertyValue<PropertyValue, string>(cmpName, probName, value, false); }
+            catch (e) { console.log(e); }
+        }
+
+        const GRAND_FATHER = (cmpName: string, probName: string): PropertyValue | null => {
+            try {return grand_father?.getPropertyValue<PropertyValue, string>(cmpName, probName) || null;
+            } catch (e) { console.log(e); return null; }
+        }
+        const S_GRAND_FATHER = (cmpName: string, probName: string, value: PropertyValue): void => {
+            try { if (!grand_father) throw new Error("Родительский объект не существует."); me.setPropertyValue<PropertyValue, string>(cmpName, probName, value, false); }
+            catch (e) { console.log(e); }
+        }
+
+        const BROTHERS = (entityName: string, note: string | undefined = undefined, cmpName: string, probName: string): PropertyValue|null => {
+            try {
+                const index = brothers.findIndex(b => b.name.toUpperCase() === entityName.toUpperCase() 
+                        && b.note.toUpperCase() === (note || '').toUpperCase());
+                if (index === -1) return null;
+                return brothers[index].getPropertyValue<PropertyValue, string>(cmpName, probName);
+            } catch (e) {
+                console.log(e);
+                return null;
+            }
+        }
+
+        const S_BROTHERS = (entityName: string, note: string | undefined = undefined, cmpName: string, probName: string, value: string): void => {
+            try {
+                const index = brothers.findIndex(b => b.name.toUpperCase() === entityName.toUpperCase()
+                    && b.note.toUpperCase() === (note || '').toUpperCase());
+                if (index === -1) return;
+                brothers[index].setPropertyValue<PropertyValue, string>(cmpName, probName, value, false);
+            } catch (e) {
+                console.log(e);
+            }
+        }
+        const CHILDS = (entityName: string, note: string | undefined = undefined, cmpName: string, probName: string): PropertyValue | null => {
+            try {
+                const index = childs.findIndex(b => b.name.toUpperCase() === entityName.toUpperCase()
+                    && b.note.toUpperCase() === (note || '').toUpperCase());
+                if (index === -1) return null;
+                return childs[index].getPropertyValue<PropertyValue, string>(cmpName, probName);
+            } catch (e) {
+                console.log(e);
+                return null;
+            }
+        }
+
+        const S_CHILDS = (entityName: string, note: string | undefined = undefined, cmpName: string, probName: string, value: string): void => {
+            try {
+                const index = childs.findIndex(b => b.name.toUpperCase() === entityName.toUpperCase()
+                    && b.note.toUpperCase() === (note || '').toUpperCase());
+                if (index === -1) return;
+                childs[index].setPropertyValue<PropertyValue, string>(cmpName, probName, value, false);
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        /** **************************************** */
+        /** ************* Функции **************** */
+        function ROUND(number: number = 0, fixed: number = 0) {
+            return Number(number).toFixed(fixed)
+        }
+        function RUB(number: string = '0') {
+            const num = number.replace(/[^0-9,.]/g, '');
+            return Number(num).toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
+        }
+        function COSINUS(number: number = 0) {
+            return Math.cos(Number(number) * Math.PI / 180);
+        }
+
+        const ACCUMULATOR = (componentName: string, propertyName: string, {
+            me = false,
+            categories,
+            names,
+            valueCondition,
+            entityCondition
+        }: AccomulatorOptions = {}) => {
+            try {
+                const meValue = me ? this.getPropertyValue<number>(componentName, propertyName) || 0 : 0;
+                const accResult = childs.reduce<number>((acc, ent) => {
+                    if (categories && categories.length) {
+                        const isCat = categories.map(c=>c.toUpperCase()).includes(ent.getCategory().toUpperCase());
+                        return acc;
+                    }
+                    if (names && names.length) {
+                        const isNam = names.map(c => c.toUpperCase()).includes(ent.name.toUpperCase());
+                        return acc;
+                    }
+                    if (valueCondition 
+                        && typeof valueCondition === "function" 
+                            && !valueCondition(Number(ent.getPropertyValue<number>(componentName, propertyName))))
+                                return acc;
+                    if (entityCondition && typeof entityCondition === "function" && !entityCondition(ent))
+                                return acc;
+                    return acc += Number(ent.getPropertyValue<number>(componentName, propertyName))||0;
+                }, 0);
+                return meValue + accResult;
+            } catch (e) {
+                console.log("ACCUMULATOR", e);
+                return 0;
+            }
+        }
+
+        /** **************************************** */
+        /** **************************************** */
+
+        const THIS = currentPropertyValue;
+
+        /** **************************************** */
+        /** **************************************** */
+        /** **************************************** */
+
+        const getNameExcutor = (thisIs: ThisIs, entity: Entity, cmp: ApiComponent): string => {
+            const cmpName = cmp.componentName; // Имя компонента.
+            if (thisIs === "me") return `ME_${strtr(cmpName)}_${cmp.propertyName}`;
+            if (thisIs === "father") return `F_${strtr(cmpName)}_${cmp.propertyName}`;
+            if (thisIs === "grand_father") return `GF_${strtr(cmpName)}_${cmp.propertyName}`;
+            return `${strtr(entity.name)}_${strtr(entity.note)}_${strtr(cmpName)}_${cmp.propertyName}`;
+        }
+
+        //Executors
+        for (const entity of entities) {
+            for (const cmp of entity.getApiComponents()) {
+
+                let THIS_IS: ThisIs = undefined;
+                if (me.key === entity.key) THIS_IS = "me";
+                if (father?.key === entity.key) THIS_IS = "father";
+                if (grand_father?.key === entity.key) THIS_IS = "grand_father";
+                const KEY = `ent-${entity.name}-not${entity.note}-cmp-${cmp.componentName}-prop-${cmp.propertyName}`.toLocaleLowerCase();
+                const IS_CURRENT_PROPERTY = key === cmp.key;
+            
+                const PROPERTY_VALUE = cmp.propertyValue;
+                const GETTER = entity.getterExecutor(cmp.componentName, cmp.propertyName);
+                const SETTER = entity.setterExecutor(cmp.componentName, cmp.propertyName);
+                const ENTITY_NAME = entity.name; // Название сущности.
+                const ENTITY_NOTE = entity.note; // note :)
+                const COMPONENT_NAME = cmp.componentName; // Название компонента.
+                const COMPONENT_DESC = cmp.componentDescription; // Название на русском.
+                const PROPERTY_NAME = `${getNameExcutor(THIS_IS, entity, cmp)}`; // Название свойства.
+                const PROPERTY_DESC = cmp.propertyDescription; // Название свойства на русском.
+                const GETTER_NAME = IS_CURRENT_PROPERTY ? `THIS` : `${PROPERTY_NAME.toUpperCase()}`;
+                const SETTER_NAME = IS_CURRENT_PROPERTY ? `S_${PROPERTY_NAME.toUpperCase()}` : `S_${PROPERTY_NAME.toUpperCase()}`; 
+                const CODE = IS_CURRENT_PROPERTY
+                    ? `const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_GET;`
+                    : `const ${GETTER_NAME} = EXECUTORS.get("${KEY}")?.GETTER || DUMMY_GET; const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_SET;`
+
+                EXECUTORS.set(KEY, {
+                    KEY,
+                    GETTER,
+                    SETTER,
+                    ENTITY_NAME,
+                    COMPONENT_NAME,
+                    COMPONENT_DESC,
+                    PROPERTY_NAME,
+                    PROPERTY_DESC,
+                    GETTER_NAME,
+                    SETTER_NAME,
+                    ENTITY_NOTE,
+                    IS_CURRENT_PROPERTY,
+                    CODE
+                })
+            }
+        }
+
+        const arrCode: string[] = [];
+        for (const EXCT of EXECUTORS.values()) {
+           // arrCode.push(EXCT.CODE) удаление импорта
+        }
+
+        const baseCode = `
+        const executor = () => {
+                ${arrCode.join('\n')}
+                ${formulaImport}
+                /* ************************************************** /
+                let Q,W,E,R,T,Y,U,I,O,P,A,S,D,F,G,H,J,K,L,X,C,V,B,N,M;
+                let PI = Math.PI;
+                let RESULT = currentPropertyValue;
+                ${code}
+                return RESULT;
+        }
+        executor();`;
+
+        if (Engine.getMode() === "DEV") console.log('baseCode', baseCode);
+        if (type === 'execution') return eval(baseCode);
+
+        const clientButtons: FormulaButton[] = [];
+        const executorArr = [...EXECUTORS].map(e => e[1]);
+        const groupSet = [...new Set(executorArr.map(e => (e.ENTITY_NAME + '~' + e.ENTITY_NOTE)))]
+            .map(g => g.split("~")).map(g => ({ name: g[0], note: g[1] || '' }));
+        for (const group of groupSet) {
+            const componentNames = [...new Set(executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note).map(e => e.COMPONENT_NAME))];
+            const components: Array<{
+                componentName: string,
+                buttons: Array<{ name: string, value: string }>
+                setters: Array<{ name: string, value: string }>
+            }> = [];
+            for (const componentName of componentNames) {
+                const buttons: Array<{ name: string, value: string, import?: string }> = [];
+                const setters: Array<{ name: string, value: string, import?: string }> = [];
+                buttons.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note && e.COMPONENT_NAME === componentName)
+                    .map(e => ({ name: e.PROPERTY_DESC, value: `${e.GETTER_NAME}${e.IS_CURRENT_PROPERTY ? ' ' : "() "}`, import: e.CODE })));
+                setters.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note && e.COMPONENT_NAME === componentName)
+                    .map(e => ({ name: e.PROPERTY_DESC, value: e.IS_CURRENT_PROPERTY ? '/* Используйте RESULT */' : `${e.SETTER_NAME}( /*ЗНАЧЕНИЕ*/ ) `, import: e.CODE})));
+                buttons.push({ name: 'РЕЗУЛЬТАТ', value: 'RESULT = ' });
+                components.push({
+                    componentName,
+                    buttons,
+                    setters
+                });
+            }
+            clientButtons.push({
+                group: `${group.name}${(!group.note || group.note === '') ? '' : ' (' + group.note + ')'}`,
+                components
+            });
+        }
+
+        clientButtons.unshift({
+            group: "Окружение",
+            components: [
+                {componentName: "Функции окружения",
+                    buttons: [
+                        { name: "Текущая сущность", value: 'ME("Компонент", "Свойство") ' },
+                        { name: "Родительская сущность", value: 'FATHER("Компонент", "Свойство") ' },
+                        { name: "Высшая сущность", value: 'GRAND_FATHER("Компонент", "Свойство") ' },
+                        { name: "Братья", value: 'BROTHERS("Название сущности", "Заметка", "Компонент", "Свойство") ' },
+                        { name: "Дочерние сущности", value: 'CHILDS("Название сущности", "Заметка", "Компонент", "Свойство") ' },
+                        { name: "Аккумулятор", value: 
+                            `RESULT = ACCUMULATOR("Компонент", "Свойство", {
+                                me: false, // Считать ли показатель текущей сущности?
+                                categories: ["Категория 2", "Категория 2"], // Фильтр по категории, удалить если не нужен
+                                names: ["Имя 1", "Имя 2",], // Фильтр по имени, удалить если не нужен
+                                valueCondition(value) { // условие по значению, удалить если не нужен.
+                                    return value > 0; 
+                                },
+                                entityCondition(ent) {// условие по сущности, удалить если не нужен.
+                                    return ent.name === "Фасад глухой" && ent.note === "Резной"
+                                },
+                            });` 
+                            },
+                        
+                        { name: "Округление", value: 'ROUND(0, 3)' },
+                        { name: "Результат", value: 'RESULT = ' },
+                    ],
+                    setters: [
+                        { name: "Текущая сущность", value: 'S_ME("Компонент", "Свойство", "Значение") ' },
+                        { name: "Родительская сущность", value: 'S_FATHER("Компонент", "Свойство", "Значение") ' },
+                        { name: "Высшая сущность", value: 'S_GRAND_FATHER("Компонент", "Свойство", "Значение") ' },
+                        { name: "Братья", value: 'S_BROTHERS("Название сущности", "Заметка", "Компонент", "Свойство", "Значение") ' },
+                        { name: "Дочерние сущности", value: 'S_CHILDS("Название сущности", "Заметка", "Компонент", "Свойство", "Значение") ' },
+                        { name: "Результат", value: 'RESULT = ' },
+                    ],
+                },
+            ]
+
+        })
+
+        let startCode = '';
+        startCode += `/*************************************************************/\n`;
+        startCode += `/*  RESULT - в эту переменную внесите результат.             */\n`;
+        startCode += `/*  Переменные окружения, позволяют получить доступ к        */\n`;
+        startCode += `/*  свойствам компонентов по названию.                       */\n`;
+        startCode += `/*  me, father, childs, brothers, grand_father -             */\n`;
+        startCode += `/*  прямой доступ к сущностям                                */\n`;
+        startCode += `/*  THIS - текущее свойство, для получения значения, писать  */\n`;
+        startCode += `/*  скобки не нужно. (RESULT = THIS).                        */\n`;
+        startCode += `/*  Остальное в кнопках на панели. Писать в верхнем регистре.*/\n`;
+        startCode += `/*************************************************************/\n`;
+        startCode += `// Тут пишите ваш код, удачи!\n\n`;
+        return { clientButtons, startCode }
+
+    } catch (e) {
+        if (err) err(e as Error)
+        return null;
+    }
+}
+
+
+
+
 

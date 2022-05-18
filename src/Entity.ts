@@ -1,6 +1,6 @@
 import Component from "./Component";
 import Engine from "./Engine";
-import { formulaExecutor3 } from "./FormulaExecutor3";
+import { formulaExecutor } from "./FormulaExecutor";
 import { History } from "./History";
 import { ApiComponent, ApiEntity, PropertyAttribute, PropertyTypes, PropertyValue } from "./types/engine-types";
 
@@ -354,7 +354,7 @@ export default class Entity {
             const formula = cmp.propertyFormula;
             let value:PropertyValue;
             if (formula && formula != '') {
-                const result = <PropertyValue | null> (formulaExecutor3.bind(this)(cmp, formula, "execution", (err) => {
+                const result = <PropertyValue | null> (formulaExecutor.bind(this)(cmp, formula, "execution", (err) => {
                     this.historyRepository.push(`<${this.name}> Ошибка вычисления формулы, свойство ${cmp.propertyDescription}, комопнента ${cmp.componentDescription}: ${err.message}`,
                     { entityKey: this.key, componentKey: cmp.key }, "error")
                 }));
@@ -607,7 +607,7 @@ export default class Entity {
      */
     getPreparationData(componentKey: string) {
         if (!this.options.id) return;
-        return formulaExecutor3.bind(this)({ key: componentKey }, '', 'preparation');
+        return formulaExecutor.bind(this)({ key: componentKey }, '', 'preparation');
     }
     /**
      * Получение родительской сущности.
@@ -777,7 +777,8 @@ export default class Entity {
                     propertyDescription: cmp.propertyDescription,
                     propertyType: cmp.propertyType,
                     propertyFormula: cmp.propertyFormula,
-                    propertyValue: cmp.propertyValue
+                    propertyValue: cmp.propertyValue,
+                    formulaImport: cmp.formulaImport
                 };
             }else {
                 this.options.components.push({...cmp})
