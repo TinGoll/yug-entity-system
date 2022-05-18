@@ -315,7 +315,7 @@ export default class Entity {
     getPropertyValueToKey<U extends PropertyValue = string> (propertyKey: string) {
         try {
             const cmp = this.options.components?.find(c => c.key === propertyKey);
-            if (!cmp) throw new Error("Свойство не найдено.");
+            if (!cmp) throw new Error("getPropertyValueToKey: Свойство не найдено.");
             return <U>this.get_property_value(cmp);
         } catch (e) {
             console.log(e);
@@ -338,7 +338,7 @@ export default class Entity {
                 c.componentName === componentName &&
                 c.propertyName === propertyName
             );
-            if (!cmp) throw new Error("Свойство не найдено.");
+            if (!cmp) throw new Error("getPropertyValue: Свойство не найдено.");
             return <U> this.get_property_value(cmp);
         } catch (e) {
             console.log(e);
@@ -393,7 +393,7 @@ export default class Entity {
         try {
             const components = this.getApiComponents();
             const cmp = components.find(c => c.key === propertyKey);
-            if (!cmp) throw new Error("Свойство не найдено.");
+            if (!cmp) throw new Error("setPropertyValueToKey: Свойство не найдено.");
             return this.set_property(cmp, value, prod);
         } catch (e) {
             this.historyRepository.push(
@@ -423,7 +423,7 @@ export default class Entity {
                 c.componentName === componentName &&
                 c.propertyName === propertyName
             );
-            if (!cmp) throw new Error("Свойство не найдено.");
+            if (!cmp) throw new Error("setPropertyValue: Свойство не найдено.");
             return this.set_property(cmp, value, prod);
         } catch (e) {
             this.historyRepository.push(
@@ -507,6 +507,23 @@ export default class Entity {
     setterExecutor(componentName: string, propertyName: string ): (value: PropertyValue) => void {
         const fun = (value: PropertyValue) => this.setPropertyValue.bind(this)<PropertyValue, string>(componentName, propertyName, value);
         return fun.bind(this);
+    }
+    /**
+     * Агрегатор, для отсроченного выполнения функции с привязкой контекста, по ключу. GETTER
+     * @param key 
+     * @returns функция getter
+     */
+    getterExecutorToKey(key: string): () => PropertyValue | null  {
+        return () => this.getPropertyValueToKey.bind(this)<PropertyValue>(key)
+    }
+
+    /**
+     * Агрегатор, для отсроченного выполнения функции с привязкой контекста, по ключу. SETTER
+     * @param key 
+     * @returns функция getter
+     */
+    setterExecutorToKey(key: string): (value: PropertyValue) => void {
+        return (value: PropertyValue) => this.setPropertyValueToKey.bind(this)(key, value, false);
     }
 
     /**

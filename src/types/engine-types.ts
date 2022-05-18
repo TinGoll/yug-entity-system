@@ -33,6 +33,7 @@ export interface ApiComponent extends ISerializable {
     propertyDescription: string;
     propertyValue: PropertyValue;
     propertyFormula?: string;
+    formulaImport?: string;
     propertyType?: PropertyTypes;
     attributes?: string;
     bindingToList?: boolean;

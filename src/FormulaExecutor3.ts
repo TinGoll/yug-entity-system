@@ -2,7 +2,6 @@ import Engine from "./Engine";
 import Entity from "./Entity";
 import { ApiComponent, PropertyValue } from "./types/engine-types";
 
-
 interface AccomulatorOptions {
     me?: boolean;
     categories?: Array<string>;
@@ -14,6 +13,7 @@ interface AccomulatorOptions {
 interface FormulaComponentOptions extends Partial<ApiComponent> {
     key: string;
 }
+
 interface IKeysMap {
     [index: string]: string;
 }
@@ -76,8 +76,7 @@ function strtr(str: string): string {
 /** ***************************************************** */
 /** ***************************************************** */
 
-
-export function formulaExecutor3(this: Entity, { componentName, propertyName, propertyValue, key }: FormulaComponentOptions, code: string = '', type: 'execution' | 'preparation' = 'execution', err?: (e: Error) => void) {
+export function formulaExecutor3(this: Entity, { componentName, propertyName, propertyValue, key, formulaImport = '' }: FormulaComponentOptions, code: string = '', type: 'execution' | 'preparation' = 'execution', err?: (e: Error) => void) {
     try {
         /** **************************************** */
         /** ********** Текущие значения ************ */
@@ -86,10 +85,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
         /** **************************************** */
         /** ****** Дополнительные переменные ******* */
 
-
-
         const me = currentEntity;
-        const name = me.getName();
         const father = me.getParent();
         const childs = me.getChildren() || [];
         const brothers = father?.getChildren() || [];
@@ -112,7 +108,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
             } catch (e) {console.log(e); return null;}
         }
         const S_ME = (cmpName: string, probName: string, value: PropertyValue): void => {
-            try {me.setPropertyValue<PropertyValue, string>(cmpName, probName, value);} 
+            try {me.setPropertyValue<PropertyValue, string>(cmpName, probName, value, false);} 
             catch (e) {console.log(e);}
         }
         const FATHER = (cmpName: string, probName: string): PropertyValue | null => {
@@ -120,7 +116,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
             } catch (e) { console.log(e); return null; }
         }
         const S_FATHER = (cmpName: string, probName: string, value: PropertyValue): void => {
-            try { if(!father) throw new Error("Родительский объект не существует."); me.setPropertyValue<PropertyValue, string>(cmpName, probName, value); }
+            try { if (!father) throw new Error("Родительский объект не существует."); me.setPropertyValue<PropertyValue, string>(cmpName, probName, value, false); }
             catch (e) { console.log(e); }
         }
 
@@ -129,7 +125,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
             } catch (e) { console.log(e); return null; }
         }
         const S_GRAND_FATHER = (cmpName: string, probName: string, value: PropertyValue): void => {
-            try { if (!grand_father) throw new Error("Родительский объект не существует."); me.setPropertyValue<PropertyValue, string>(cmpName, probName, value); }
+            try { if (!grand_father) throw new Error("Родительский объект не существует."); me.setPropertyValue<PropertyValue, string>(cmpName, probName, value, false); }
             catch (e) { console.log(e); }
         }
 
@@ -150,7 +146,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                 const index = brothers.findIndex(b => b.name.toUpperCase() === entityName.toUpperCase()
                     && b.note.toUpperCase() === (note || '').toUpperCase());
                 if (index === -1) return;
-                brothers[index].setPropertyValue<PropertyValue, string>(cmpName, probName, value);
+                brothers[index].setPropertyValue<PropertyValue, string>(cmpName, probName, value, false);
             } catch (e) {
                 console.log(e);
             }
@@ -172,10 +168,23 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                 const index = childs.findIndex(b => b.name.toUpperCase() === entityName.toUpperCase()
                     && b.note.toUpperCase() === (note || '').toUpperCase());
                 if (index === -1) return;
-                childs[index].setPropertyValue<PropertyValue, string>(cmpName, probName, value);
+                childs[index].setPropertyValue<PropertyValue, string>(cmpName, probName, value, false);
             } catch (e) {
                 console.log(e);
             }
+        }
+
+        /** **************************************** */
+        /** ************* Функции **************** */
+        function ROUND(number: number = 0, fixed: number = 0) {
+            return Number(number).toFixed(fixed)
+        }
+        function RUB(number: string = '0') {
+            const num = number.replace(/[^0-9,.]/g, '');
+            return Number(num).toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
+        }
+        function COSINUS(number: number = 0) {
+            return Math.cos(Number(number) * Math.PI / 180);
         }
 
         const ACCUMULATOR = (componentName: string, propertyName: string, {
@@ -211,7 +220,8 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
             }
         }
 
-        
+        /** **************************************** */
+        /** **************************************** */
 
         const THIS = currentPropertyValue;
 
@@ -235,9 +245,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                 if (me.key === entity.key) THIS_IS = "me";
                 if (father?.key === entity.key) THIS_IS = "father";
                 if (grand_father?.key === entity.key) THIS_IS = "grand_father";
-
-                const KEY = `Entity ${entity.name} Cmp ${cmp.componentName} Prob ${cmp.propertyName}`;
-
+                const KEY = `ent-${entity.name}-not${entity.note}-cmp-${cmp.componentName}-prop-${cmp.propertyName}`.toLocaleLowerCase();
                 const IS_CURRENT_PROPERTY = key === cmp.key;
             
                 const PROPERTY_VALUE = cmp.propertyValue;
@@ -251,7 +259,6 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                 const PROPERTY_DESC = cmp.propertyDescription; // Название свойства на русском.
                 const GETTER_NAME = IS_CURRENT_PROPERTY ? `THIS` : `${PROPERTY_NAME.toUpperCase()}`;
                 const SETTER_NAME = IS_CURRENT_PROPERTY ? `S_${PROPERTY_NAME.toUpperCase()}` : `S_${PROPERTY_NAME.toUpperCase()}`; 
-
                 const CODE = IS_CURRENT_PROPERTY
                     ? `const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_GET;`
                     : `const ${GETTER_NAME} = EXECUTORS.get("${KEY}")?.GETTER || DUMMY_GET; const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_SET;`
@@ -274,22 +281,6 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
             }
         }
 
-        /** **************************************** */
-        /** ************* Функции **************** */
-        function ROUND(number: number = 0, fixed: number = 0) {
-            return Number(number).toFixed(fixed)
-        }
-        function RUB(number: string = '0') {
-            const num = number.replace(/[^0-9,.]/g, '');
-            return Number(num).toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' });
-        }
-        function COSINUS(number: number = 0) {
-            return Math.cos(Number(number) * Math.PI / 180);
-        }
-
-        /** **************************************** */
-        /** **************************************** */
-
         const arrCode: string[] = [];
         for (const EXCT of EXECUTORS.values()) {
            // arrCode.push(EXCT.CODE) удаление импорта
@@ -298,6 +289,8 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
         const baseCode = `
         const executor = () => {
                 ${arrCode.join('\n')}
+                ${formulaImport}
+                /* ************************************************** /
                 let Q,W,E,R,T,Y,U,I,O,P,A,S,D,F,G,H,J,K,L,X,C,V,B,N,M;
                 let PI = Math.PI;
                 let RESULT = currentPropertyValue;
@@ -307,9 +300,8 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
         executor();`;
 
         if (Engine.getMode() === "DEV") console.log('baseCode', baseCode);
-        
-        
         if (type === 'execution') return eval(baseCode);
+
         const clientButtons: FormulaButton[] = [];
         const executorArr = [...EXECUTORS].map(e => e[1]);
         const groupSet = [...new Set(executorArr.map(e => (e.ENTITY_NAME + '~' + e.ENTITY_NOTE)))]
@@ -322,15 +314,13 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                 setters: Array<{ name: string, value: string }>
             }> = [];
             for (const componentName of componentNames) {
-                const buttons: Array<{ name: string, value: string }> = [];
-                const setters: Array<{ name: string, value: string }> = [];
+                const buttons: Array<{ name: string, value: string, import?: string }> = [];
+                const setters: Array<{ name: string, value: string, import?: string }> = [];
                 buttons.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note && e.COMPONENT_NAME === componentName)
-                    .map(e => ({ name: e.PROPERTY_DESC, value: `${e.GETTER_NAME}${e.IS_CURRENT_PROPERTY ? ' ' : "() "}` })));
-
+                    .map(e => ({ name: e.PROPERTY_DESC, value: `${e.GETTER_NAME}${e.IS_CURRENT_PROPERTY ? ' ' : "() "}`, import: e.CODE })));
                 setters.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note && e.COMPONENT_NAME === componentName)
-                    .map(e => ({ name: e.PROPERTY_DESC, value: e.IS_CURRENT_PROPERTY ?  '/* Используйте RESULT */' : `${e.SETTER_NAME}( /*ЗНАЧЕНИЕ*/ ) `})));
-                buttons.push({ name: 'РЕЗУЛЬТАТ', value: 'RESULT = ' })
-
+                    .map(e => ({ name: e.PROPERTY_DESC, value: e.IS_CURRENT_PROPERTY ? '/* Используйте RESULT */' : `${e.SETTER_NAME}( /*ЗНАЧЕНИЕ*/ ) `, import: e.CODE})));
+                buttons.push({ name: 'РЕЗУЛЬТАТ', value: 'RESULT = ' });
                 components.push({
                     componentName,
                     buttons,
@@ -353,6 +343,20 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                         { name: "Высшая сущность", value: 'GRAND_FATHER("Компонент", "Свойство") ' },
                         { name: "Братья", value: 'BROTHERS("Название сущности", "Заметка", "Компонент", "Свойство") ' },
                         { name: "Дочерние сущности", value: 'CHILDS("Название сущности", "Заметка", "Компонент", "Свойство") ' },
+                        { name: "Аккумулятор", value: 
+                            `RESULT = ACCUMULATOR("Компонент", "Свойство", {
+                                me: false, // Считать ли показатель текущей сущности?
+                                categories: ["Категория 2", "Категория 2"], // Фильтр по категории, удалить если не нужен
+                                names: ["Имя 1", "Имя 2",], // Фильтр по имени, удалить если не нужен
+                                valueCondition(value) { // условие по значению, удалить если не нужен.
+                                    return value > 0; 
+                                },
+                                entityCondition(ent) {// условие по сущности, удалить если не нужен.
+                                    return ent.name === "Фасад глухой" && ent.note === "Резной"
+                                },
+                            });` 
+                            },
+                        { name: "Результат", value: 'RESULT = ' },
                     ],
                     setters: [
                         { name: "Текущая сущность", value: 'S_ME("Компонент", "Свойство", "Значение") ' },
@@ -360,6 +364,7 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
                         { name: "Высшая сущность", value: 'S_GRAND_FATHER("Компонент", "Свойство", "Значение") ' },
                         { name: "Братья", value: 'S_BROTHERS("Название сущности", "Заметка", "Компонент", "Свойство", "Значение") ' },
                         { name: "Дочерние сущности", value: 'S_CHILDS("Название сущности", "Заметка", "Компонент", "Свойство", "Значение") ' },
+                        { name: "Результат", value: 'RESULT = ' },
                     ],
                 },
             ]
@@ -371,15 +376,16 @@ export function formulaExecutor3(this: Entity, { componentName, propertyName, pr
         startCode += `/*  RESULT - в эту переменную внесите результат.             */\n`;
         startCode += `/*  Переменные окружения, позволяют получить доступ к        */\n`;
         startCode += `/*  свойствам компонентов по названию.                       */\n`;
+        startCode += `/*  me, father, childs, brothers, grand_father -             */\n`;
+        startCode += `/*  прямой доступ к сущностям                                */\n`;
         startCode += `/*  THIS - текущее свойство, для получения значения, писать  */\n`;
         startCode += `/*  скобки не нужно. (RESULT = THIS).                        */\n`;
         startCode += `/*  Остальное в кнопках на панели. Писать в верхнем регистре.*/\n`;
         startCode += `/*************************************************************/\n`;
-        startCode += `// Тут пишите ваш код, удачи!\n\n\n\n\n`;
+        startCode += `// Тут пишите ваш код, удачи!\n\n`;
         return { clientButtons, startCode }
 
     } catch (e) {
-        //console.log(e);
         if (err) err(e as Error)
         return null;
     }
