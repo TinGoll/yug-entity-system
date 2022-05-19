@@ -28,7 +28,15 @@ export class FormulaImport<T extends object | string = string> extends Set {
      * @param value строковое значение или объект, определяеться дженериком.
      * @returns bool значение.
      */
-    remove(value: T): boolean {
+    remove(value?: T | null, callback?: (value: T) => boolean | any): boolean {
+        if (callback && typeof callback === "function") {
+            this.forEach((val, val2, set) => {
+                if (!!callback(val)) {
+                    this.delete(val);
+                }
+            })
+        }
+        if (!value) return false;
         return this.delete(value)
     }
     /**
@@ -36,7 +44,8 @@ export class FormulaImport<T extends object | string = string> extends Set {
      * @param callback Каллбэк функция, в случае, если используеться объект, определенного типа. Опционально.
      * @returns строка.
      */
-    build (callback?: (element: T) => string): string {
+    build (callback?: (element: T) => string | undefined): string {
+
         if (callback && typeof callback === "function") {
             let str: string = '';
             for (const iterator of this.entries()) {
@@ -46,9 +55,9 @@ export class FormulaImport<T extends object | string = string> extends Set {
             return str;
         } else {
             const formulaIterator = this.values();
-            if (formulaIterator.next().done) return '';
-  
-            if (typeof formulaIterator.next().value === "string") {
+            const next = formulaIterator.next()
+            if (next.done) return '';
+            if (typeof next.value === "string") {
                 return (<Array<string>>[...this]).join(`\n`);
             }else {
                 throw new Error("Тип объекта, переданный в FormulaImport, не является строкой, используй callback");
@@ -75,11 +84,18 @@ export class FormulaImport<T extends object | string = string> extends Set {
         return this;
     }
 
+    /**
+     * Существует ли елемент в коллекции.
+     * @param value 
+     * @returns 
+     */
     exist (value: T): boolean {
         if (typeof value === "object") {
             for (const iterator of this) {
                 if (this.isEqual(value, iterator)) return true;
             }
+        } else if (typeof value === "string") {
+            return this.has(value);
         } else {
             for (const iterator of this) {
                 if (iterator === value) return true;

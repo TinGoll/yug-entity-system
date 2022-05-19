@@ -468,6 +468,7 @@ export default class Entity {
             if (tempValue != previusValue) {
                 this.options.isChange = true;
                 cmp.isChange = true;
+                cmp.changedByUser = prod;
                 this.historyRepository
                     .push(`изменение свойства "${cmp.propertyDescription}": ${previusValue} => ${tempValue}`, 
                         {entityKey: this.key, componentKey: cmp.key}, "high");
@@ -580,7 +581,7 @@ export default class Entity {
                 ...apiComponent,
                 entityId: cmp.entityId,
                 entityKey: cmp.entityKey,
-                isChange: true
+                isChange: true,
             }
             this.options!.components![index] = { ...newDataComponent }
             this.options.isChange = true;

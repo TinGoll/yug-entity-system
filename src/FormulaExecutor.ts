@@ -196,14 +196,16 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
         }: AccomulatorOptions = {}) => {
             try {
                 const meValue = me ? this.getPropertyValue<number>(componentName, propertyName) || 0 : 0;
-                const accResult = childs.reduce<number>((acc, ent) => {
+                const accResult = entities.reduce<number>((acc, ent) => {
+                    if (ent.key === this.key) return acc;
                     if (categories && categories.length) {
                         const isCat = categories.map(c=>c.toUpperCase()).includes(ent.getCategory().toUpperCase());
-                        return acc;
+
+                        if (!isCat) return acc;
                     }
                     if (names && names.length) {
                         const isNam = names.map(c => c.toUpperCase()).includes(ent.name.toUpperCase());
-                        return acc;
+                        if (!isNam) return acc;
                     }
                     if (valueCondition 
                         && typeof valueCondition === "function" 
@@ -211,6 +213,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
                                 return acc;
                     if (entityCondition && typeof entityCondition === "function" && !entityCondition(ent))
                                 return acc;
+
                     return acc += Number(ent.getPropertyValue<number>(componentName, propertyName))||0;
                 }, 0);
                 return meValue + accResult;
@@ -245,7 +248,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
                 if (me.key === entity.key) THIS_IS = "me";
                 if (father?.key === entity.key) THIS_IS = "father";
                 if (grand_father?.key === entity.key) THIS_IS = "grand_father";
-                const KEY = `ent-${entity.name}-not${entity.note}-cmp-${cmp.componentName}-prop-${cmp.propertyName}`.toLocaleLowerCase();
+                const KEY = `ent-${strtr(entity.name)}-not${strtr(entity.note)}-cmp-${cmp.componentName}-prop-${cmp.propertyName}`.toLocaleLowerCase();
                 const IS_CURRENT_PROPERTY = key === cmp.key;
             
                 const PROPERTY_VALUE = cmp.propertyValue;
@@ -290,7 +293,6 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
         const executor = () => {
                 ${arrCode.join('\n')}
                 ${formulaImport}
-                /* ************************************************** /
                 let Q,W,E,R,T,Y,U,I,O,P,A,S,D,F,G,H,J,K,L,X,C,V,B,N,M;
                 let PI = Math.PI;
                 let RESULT = currentPropertyValue;
@@ -301,7 +303,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
 
         if (Engine.getMode() === "DEV") console.log('baseCode', baseCode);
         if (type === 'execution') return eval(baseCode);
-
+        
         const clientButtons: FormulaButton[] = [];
         const executorArr = [...EXECUTORS].map(e => e[1]);
         const groupSet = [...new Set(executorArr.map(e => (e.ENTITY_NAME + '~' + e.ENTITY_NOTE)))]
@@ -310,8 +312,8 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
             const componentNames = [...new Set(executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note).map(e => e.COMPONENT_NAME))];
             const components: Array<{
                 componentName: string,
-                buttons: Array<{ name: string, value: string }>
-                setters: Array<{ name: string, value: string }>
+                buttons: Array<{ name: string, value: string, import?: string }>
+                setters: Array<{ name: string, value: string, import?: string }>
             }> = [];
             for (const componentName of componentNames) {
                 const buttons: Array<{ name: string, value: string, import?: string }> = [];

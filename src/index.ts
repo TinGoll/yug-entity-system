@@ -17,35 +17,32 @@ const createEngine = (): Engine => new Engine();
 
 const formulaImport = new FormulaImport();
 
-formulaImport.push("Утречко");
-formulaImport.push("Утречко");
-formulaImport.push("Хороший денек для рыбалки!");
-formulaImport.push("Не правда ли?");
-formulaImport.push("Не правда ли?");
+
+formulaImport.push("Не правда ли1?");
 
 console.log(formulaImport.build());
 
-interface Obj {
-  importTxt: string;
-  code: string;
+interface FormulaButton {
+  name: string, 
+  value: string, 
+  import?: string 
 }
-console.log('********* Пример с обектами *********');
 
-const formulaImportObj = new FormulaImport<Obj>();
+const importCollection = new FormulaImport<FormulaButton>();
+const ob = { name: 'Кнопка 1', value: 'ME_BUTT1', import: 'const ME_BUTT1 = EXC(dfgfhgg-fgfh-fgfg1)' }
+const ob2 = { name: 'Кнопка 2', value: 'ME_BUTT2', import: 'const ME_BUTT1 = EXC(dfgfhgg-fgfh-fgfg2)' }
+importCollection.push(ob);
+importCollection.push(ob2);
 
-formulaImportObj.push({ importTxt: "Утречко", code: "A + B" });
-formulaImportObj.push({ importTxt: "Утречко", code: "A + B" });
-formulaImportObj.push({ importTxt: "Хороший денек для рыбалки!", code: "A + B" });
-formulaImportObj.push({ importTxt: "Хороший денек для рыбалки!", code: "A + B" });
-formulaImportObj.push({ importTxt: "Хороший денек для рыбалки!", code: "A + B" });
-formulaImportObj.push({ importTxt: "Не правда ли?", code: "A + B" });
+importCollection.remove(null, (value) => value.value === "ME_BUTT1");
 
-console.log(formulaImportObj.build((element) => element.importTxt));
+console.log(importCollection.build((element) => element.import));
 
 */
 
 
 // функция присвоения id 
+
 /*
 
 const save = (apiEntity: ApiEntity[]): ApiEntity[] => {
@@ -69,13 +66,13 @@ const engine = createEngine();
 const creator = engine.creator();
 
 const money = creator.create('component', 'money', { componentDescription: "Деньги" })
-  .addProperty({ propertyName: 'price', propertyDescription: 'Цена', propertyValue: 1000, propertyType: 'number', attributes: "required;" });
+  .addProperty({ propertyName: 'price', propertyDescription: 'Цена', propertyValue: 0, propertyType: 'number', attributes: "required;" });
 const color = creator.create('component', 'finishing', { componentDescription: 'Цвет' })
   .addProperty({ propertyName: 'color', propertyDescription: 'Цвет', propertyValue: 'Красный', propertyType: 'string', attributes: "show;required;"})
 
 const entity = creator.create('entity', 'БАТЯ', { category: 'Род сущ', note: 'Главный' }).addComponent(money).addComponent(color);
-const entity2 = creator.create('entity', 'СЫН', { note: 'Средний', }).addComponent(money);
-const entity3 = creator.create('entity', 'ВНУЧА', { note: 'Младшая' }).addComponent(money);
+const entity2 = creator.create('entity', 'СЫН', { category: 'Кат 1', note: 'Средний', }).addComponent(money);
+const entity3 = creator.create('entity', 'ВНУЧА', { category: 'Кат 2', note: 'Младшая' }).addComponent(money);
 
 entity2.addChild(entity3.build());
 entity.addChild(entity2.build());
@@ -87,12 +84,16 @@ const cld1 = fasad.findToName("СЫН")!;
 const cld2 = cld1.findToName("ВНУЧА")!;
 
 fasad.setPropertyFormula('money', 'price', `
-  RESULT = ACCUMULATOR("money", "price");
+  RESULT = ACCUMULATOR('money', 'price', {
+    entityCondition(ent) {// условие по сущности, удалить если не нужен.
+        return ent.note === "Младшая"
+    }, 
+  });
 `);
 
 // Формула филенки
 cld1.setPropertyFormula('money', 'price', `
-  RESULT = 100;
+  RESULT = 1055;
 `);
 
 const res =  cld2.setPropertyFormula('money', 'price', `
@@ -103,19 +104,17 @@ fasad.recalculationFormulas();
 
 Engine.setMode("DEV")
 
-console.log(fasad.getPropertyValue("money", "price"));
+fasad.setPropertyValue("money", "price", 500)
 
+console.log("price", fasad.getPropertyValue("money", "price"));
 
 //console.log(JSON.stringify(fasad.getPreparationData(fasad.getApiComponents()[0].key), null, 2));
-
 //console.log(fasad.getChangedEntities());
-
 //console.log(fasad.getHistoryAndClear());
 
-
 console.timeEnd('FirstWay');
-
 */
+
 export default createEngine;
 export {
   Engine,

@@ -38,6 +38,7 @@ export interface ApiComponent extends ISerializable {
     attributes?: string;
     bindingToList?: boolean;
     isChange?: boolean;
+    changedByUser?: boolean;
     sortIndex?: number;
 }
 

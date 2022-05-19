@@ -33,7 +33,7 @@ export default class Component {
         try {
             Engine.registration(<ISerializable>component);
             const { propertyName, propertyType, propertyDescription = 'Описание свойства', 
-                propertyValue = 0, attributes, bindingToList, propertyFormula, key, isChange = false } = component;
+                propertyValue = 0, attributes, bindingToList, propertyFormula, key, isChange = false, changedByUser = false } = component;
             if (!propertyName) throw new Error("Название свойства не может быть пустым.")
             const index = this.components.findIndex(c => 
                 c.componentName === this.componentName && c.propertyName === propertyName);
@@ -41,7 +41,7 @@ export default class Component {
                 const cmp =  this.components[index];
                 this.components[index] = {
                     ...cmp, propertyName, propertyType, propertyDescription,
-                    propertyValue, attributes, bindingToList, propertyFormula, key: key!, isChange
+                    propertyValue, attributes, bindingToList, propertyFormula, key: key!, isChange, changedByUser
                 }
             }else {
                 this.components.push({
@@ -49,7 +49,7 @@ export default class Component {
                     componentDescription: this.componentDescription,
                     propertyName, propertyType, propertyDescription,
                     propertyValue, attributes, bindingToList, propertyFormula,
-                    key: key!, isChange
+                    key: key!, isChange, changedByUser
                 })
             }
             return this;
