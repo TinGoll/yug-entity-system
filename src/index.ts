@@ -19,8 +19,11 @@ const formulaImport = new FormulaImport();
 
 
 formulaImport.push("Не правда ли1?");
+formulaImport.push("Не правда ли2?");
+formulaImport.push("Не правда ли3?");
 
-console.log(formulaImport.build());
+const txt = formulaImport.build();
+//console.log(formulaImport.build());
 
 interface FormulaButton {
   name: string, 
@@ -28,21 +31,17 @@ interface FormulaButton {
   import?: string 
 }
 
-const importCollection = new FormulaImport<FormulaButton>();
-const ob = { name: 'Кнопка 1', value: 'ME_BUTT1', import: 'const ME_BUTT1 = EXC(dfgfhgg-fgfh-fgfg1)' }
-const ob2 = { name: 'Кнопка 2', value: 'ME_BUTT2', import: 'const ME_BUTT1 = EXC(dfgfhgg-fgfh-fgfg2)' }
-importCollection.push(ob);
-importCollection.push(ob2);
 
-importCollection.remove(null, (value) => value.value === "ME_BUTT1");
+const importCollection = new FormulaImport<string>();
 
-console.log(importCollection.build((element) => element.import));
+importCollection.loadStringData(undefined)
+
+console.log(importCollection.build());
+
 
 */
 
-
 // функция присвоения id 
-
 /*
 
 const save = (apiEntity: ApiEntity[]): ApiEntity[] => {
@@ -108,12 +107,15 @@ fasad.setPropertyValue("money", "price", 500)
 
 console.log("price", fasad.getPropertyValue("money", "price"));
 
+
 //console.log(JSON.stringify(fasad.getPreparationData(fasad.getApiComponents()[0].key), null, 2));
 //console.log(fasad.getChangedEntities());
 //console.log(fasad.getHistoryAndClear());
 
 console.timeEnd('FirstWay');
 */
+
+
 
 export default createEngine;
 export {

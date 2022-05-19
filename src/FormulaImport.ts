@@ -2,18 +2,35 @@
 /**
  * Класс для создания и подготовки к отправке импортов для формул.
  * Работает не только со строковыми импортами, но и с импортами в виде объектов.
+ * v 1.0.5
  */
 export class FormulaImport<T extends object | string = string> extends Set {
+    public static separator: string = ' /*~*/\n';
     constructor(values?: readonly T[]) {
         super(values)
     }
+
+    loadStringData (txt?: string): FormulaImport<T> {
+        if (!txt || typeof txt !== "string") return this;
+        if (this.size) {
+            const it = this.values().next();
+            if (typeof it.value !== "string") 
+                throw new Error("Коллекция содержит объекты, загрузка строковых данных невозможна.")
+        }
+        const arr = txt.split(FormulaImport.separator);
+        for (const iterator of arr) {
+            this.add(iterator)
+        }
+        return this;
+    }
+
     /**
      * Добавление значения в импорт.
      * @param value строковое значение или объект, определяеться дженериком.
      * @returns возвращает FormulaImport;
      */
-    push (value: T): FormulaImport<T> {
-        if (this.exist(value)) return this;
+    push (value?: T): FormulaImport<T> {
+        if (!value || this.exist(value)) return this;
         this.add(value);
         return this;
     }
@@ -57,8 +74,9 @@ export class FormulaImport<T extends object | string = string> extends Set {
             const formulaIterator = this.values();
             const next = formulaIterator.next()
             if (next.done) return '';
+            if (typeof next.value === "undefined") return '';
             if (typeof next.value === "string") {
-                return (<Array<string>>[...this]).join(`\n`);
+                return (<Array<string>>[...this]).join(FormulaImport.separator);
             }else {
                 throw new Error("Тип объекта, переданный в FormulaImport, не является строкой, используй callback");
             }
@@ -126,8 +144,6 @@ export class FormulaImport<T extends object | string = string> extends Set {
         }
         return true;
     }
-
-
 }
 
 
