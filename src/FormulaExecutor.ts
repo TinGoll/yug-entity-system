@@ -1,6 +1,6 @@
 import Engine from "./Engine";
 import Entity from "./Entity";
-import { ApiComponent, PropertyValue } from "./types/engine-types";
+import { ApiComponent, PropertyTypes, PropertyValue } from "./types/engine-types";
 
 interface AccomulatorOptions {
     me?: boolean;
@@ -76,7 +76,29 @@ function strtr(str: string): string {
 /** ***************************************************** */
 /** ***************************************************** */
 
-export function formulaExecutor(this: Entity, { componentName, propertyName, propertyValue, key, formulaImport = '' }: FormulaComponentOptions, code: string = '', type: 'execution' | 'preparation' = 'execution', err?: (e: Error) => void) {
+function normalizeValue (value: PropertyValue | null, type?: PropertyTypes): PropertyValue | null {
+    let tempValue;
+    if (value === null) return value;
+    switch (type) {
+        case 'string':
+            tempValue = String(value);
+            break;
+        case 'boolean':
+            tempValue = Boolean(value);
+            break;
+        case 'number':
+            tempValue = Number(value);
+            break;
+        case 'date':
+            tempValue = new Date(<string>value);
+            break;
+        default:
+            tempValue = String(value);
+    }
+    return tempValue;
+}
+
+export function formulaExecutor(this: Entity, { componentName, propertyName, propertyValue, key, formulaImport = '', propertyType }: FormulaComponentOptions, code: string = '', type: 'execution' | 'preparation' = 'execution', err?: (e: Error) => void) {
     try {
         /** **************************************** */
         /** ********** Текущие значения ************ */
@@ -226,7 +248,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
         /** **************************************** */
         /** **************************************** */
 
-        const THIS = currentPropertyValue;
+        const THIS = normalizeValue(currentPropertyValue, propertyType);
 
         /** **************************************** */
         /** **************************************** */
