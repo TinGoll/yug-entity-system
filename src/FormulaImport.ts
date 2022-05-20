@@ -40,6 +40,7 @@ export class FormulaImport<T extends object | string = string> extends Set {
     reset (): void {
         this.clear();
     }
+
     /**
      * Удаление конкретного импорта
      * @param value строковое значение или объект, определяеться дженериком.
@@ -56,6 +57,7 @@ export class FormulaImport<T extends object | string = string> extends Set {
         if (!value) return false;
         return this.delete(value)
     }
+    
     /**
      * Формирует строку импорта для отправки на сервер.
      * @param callback Каллбэк функция, в случае, если используеться объект, определенного типа. Опционально.

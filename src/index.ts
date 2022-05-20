@@ -17,7 +17,6 @@ const createEngine = (): Engine => new Engine();
 
 const formulaImport = new FormulaImport();
 
-
 formulaImport.push("Не правда ли1?");
 formulaImport.push("Не правда ли2?");
 formulaImport.push("Не правда ли3?");
@@ -31,16 +30,13 @@ interface FormulaButton {
   import?: string 
 }
 
-
 const importCollection = new FormulaImport<string>();
 
 importCollection.loadStringData(undefined)
 
 console.log(importCollection.build());
 
-
 */
-
 // функция присвоения id 
 /*
 
@@ -114,8 +110,6 @@ console.log("price", fasad.getPropertyValue("money", "price"));
 
 console.timeEnd('FirstWay');
 */
-
-
 
 export default createEngine;
 export {
