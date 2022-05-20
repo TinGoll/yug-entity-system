@@ -308,7 +308,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
 
         const arrCode: string[] = [];
         for (const EXCT of EXECUTORS.values()) {
-            arrCode.push(EXCT.CODE);
+           // arrCode.push(EXCT.CODE) удаление импорта
         }
 
         const baseCode = `
