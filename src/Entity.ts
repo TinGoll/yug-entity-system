@@ -496,7 +496,7 @@ export default class Entity {
      */
     getterExecutor (componentName:string, propertyName:string): () => PropertyValue | null {
         const fun = (): PropertyValue | null => this.getPropertyValue.bind(this)<PropertyValue, string>(componentName, propertyName);
-        return fun;
+        return fun.bind(this);;
     }
 
     /**

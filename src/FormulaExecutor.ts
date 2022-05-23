@@ -412,7 +412,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
         return { clientButtons, startCode }
 
     } catch (e) {
-        if (err) err(e as Error)
+        if (err && typeof err === "function" ) err(e as Error)
         return null;
     }
 }
