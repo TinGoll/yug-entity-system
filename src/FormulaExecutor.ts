@@ -135,14 +135,17 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
             try {return me.getPropertyValue<PropertyValue, string>(cmpName, probName);
             } catch (e) {console.log(e); return null;}
         }
+        
         const S_ME = (cmpName: string, probName: string, value: PropertyValue): void => {
             try {me.setPropertyValue<PropertyValue, string>(cmpName, probName, value, false);} 
             catch (e) {console.log(e);}
         }
+
         const FATHER = (cmpName: string, probName: string): PropertyValue | null => {
             try {return father?.getPropertyValue<PropertyValue, string>(cmpName, probName)||null;
             } catch (e) { console.log(e); return null; }
         }
+
         const S_FATHER = (cmpName: string, probName: string, value: PropertyValue): void => {
             try { if (!father) throw new Error("Родительский объект не существует."); me.setPropertyValue<PropertyValue, string>(cmpName, probName, value, false); }
             catch (e) { console.log(e); }
@@ -152,6 +155,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
             try {return grand_father?.getPropertyValue<PropertyValue, string>(cmpName, probName) || null;
             } catch (e) { console.log(e); return null; }
         }
+
         const S_GRAND_FATHER = (cmpName: string, probName: string, value: PropertyValue): void => {
             try { if (!grand_father) throw new Error("Родительский объект не существует."); me.setPropertyValue<PropertyValue, string>(cmpName, probName, value, false); }
             catch (e) { console.log(e); }

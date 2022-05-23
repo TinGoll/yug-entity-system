@@ -205,6 +205,7 @@ export default class Entity {
                    this.getPropertyValue<PropertyValue, string>(cmp.componentName, cmp.propertyName);
                 }
             }
+
             for (const cld of this.getChildren()) {
                 cld.recalculationFormulas();
                 this.historyRepository.addHistory(...cld.getHistoryAndClear())
@@ -315,7 +316,7 @@ export default class Entity {
     getPropertyValueToKey<U extends PropertyValue = string> (propertyKey: string) {
         try {
             const cmp = this.options.components?.find(c => c.key === propertyKey);
-            if (!cmp) throw new Error("getPropertyValueToKey: Свойство не найдено.");
+            if (!cmp) throw new Error(`getPropertyValueToKey: Свойство по ключу ${propertyKey} не найдено.`);
             return <U>this.get_property_value(cmp);
         } catch (e) {
             console.log(e);
@@ -338,7 +339,7 @@ export default class Entity {
                 c.componentName === componentName &&
                 c.propertyName === propertyName
             );
-            if (!cmp) throw new Error("getPropertyValue: Свойство не найдено.");
+            if (!cmp) throw new Error(`getPropertyValue: Свойство ${<string>propertyName} компонента ${componentName} не найдено.`);
             return <U> this.get_property_value(cmp);
         } catch (e) {
             console.log(e);
@@ -393,7 +394,7 @@ export default class Entity {
         try {
             const components = this.getApiComponents();
             const cmp = components.find(c => c.key === propertyKey);
-            if (!cmp) throw new Error("setPropertyValueToKey: Свойство не найдено.");
+            if (!cmp) throw new Error(`setPropertyValueToKey: Свойство по ключу ${propertyKey} не найдено.`);
             return this.set_property(cmp, value, prod);
         } catch (e) {
             this.historyRepository.push(
@@ -423,7 +424,7 @@ export default class Entity {
                 c.componentName === componentName &&
                 c.propertyName === propertyName
             );
-            if (!cmp) throw new Error("setPropertyValue: Свойство не найдено.");
+            if (!cmp) throw new Error(`setPropertyValue: Свойство ${<string>propertyName} компонента ${componentName} не найдено.`);
             return this.set_property(cmp, value, prod);
         } catch (e) {
             this.historyRepository.push(

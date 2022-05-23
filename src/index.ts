@@ -31,22 +31,12 @@ interface FormulaButton {
 }
 
 const importCollection = new FormulaImport<string>();
-
-importCollection.loadStringData(formulaImport.build())
-
+importCollection.loadStringData(formulaImport.build());
 console.log("До удаления", importCollection.build());
-
-
-importCollection.remove(null, (value) => value == "Не правда ли1?")
-
-
+importCollection.remove(null, (value) => value == "Не правда ли1?");
 console.log("После удаления", importCollection.build());
-
 */
-
 // функция присвоения id 
-
-
 /*
 const save = (apiEntity: ApiEntity[]): ApiEntity[] => {
   let genEntId = 1;
@@ -64,10 +54,8 @@ const save = (apiEntity: ApiEntity[]): ApiEntity[] => {
 }
 
 console.time('FirstWay');
-
 const engine = createEngine();
 const creator = engine.creator();
-
 const money = creator.create('component', 'money', { componentDescription: "Деньги" })
   .addProperty({ propertyName: 'price', propertyDescription: 'Цена', propertyValue: 0, propertyType: 'number', attributes: "required;" });
 const color = creator.create('component', 'finishing', { componentDescription: 'Цвет' })
