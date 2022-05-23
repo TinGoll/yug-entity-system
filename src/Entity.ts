@@ -486,8 +486,6 @@ export default class Entity {
     }
 
 
-
-
     /**
      * Агрегатор, для отсроченного выполнения функции с привязкой контекста. GETTER
      * @param componentName Название копопнента
@@ -508,23 +506,6 @@ export default class Entity {
     setterExecutor(componentName: string, propertyName: string ): (value: PropertyValue) => void {
         const fun = (value: PropertyValue) => this.setPropertyValue.bind(this)<PropertyValue, string>(componentName, propertyName, value);
         return fun.bind(this);
-    }
-    /**
-     * Агрегатор, для отсроченного выполнения функции с привязкой контекста, по ключу. GETTER
-     * @param key 
-     * @returns функция getter
-     */
-    getterExecutorToKey(key: string): () => PropertyValue | null  {
-        return () => this.getPropertyValueToKey.bind(this)<PropertyValue>(key)
-    }
-
-    /**
-     * Агрегатор, для отсроченного выполнения функции с привязкой контекста, по ключу. SETTER
-     * @param key 
-     * @returns функция getter
-     */
-    setterExecutorToKey(key: string): (value: PropertyValue) => void {
-        return (value: PropertyValue) => this.setPropertyValueToKey.bind(this)(key, value, false);
     }
 
     /**

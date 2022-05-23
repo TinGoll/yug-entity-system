@@ -2,6 +2,7 @@ import Engine from "./Engine";
 import Entity from "./Entity";
 import { ApiComponent, PropertyTypes, PropertyValue } from "./types/engine-types";
 
+// Интерфейс аккумулятора.
 interface AccomulatorOptions {
     me?: boolean;
     categories?: Array<string>;
@@ -10,21 +11,23 @@ interface AccomulatorOptions {
     entityCondition?: (ent: Entity) => boolean;
 }
 
+// Интерфейс опций
 interface FormulaComponentOptions extends Partial<ApiComponent> {
     key: string;
 }
 
+// Ключ значение
 interface IKeysMap {
     [index: string]: string;
 }
 
+// Типы формул (без импортов не используется).
 type FormulaGetters = () => PropertyValue | null;
 type FormulaSetters = (value: PropertyValue) => void;
 
+// 
 interface FormulaExecutor {
     KEY: string;
-    GETTER: FormulaGetters;
-    SETTER: FormulaSetters;
     ENTITY_NAME: string
     COMPONENT_NAME: string;
     COMPONENT_DESC: string;
@@ -33,6 +36,7 @@ interface FormulaExecutor {
     GETTER_NAME: string;
     SETTER_NAME: string;
     ENTITY_NOTE: string;
+    PROPERTY_TYPE: PropertyTypes;
     IS_CURRENT_PROPERTY: boolean;
     CODE: string;
 }
@@ -75,7 +79,6 @@ function strtr(str: string): string {
 }
 /** ***************************************************** */
 /** ***************************************************** */
-
 function normalizeValue (value: PropertyValue | null, type?: PropertyTypes): PropertyValue | null {
     let tempValue;
     if (value === null) return value;
@@ -97,6 +100,7 @@ function normalizeValue (value: PropertyValue | null, type?: PropertyTypes): Pro
     }
     return tempValue;
 }
+/** ***************************************************** */
 
 export function formulaExecutor(this: Entity, { componentName, propertyName, propertyValue, key, formulaImport = '', propertyType }: FormulaComponentOptions, code: string = '', type: 'execution' | 'preparation' = 'execution', err?: (e: Error) => void) {
     try {
@@ -124,6 +128,8 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
         /** **************************************** */
         /** *********** Функции окружения ********** */
         /** **************************************** */
+
+        const NOTE = me.note;
         
         const ME = (cmpName: string, probName: string): PropertyValue|null => {
             try {return me.getPropertyValue<PropertyValue, string>(cmpName, probName);
@@ -196,7 +202,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
             }
         }
 
-        /** **************************************** */
+        /** ************************************** */
         /** ************* Функции **************** */
         function ROUND(number: number = 0, fixed: number = 0) {
             return Number(number).toFixed(fixed)
@@ -236,7 +242,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
                     if (entityCondition && typeof entityCondition === "function" && !entityCondition(ent))
                                 return acc;
 
-                    return acc += Number(ent.getPropertyValue<number>(componentName, propertyName))||0;
+                    return acc += Number(ent.getPropertyValue<number>(componentName, propertyName)) || 0;
                 }, 0);
                 return meValue + accResult;
             } catch (e) {
@@ -262,38 +268,44 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
             return `${strtr(entity.name)}_${strtr(entity.note)}_${strtr(cmpName)}_${cmp.propertyName}`;
         }
 
+        const getNameFormulaProperty = (thisIs: ThisIs, type: "getter" | "setter"): string => {
+            if (thisIs === "me") return type === "getter" ? `ME` : 'S_ME';
+            if (thisIs === "father") return type === "getter" ? `FATHER` : 'S_FATHER';
+            if (thisIs === "grand_father") return type === "getter" ? `GRAND_FATHER` : 'S_GRAND_FATHER';
+            return ``;
+        }
+
         //Executors
         for (const entity of entities) {
             for (const cmp of entity.getApiComponents()) {
 
                 let THIS_IS: ThisIs = undefined;
-                if (me.key === entity.key) THIS_IS = "me";
-                if (father?.key === entity.key) THIS_IS = "father";
-                if (grand_father?.key === entity.key) THIS_IS = "grand_father";
-                const KEY = `ent-${strtr(entity.name)}-not${strtr(entity.note)}-cmp-${cmp.componentName}-prop-${cmp.propertyName}`.toLocaleLowerCase();
-                const IS_CURRENT_PROPERTY = key === cmp.key;
-            
-                const PROPERTY_VALUE = cmp.propertyValue;
-                const GETTER = entity.getterExecutor(cmp.componentName, cmp.propertyName);
-                const SETTER = entity.setterExecutor(cmp.componentName, cmp.propertyName);
-                const ENTITY_NAME = entity.name; // Название сущности.
-                const ENTITY_NOTE = entity.note; // note :)
-                const COMPONENT_NAME = cmp.componentName; // Название компонента.
-                const COMPONENT_DESC = cmp.componentDescription; // Название на русском.
-                const PROPERTY_NAME = `${getNameExcutor(THIS_IS, entity, cmp)}`; // Название свойства.
-                const PROPERTY_DESC = cmp.propertyDescription; // Название свойства на русском.
-                const GETTER_NAME = IS_CURRENT_PROPERTY ? `THIS` : `${PROPERTY_NAME.toUpperCase()}`;
-                const SETTER_NAME = IS_CURRENT_PROPERTY ? `S_${PROPERTY_NAME.toUpperCase()}` : `S_${PROPERTY_NAME.toUpperCase()}`; 
-                const CODE = IS_CURRENT_PROPERTY
-                    ? `const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_GET;`
-                    : `const ${GETTER_NAME} = EXECUTORS.get("${KEY}")?.GETTER || DUMMY_GET; const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_SET;`
+
+                if (me.key === entity.key) THIS_IS = "me"; // +
+                if (father?.key === entity.key) THIS_IS = "father"; // +
+                if (grand_father?.key === entity.key) THIS_IS = "grand_father"; // +
+
+                if (!THIS_IS) continue;
+                const KEY = `${THIS_IS}-${cmp.componentName}-${cmp.propertyName}`.toLocaleLowerCase(); // +
+
+                const IS_CURRENT_PROPERTY = (key === cmp.key); // +
+                const ENTITY_NAME = entity.name; // Название сущности.  // +
+                const ENTITY_NOTE = entity.note; // note :) // +
+                const COMPONENT_NAME = cmp.componentName; // Название компонента. // +
+                const COMPONENT_DESC = cmp.componentDescription; // Название на русском. // +
+                const PROPERTY_NAME = cmp.propertyName; // Название свойства. // +
+                const PROPERTY_DESC = cmp.propertyDescription; // Название свойства на русском.  // +
+                const PROPERTY_TYPE = cmp.propertyType || "string"; // Тип свойства.  // +
+
+                const GETTER_NAME = IS_CURRENT_PROPERTY ? `THIS` : `${getNameFormulaProperty(THIS_IS, "getter")}("${COMPONENT_NAME}", "${PROPERTY_NAME}")`;
+                const SETTER_NAME = `${getNameFormulaProperty(THIS_IS, "setter")}("${COMPONENT_NAME}", "${PROPERTY_NAME}", /*Значение (${cmp.propertyType})*/ )`; 
+
+                const CODE = '';
 
                 if (EXECUTORS.has(KEY) && Engine.getMode() === "DEV") console.log("Одинаковый ключ " + KEY);
                 
                 EXECUTORS.set(KEY, {
                     KEY,
-                    GETTER,
-                    SETTER,
                     ENTITY_NAME,
                     COMPONENT_NAME,
                     COMPONENT_DESC,
@@ -303,20 +315,14 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
                     SETTER_NAME,
                     ENTITY_NOTE,
                     IS_CURRENT_PROPERTY,
+                    PROPERTY_TYPE,
                     CODE
                 })
             }
         }
 
-        const arrCode: string[] = [];
-        for (const EXCT of EXECUTORS.values()) {
-           // arrCode.push(EXCT.CODE) удаление импорта
-        }
-
         const baseCode = `
         const executor = () => {
-                ${arrCode.join('\n')}
-                ${formulaImport}
                 let Q,W,E,R,T,Y,U,I,O,P,A,S,D,F,G,H,J,K,L,X,C,V,B,N,M;
                 let PI = Math.PI;
                 let RESULT = currentPropertyValue;
@@ -325,27 +331,36 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
         }
         executor();`;
 
+        // Выполнение
         if (Engine.getMode() === "DEV") console.log('baseCode', baseCode);
         if (type === 'execution') return eval(baseCode);
+        // Конец выполнения.
         
         const clientButtons: FormulaButton[] = [];
         const executorArr = [...EXECUTORS].map(e => e[1]);
+
+        // Формирвоание уникальных групп
         const groupSet = [...new Set(executorArr.map(e => (e.ENTITY_NAME + '~' + e.ENTITY_NOTE)))]
             .map(g => g.split("~")).map(g => ({ name: g[0], note: g[1] || '' }));
+
         for (const group of groupSet) {
             const componentNames = [...new Set(executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note).map(e => e.COMPONENT_NAME))];
             const components: Array<{
                 componentName: string,
-                buttons: Array<{ name: string, value: string, import?: string }>
-                setters: Array<{ name: string, value: string, import?: string }>
+                buttons: Array<{ name: string, value: string,}>
+                setters: Array<{ name: string, value: string,}>
             }> = [];
             for (const componentName of componentNames) {
-                const buttons: Array<{ name: string, value: string, import?: string }> = [];
-                const setters: Array<{ name: string, value: string, import?: string }> = [];
+
+                const buttons: Array<{ name: string, value: string,}> = [];
+                const setters: Array<{ name: string, value: string,}> = [];
+                // Кнопки получения данных
                 buttons.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note && e.COMPONENT_NAME === componentName)
-                    .map(e => ({ name: e.PROPERTY_DESC, value: `${e.GETTER_NAME}${e.IS_CURRENT_PROPERTY ? ' ' : "() "}`, import: e.CODE })));
+                    .map(e => ({ name: e.PROPERTY_DESC, value: ` = ${e.GETTER_NAME}; // ${e.PROPERTY_TYPE}`})));
+
+                // Кнопки присвоения данных
                 setters.push(...executorArr.filter(e => e.ENTITY_NAME === group.name && e.ENTITY_NOTE === group.note && e.COMPONENT_NAME === componentName)
-                    .map(e => ({ name: e.PROPERTY_DESC, value: e.IS_CURRENT_PROPERTY ? '/* Используйте RESULT */' : `${e.SETTER_NAME}( /*ЗНАЧЕНИЕ*/ ) `, import: e.CODE})));
+                    .map(e => ({ name: e.PROPERTY_DESC, value: e.IS_CURRENT_PROPERTY ? '/* Используйте RESULT */' : `${e.SETTER_NAME};`})));
                 buttons.push({ name: 'РЕЗУЛЬТАТ', value: 'RESULT = ' });
                 components.push({
                     componentName,
@@ -380,9 +395,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
                                 entityCondition(ent) {// условие по сущности, удалить если не нужен.
                                     return ent.name === "Фасад глухой" && ent.note === "Резной"
                                 },
-                            });` 
-                            },
-                        
+                            });`},
                         { name: "Округление", value: 'ROUND(0, 3)' },
                         { name: "Результат", value: 'RESULT = ' },
                     ],
@@ -397,7 +410,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
                 },
             ]
 
-        })
+        });
 
         let startCode = '';
         startCode += `/*************************************************************/\n`;
@@ -411,6 +424,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
         startCode += `/*  Остальное в кнопках на панели. Писать в верхнем регистре.*/\n`;
         startCode += `/*************************************************************/\n`;
         startCode += `// Тут пишите ваш код, удачи!\n\n`;
+
         return { clientButtons, startCode }
 
     } catch (e) {
