@@ -45,8 +45,9 @@ console.log("После удаления", importCollection.build());
 */
 
 // функция присвоения id 
-/*
 
+
+/*
 const save = (apiEntity: ApiEntity[]): ApiEntity[] => {
   let genEntId = 1;
   let genCmpId = 1;
@@ -96,7 +97,7 @@ cld1.setPropertyFormula('money', 'price', `
   S_SYN_SREDNIY_FINISHING_COLOR(5000);
 
   //console.log("EXECUTORS", EXECUTORS);
-  console.log("SYN_SREDNIY_FINISHING_COLOR", SYN_SREDNIY_FINISHING_COLOR());
+  //console.log("SYN_SREDNIY_FINISHING_COLOR", SYN_SREDNIY_FINISHING_COLOR());
 
   RESULT = SYN_SREDNIY_FINISHING_COLOR() + 500;
 `); 

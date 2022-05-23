@@ -288,6 +288,8 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
                     ? `const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_GET;`
                     : `const ${GETTER_NAME} = EXECUTORS.get("${KEY}")?.GETTER || DUMMY_GET; const ${SETTER_NAME} = EXECUTORS.get("${KEY}")?.SETTER || DUMMY_SET;`
 
+                if (EXECUTORS.has(KEY) && Engine.getMode() === "DEV") console.log("Одинаковый ключ " + KEY);
+                
                 EXECUTORS.set(KEY, {
                     KEY,
                     GETTER,
