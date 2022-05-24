@@ -291,7 +291,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
 
 
                 console.log("THIS_IS", THIS_IS);
-                if (THIS_IS) console.log("Entity", `${entity.name} - ${entity.note}`, entity.key);
+                console.log("Entity", `${entity.name} - ${entity.note}`, entity.key);
                 
                 
                 if (!THIS_IS) continue;
