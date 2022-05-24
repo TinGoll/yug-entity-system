@@ -288,9 +288,12 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
                 if (father?.key === entity.key) THIS_IS = "father"; // +
                 if (grand_father?.key === entity.key) THIS_IS = "grand_father"; // +
 
-                console.log("THIS_IS", THIS_IS);
-                
 
+
+                console.log("THIS_IS", THIS_IS);
+                if (!THIS_IS) console.log("Entity", `${entity.name} - ${entity.note}`, entity.key);
+                
+                
                 if (!THIS_IS) continue;
                 const KEY = `${THIS_IS}-${cmp.componentName}-${cmp.propertyName}`.toLocaleLowerCase(); // +
 
