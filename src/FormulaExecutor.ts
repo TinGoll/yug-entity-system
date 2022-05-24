@@ -143,10 +143,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
 
         const FATHER = (cmpName: string, probName: string): PropertyValue | null => {
             try {
-                console.log("father", father);
-                
                 return father?.getPropertyValue<PropertyValue, string>(cmpName, probName) || null;
-
             } catch (e) { console.log(e); return null; }
         }
         
