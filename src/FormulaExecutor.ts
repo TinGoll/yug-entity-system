@@ -135,7 +135,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
             try {return me.getPropertyValue<PropertyValue, string>(cmpName, probName);
             } catch (e) {console.log(e); return null;}
         }
-        
+
         const S_ME = (cmpName: string, probName: string, value: PropertyValue): void => {
             try {me.setPropertyValue<PropertyValue, string>(cmpName, probName, value, false);} 
             catch (e) {console.log(e);}
@@ -145,6 +145,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
             try {return father?.getPropertyValue<PropertyValue, string>(cmpName, probName)||null;
             } catch (e) { console.log(e); return null; }
         }
+        
 
         const S_FATHER = (cmpName: string, probName: string, value: PropertyValue): void => {
             try { if (!father) throw new Error("Родительский объект не существует."); me.setPropertyValue<PropertyValue, string>(cmpName, probName, value, false); }
@@ -257,10 +258,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
 
         /** **************************************** */
         /** **************************************** */
-
         const THIS = normalizeValue(currentPropertyValue, propertyType);
-
-        /** **************************************** */
         /** **************************************** */
         /** **************************************** */
 
@@ -399,7 +397,8 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
                                 entityCondition(ent) {// условие по сущности, удалить если не нужен.
                                     return ent.name === "Фасад глухой" && ent.note === "Резной"
                                 },
-                            });`},
+                            });`
+                        },
                         { name: "Округление", value: 'ROUND(0, 3)' },
                         { name: "Результат", value: 'RESULT = ' },
                     ],
@@ -433,6 +432,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
 
     } catch (e) {
         if (err && typeof err === "function" ) err(e as Error)
+        console.log("FORMULA ERROR", (e as Error).message);
         return null;
     }
 }
