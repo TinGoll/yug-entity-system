@@ -285,7 +285,7 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
                 let THIS_IS: ThisIs = undefined;
                 if (me.key === entity.key) THIS_IS = "me"; // +
                 if (father?.key === entity.key) THIS_IS = "father"; // +
-                if (grand_father?.key === entity.key) THIS_IS = "grand_father"; // +
+                if (grand_father?.key === entity.key && entity.key !== father?.key) THIS_IS = "grand_father"; // +
 
                 if (!THIS_IS) continue;
                 const KEY = `${THIS_IS}-${cmp.componentName}-${cmp.propertyName}`.toLocaleLowerCase(); // +
