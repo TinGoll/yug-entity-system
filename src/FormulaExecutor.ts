@@ -283,7 +283,6 @@ export function formulaExecutor(this: Entity, { componentName, propertyName, pro
             for (const cmp of entity.getApiComponents()) {
 
                 let THIS_IS: ThisIs = undefined;
-
                 if (me.key === entity.key) THIS_IS = "me"; // +
                 if (father?.key === entity.key) THIS_IS = "father"; // +
                 if (grand_father?.key === entity.key) THIS_IS = "grand_father"; // +
