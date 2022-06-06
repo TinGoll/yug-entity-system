@@ -193,7 +193,6 @@ export {
     MultipleEmitter,
     SingleEmitter,
     TimerController,
-    timing,
 };
 
 
