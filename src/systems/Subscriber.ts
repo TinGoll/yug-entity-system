@@ -1,5 +1,5 @@
 export interface Subscriber<K extends any = string, 
-        U extends object = {}> {
+        U extends object | null = null> {
     /**
      * id подписчика
      */
