@@ -1,22 +1,26 @@
 
-import { ApiComponent, ApiEntity, PropertyAttribute } from "./@engine-types";
-import Component from "./Component";
+import { timing } from "./@decorators";
+import { ApiEntity, ApiComponent, PropertyValue, PropertyType, PropertyAttribute } from "./@engine-types";
 import { Engine } from "./Engine";
-import Entity from "./Entity";
 import AttributeCreator from "./other/AttributeCreator";
-import { loadingEntities, insertComponents, insertEntities, deleteEntities, updateComponents, updateEntities } from "./testing/db-function";
+import MultipleEmitter from "./other/MultipleEmitter";
+import SingleEmitter from "./other/SingleEmitter";
+import TimerController from "./other/TimerController";
+import Room from "./systems/Room";
+import RoomControllerHeart from "./systems/RoomControllerHeart";
+import { Subscriber } from "./systems/Subscriber";
 
 
-const engine = Engine.create().start();
-const events = engine.events;
+// const engine = Engine.create().start();
+// const events = engine.events;
 
-events
-    .onCreatedObjects("entity", insertEntities) // Событие записи в бд новой сущности 
-    .onCreatedObjects("component", insertComponents) // событие записи в бд нового компонента
-    .onLoad("entity", "Find One", loadingEntities) // событие загрузки сущности из бд
-    .onDeletedObjects("entity", deleteEntities) // Событие удаления сущности из бд.
-    .onUpdatableObjects("entity", updateEntities) // событие обновления в бд  сущности
-    .onUpdatableObjects("component", updateComponents) // событие обновления в бд  компонента
+// events
+//     .onCreatedObjects("entity", insertEntities) // Событие записи в бд новой сущности 
+//     .onCreatedObjects("component", insertComponents) // событие записи в бд нового компонента
+//     .onLoad("entity", "Find One", loadingEntities) // событие загрузки сущности из бд
+//     .onDeletedObjects("entity", deleteEntities) // Событие удаления сущности из бд.
+//     .onUpdatableObjects("entity", updateEntities) // событие обновления в бд  сущности
+//     .onUpdatableObjects("component", updateComponents) // событие обновления в бд  компонента
 /*
 const shell =  engine.createEntityShell({
     name: "Тест 1",
@@ -175,7 +179,22 @@ engine.cloneEntityShell(shell.options.key)
 // });
 
 
-
+export default Engine;
+export {
+    Room,
+    RoomControllerHeart,
+    Subscriber,
+    ApiEntity,
+    ApiComponent,
+    PropertyValue,
+    PropertyType,
+    PropertyAttribute,
+    AttributeCreator,
+    MultipleEmitter,
+    SingleEmitter,
+    TimerController,
+    timing,
+};
 
 
 
