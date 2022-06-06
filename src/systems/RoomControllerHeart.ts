@@ -27,7 +27,7 @@ export default abstract class RoomControllerHeart<T extends any = string, U exte
                 if (createRoom && typeof createRoom  === "function") {
                     return finall(null, this.add(key, createRoom(key, this.engine, entity)));
                 }else {
-                    return finall(null, this.add<R>(key, <R>(new DefaultRoom(<string>key, this.engine, entity))));
+                    return finall(null, this.add<R>(key, <R>(<unknown>(new DefaultRoom(<string>key, this.engine, entity)))));
                 }
             })
         }else{
