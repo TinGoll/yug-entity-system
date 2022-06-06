@@ -3,7 +3,7 @@ export interface Subscriber<K extends any = string,
     data: SubscriberData<K, U>
 }
 
-interface SubscriberData<K extends any = string,
+export interface SubscriberData<K extends any = string,
     U extends object | null = {}> {
     /**
      * id подписчика
