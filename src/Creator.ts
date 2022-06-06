@@ -1,66 +1,105 @@
+import { timing } from "./@decorators";
+import { ApiComponent, ApiEntity, ComponentDto, EngineObjectType, EntityDto, EntityShell } from "./@engine-types";
 import Component from "./Component";
-import Engine from "./Engine";
+import { Engine } from "./Engine";
 import Entity from "./Entity";
-import { ApiComponent, ApiEntity, EngineObjectType } from "./types/engine-types";
 
 export default class Creator {
-    engine: Engine;
+    private _engine: Engine;
+    /**
+     * Создание creator.
+     * @param engine объект движка.
+     */
     constructor(engine: Engine) {
-        this.engine = engine;
+        this._engine = engine;
     }
 
-    create(type: 'entity', name: string, options?: Partial<ApiEntity>): Entity;
-    create(type: 'component', name: string, options?: Partial<ApiComponent>, arr?: ApiComponent[]): Component;
-    create(type: EngineObjectType, name: string, options?: Partial<ApiComponent> | Partial<ApiEntity>, arr: ApiComponent[] = []): Entity | Component {
-        switch (type) {
-            case 'entity':
-                const cpms = (<ApiEntity> options)?.components || [];
-                const components: ApiComponent[] =  [...cpms, ...arr ];
-                const newEntity: ApiEntity = {
-                    ...options,
-                    key: Engine.keyGenerator('ent:'),
-                    name,
-                    components
-                }
-                this.engine.set(newEntity);
-                return new Entity(this.engine.get(newEntity.key)!, this.engine);
-            case 'component':
-                const { componentDescription = 'Описание компонента' } = <ApiComponent> options;
-                return new Component({
-                    componentName: name,
-                    componentDescription: componentDescription
-                }, arr)
-            default:
-                throw new Error("Не верный тип объекта.");
+    /** Получить объект движка */
+    getEngine(): Engine {
+        return this._engine;
+    }
+    /** Получить объект движка */
+    get engine (): Engine {
+        return this.getEngine();
+    }
+
+    /**
+     * Открыть сущность по ключу
+     * @param key ключу сущности
+     * @returns Entity
+     */
+    async open (key: string): Promise<Entity | null> {
+        const shell = await this._engine.findOne(key);
+        if (!shell) return null;
+        const entity = new Entity(shell, this._engine);
+        return entity;
+    } 
+
+    shellToEntity (shell: EntityShell) : Entity {
+        return new Entity(shell, this._engine);
+    }
+
+    create(type: "entity", dto: EntityDto, ...components: ApiComponent[]): Entity;
+    create(type: "component", dto: ComponentDto, ...components: ApiComponent[]): Component;
+    create(type: EngineObjectType, ...args: any[]): Entity | Component | void{
+        if (type === "entity") {
+            const [dto, ...components] = <[EntityDto,  ...ApiComponent[]]> args;
+            if (!dto || !dto.name) throw new Error(`Некооректные данные, для создания ${type}.`);
+            const shell = this.engine.createEntityShell({
+                ...dto,
+                components: [
+                    ...this.concatenateApiComponents(...components, ...(dto.components || []))
+                ]
+            })
+            return new Entity(shell, this._engine);
         }
-    }
-
-    getEntityToKey (key: string): Entity | undefined {
-        if (!this.engine.has(key)) return;
-        const apiEntity = this.engine.get(key)!;
-        return new Entity(apiEntity, this.engine);
-    }
-
-    getEntityChildren (key: string): Entity[] {
-        const apiEntities = this.engine.getСhildren(key);
-        return apiEntities.map(e => new Entity(e, this.engine));
-    }
-
-    getDynasty(key: string): Entity[] {
-        const tempEntities: Entity[] = [];
-        const entity = this.getEntityToKey(key);
-        if (!entity) return tempEntities;
-        tempEntities.push(entity);
-        tempEntities.push(...this.get_all_connections(entity.getChildren()));
-        return tempEntities;
-    }
-
-    private get_all_connections (children: Entity[]): Entity[] {
-        const tempEntities: Entity[] = [];
-        tempEntities.push(...children);
-        for (const child of children) {
-            tempEntities.push(...this.get_all_connections(child.getChildren()));
+        if (type === "component") {
+            const [dto, ...components] = <[ComponentDto, ...ApiComponent[]]>args;
+            if (!dto || !dto.componentName) throw new Error(`Некооректные данные, для создания ${type}.`);
+            components.forEach(c => {
+                c.componentName = dto.componentName;
+                c.componentDescription = dto.componentDescription||"";
+                c.entityKey = dto.entityKey;
+            })
+            const component = new Component(dto, this._engine, ...components)
+            const cmp = this.engine.createComponentApi(...component);
+            return new Component(dto, this._engine, ...cmp);
         }
-        return tempEntities;
+        throw new Error(`Тип объекта ""${type}" не поддерживается.`);
     }
+
+    /**
+     * Коллекор компонентов, для сборки и слияния.
+     * @param components ApiComponent[]
+     * @returns ApiComponent[]
+     */
+    concatenateApiComponents(...components: ApiComponent[]): ApiComponent[] {
+        const tempArr = this.convertApiComponentsToComponents(...components);
+        const arr: ApiComponent[] = [];
+        if (tempArr.length = 1) return [...tempArr[0]]
+        for (const tempCmp of tempArr) {
+            tempCmp.concatenate(...components);
+            arr.push(...tempCmp)
+        }
+        return arr;
+    }
+    /**
+     * Конвертирование массива ApiComponent в массив Component
+     * @param apiComponents ApiComponent[]
+     * @returns Component []
+     */
+    convertApiComponentsToComponents (...apiComponents: ApiComponent[]): Component [] {
+        const cmpNames: Array<{componentName: string, componentDescription: string, entityKey: string}> = 
+            [...new Set(apiComponents.map(c => 
+                `${c.componentName}~${c.componentDescription}${c.entityKey?`~${c.entityKey}`:""}`))]
+                .map(c => [...c.split("~")])
+                .map(c => ({ componentName: c[0], componentDescription: c[1], entityKey: c[2]}))  
+        return cmpNames.map(c => new Component({ ...c }, this._engine, ...apiComponents)); 
+    }
+
+    convertShellEntitiesToEntities (...shells: EntityShell[]): Entity [] {
+        return shells.map(shell => 
+            new Entity(shell, this._engine))
+    }
+
 }
