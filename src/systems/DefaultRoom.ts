@@ -4,7 +4,7 @@ import Room from "./Room";
 import { Subscriber } from "./Subscriber";
 
 export default class DefaultRoom extends Room<string, Subscriber<string, {}>> {
-    notifyAllRooms(entityKey: string, action: string, ...args: any[]): void {
+    notifyAllRooms(action: string, entityKey: string, ...args: any[]): void {
         throw new Error("Method not implemented.");
     }
     sendNotificationToSubscribers(action: string, ...args: any[]): void {

@@ -2,8 +2,12 @@ import { Engine } from "../Engine";
 import RoomControllerHeart from "./RoomControllerHeart";
 
 export default class RoomController extends RoomControllerHeart {
+   
+    constructor(engine: Engine) {
+        super(engine);
+    }
 
-    notify(entityKey: string, action: string, ...args: any[]): void {
+    notify(action: string, entityKey: string , ...args: any[]): void {
         for (const iterator of this) {
             iterator.getEntityKeys()
                 .then(keys => {
@@ -13,9 +17,6 @@ export default class RoomController extends RoomControllerHeart {
                 })
         }
     }
-    constructor(engine: Engine) {
-        super(engine);
-    }
 
-    
+
 }

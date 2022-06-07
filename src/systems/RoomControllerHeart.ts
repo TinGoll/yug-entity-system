@@ -87,10 +87,9 @@ export default abstract class RoomControllerHeart<T extends any = string, U exte
     }
     /**
      * Уведомление комнат
-     * @param action 
-     * @param args 
+     * @param args аргументы
      */
-    abstract notify (action: string, ...args: any[]): void;
+    abstract notify (...args: any[]): void;
 
     /**
      * Итератор по умолчанию.
