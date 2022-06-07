@@ -52,6 +52,10 @@ export class Engine extends Map<string, EntityShell> {
     set roomController(controller: RoomControllerHeart) {
         this.setRoomController(controller)
     }
+    /** Получить контроллер комнат, по умолчанию, используется стандартный */
+    get roomController() {
+        return this.getRoomController();
+    }
     /** Получить контроллер комнат */
     getRoomController<T extends RoomControllerHeart = RoomControllerHeart>(): T {return <T> this._roomController}
     /** Таймеры движка */
