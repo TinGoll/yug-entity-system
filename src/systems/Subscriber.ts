@@ -1,10 +1,10 @@
 export interface Subscriber<K extends any = string, 
-        U extends object | null = {}> {
+        U extends any | null = any> {
     data: SubscriberData<K, U>
 }
 
 export interface SubscriberData<K extends any = string,
-    U extends object | null = {}> {
+    U extends any | null = any> {
     /**
      * id подписчика
      */
