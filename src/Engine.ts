@@ -31,6 +31,11 @@ export class Engine extends Map<string, EntityShell> {
         return Engine.instance;
     }
 
+    // ENGINE SETTINGS
+
+    set intervalTime(time: number) { this.intervalTime = time }
+    get intervalTime() { return this.intervalTime }
+
     // Конструтор приватный, для ограничения вызова из вне.
     private constructor() {
         super();
