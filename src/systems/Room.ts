@@ -140,11 +140,11 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
 
     /**
      * Уведомление все комнат, в которых открыты затронутые сущности.
-     * 
-     * @param action экшен ответа
      * @param args аргументы ответа.
      */
-    abstract notifyAllRooms(entityKey: string, action: string, ...args: any[]): void;
+    notifyAllRooms(action: string, entityKey: string, ...args: any[]): void {
+        this.roomController.notify(action, entityKey, ...args!);
+    }
 
     /**
      * Отправка всем подписчикам в комнате

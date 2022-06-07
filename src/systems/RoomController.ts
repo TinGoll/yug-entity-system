@@ -7,7 +7,7 @@ export default class RoomController extends RoomControllerHeart {
         super(engine);
     }
 
-    notify(action: string, entityKey: string , ...args: any[]): void {
+    notify(action: string, entityKey: string, ...args: any[]): void {
         for (const iterator of this) {
             iterator.getEntityKeys()
                 .then(keys => {
