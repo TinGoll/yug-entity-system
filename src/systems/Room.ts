@@ -172,11 +172,12 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
     }
 
     /**
-     * Отправка всем подписчикам в комнате
+     * Отправка всем подписчикам в комнате, метод, так же может вызывать roomController
      * @param action Экшен 
      * @param args аргументы
      */
     abstract sendNotificationToSubscribers(action: string, ...args: any[]): void
+    abstract sendToOneSubscriber(action: string, subscriber: Subscriber<T>, ...args: any[]):void;
 
     /** Итератор, итерируемый объект Subscriber */
     [Symbol.iterator] = (): IterableIterator<U> => {

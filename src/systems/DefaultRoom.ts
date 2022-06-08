@@ -23,6 +23,10 @@ export default class DefaultRoom extends Room<string, Subscriber<string, {}>> {
 
     }
 
+    sendToOneSubscriber(action: string, subscriber: Subscriber<string, any>, ...args: any[]): void {
+        throw new Error("Method not implemented.");
+    }
+
     destroy(): void {
 
     }
