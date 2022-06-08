@@ -151,16 +151,33 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
         this.roomController.notify(action, entityKey, ...args!);
     }
 
+    /** метод удаления комнаты. */
+    destroy(): void {
+        for (const iterator of this.subscribers.values()) {
+            iterator.data.rooms = [...iterator.data.rooms.filter(r => r !== this.key)]
+        }
+        if (this._entity) {
+            this.roomController.isEntityOpen(this._entity?.key, <any> this.key).then((flag) => {
+                if (!flag) {
+                    this.engine.unloadToKey(this._entity!.key)
+                }
+            })
+        }
+        this.subscribers.clear()
+    }
+
+    /** Метод обновления комнатыю */
+    async update(dt: number): Promise<void> {
+        // Обновление комнаты
+    }
+
     /**
      * Отправка всем подписчикам в комнате
      * @param action Экшен 
      * @param args аргументы
      */
     abstract sendNotificationToSubscribers(action: string, ...args: any[]): void
-    /** Метод обновления комнатыю */
-    abstract update (dt: number): Promise<void>
-    /** метод удаления комнаты. */
-    abstract destroy (): void;
+
     /** Итератор, итерируемый объект Subscriber */
     [Symbol.iterator] = (): IterableIterator<U> => {
         return this.subscribers.values();

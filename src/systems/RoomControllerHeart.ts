@@ -85,6 +85,21 @@ export default abstract class RoomControllerHeart<T extends any = string, U exte
     entries (): U[] {
         return [...this.rooms.values()]
     }
+
+    async isEntityOpen(entityKey: string, excludeRoomKey?: string): Promise<boolean> {
+        let result: boolean = false;
+        for (const iterator of this.rooms.values()) {
+            if (excludeRoomKey && iterator.key === excludeRoomKey) {
+                continue;
+            }
+            const candidate = (await iterator.getEntityKeys()).find(key => key === entityKey);
+            if (candidate) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
     /**
      * Уведомление комнат
      * @param args аргументы
