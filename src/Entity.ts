@@ -1,4 +1,4 @@
-import { ApiComponent, EntityIndicators, EntityShell, PropertyAttribute, PropertyType, PropertyValue } from "./@engine-types";
+import { ApiComponent, ApiEntity, EntityIndicators, EntityShell, PropertyAttribute, PropertyType, PropertyValue } from "./@engine-types";
 import { Engine } from "./Engine";
 
 export default class Entity {
@@ -8,6 +8,23 @@ export default class Entity {
     constructor(shell: EntityShell, engine: Engine) {
         this._shell = shell;
         this._engine = engine;
+    }
+
+    async build (): Promise<ApiEntity[]> {
+        const shells = await this.engine.find(this.key, "children and me");
+        return shells.map(shell => ({...shell.options, components: [
+            ...(shell.options.components.map(cmp => ({...cmp})))
+        ]}))
+    }
+
+    async fullBuild(): Promise<ApiEntity[]> {
+        const shells = await this.engine.find(this.key, "all offspring");
+        shells.push(this.shell)
+        return shells.map(shell => ({
+            ...shell.options, components: [
+                ...(shell.options.components.map(cmp => ({ ...cmp })))
+            ]
+        }))
     }
 
     // ДОБАВЛЕНИЕ / УДАЛЕНИЕ СУЩНОСТЕЙ
