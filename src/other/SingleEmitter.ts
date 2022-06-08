@@ -36,7 +36,7 @@ export default class SingleEmitter {
         try {
             const event = this.events[eventName];
             if (event && typeof event === "function") {
-                return await event.call(null, ...args);
+                return event.call(null, ...args);
             }
             console.group(`Single Event Emmit <${new Date().toLocaleTimeString()}> warning:`);
             console.log(`Событие: ${eventName}, не содержит реализации.`);

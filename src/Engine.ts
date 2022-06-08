@@ -407,8 +407,6 @@ export class Engine extends Map<string, EntityShell> {
     async loadEntityShell (key: string): Promise<EntityShell | null> {
         try {
             const loadedEntities = await this.events.loadEmit("entity", "Find One", key);
-            console.log("ENGINE - LOG", "loadedEntities", loadedEntities);
-            
             for (const entity of loadedEntities) {
                 this.pushEntity(entity);
             }
