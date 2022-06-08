@@ -433,7 +433,7 @@ export class Engine extends Map<string, EntityShell> {
      */
     async findOne(key: string): Promise<EntityShell | null> {
         if (!this.has(key)) {
-            return this.loadEntityShell(key);
+            return await this.loadEntityShell(key);
         };
         return this.get(key)||null;
     }
