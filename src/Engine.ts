@@ -434,7 +434,6 @@ export class Engine extends Map<string, EntityShell> {
     async findOne(key: string): Promise<EntityShell | null> {
         if (!this.has(key)) {
             console.log("findOne", "initial load");
-            
             return await this.loadEntityShell(key);
         };
         return this.get(key)||null;
@@ -450,6 +449,7 @@ export class Engine extends Map<string, EntityShell> {
         if (!entity || !entity.options?.parentKey) return null;
 
         if (!this.has(entity.options?.parentKey)) {
+            console.log("find", "findParent");
             return this.loadEntityShell(entity.options?.parentKey);
         }
         return this.get(entity.options.parentKey) || null;
@@ -510,6 +510,7 @@ export class Engine extends Map<string, EntityShell> {
      */
     async findDynasty(key: string): Promise<EntityShell[]> {
         if (!this.has(key)) {
+            console.log("findDynasty", "initial load");
             const result = await this.loadEntityShell(key);
             if (!result) return [];
         }
