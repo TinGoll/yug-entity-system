@@ -84,12 +84,20 @@ export class Engine extends Map<string, EntityShell> {
      */
     async cloneEntityShell(key: string, parentKey?: string,): Promise<EntityShell | null> {
         try {
+            console.log("ENGINE - LOG", "cloneable", key);
+            
             const cloneable = await this.findOne(key);
             if (!cloneable) throw new Error("Клонируемая сущность не найдена.");
+
+            console.log("ENGINE - LOG", "childs", key);
             const childs = await this.find(key, "only children");
+
             const candidate = this.clone_entity_shell(cloneable, parentKey);
+
             this.set(candidate.options.key, candidate);
+
             const AllCloneable = await this.deep_cloning(childs, candidate.options.key);
+
             AllCloneable.unshift(candidate);
             // Отправка на сохранение.
             // this.signEntities(AllCloneable)
