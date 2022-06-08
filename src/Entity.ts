@@ -31,8 +31,6 @@ export default class Entity {
      * @returns доабавленная Entity (новый объект).
      */
     async addChildToKey (key: string): Promise<Entity | null> {
-        const candidate = await this._engine.findOne(key);
-        if (!candidate) return null;
         const newChildShell = await this._engine.cloneEntityShell(key, this.key);
         if (!newChildShell) return null;
         return this._engine.creator.shellToEntity(newChildShell);
@@ -57,6 +55,17 @@ export default class Entity {
         }
         return result;
     }
+    /**
+     * Существует ли свойство компонента.
+     * @param componentName Название компонента
+     * @param propertyName название свойства
+     * @returns boolean;
+     */
+    existComponent(componentName: string, propertyName: string): boolean {
+        return Boolean(this._shell.options.components
+            .find(c => c.componentName === componentName && c.propertyName === propertyName))
+    }
+
 
     /**
      * Массив дочерних сущностей

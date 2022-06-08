@@ -69,6 +69,17 @@ export default class Creator {
     }
 
     /**
+     * Создание новой сущности по ключу шаблона (клонирование)
+     * @param key ключ шаблона
+     * @returns Сущность или null
+     */
+    async CreateFromTemplateKey (key: string): Promise<Entity | null> {
+        const shell = await this._engine.cloneEntityShell(key);
+        if (!shell) return null;
+        return this.shellToEntity(shell);
+    }
+
+    /**
      * Коллекор компонентов, для сборки и слияния.
      * @param components ApiComponent[]
      * @returns ApiComponent[]
