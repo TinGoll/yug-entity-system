@@ -110,8 +110,6 @@ export default class Events extends EventEmitter {
     loadEmit(type: 'entity', method: 'Find All',
         params: { where?: { id?: Array<number>, keys?: Array<string>, categories?: Array<string>, }, sample?: boolean }): Promise<ApiEntity[]>
     loadEmit(type: EngineObjectType, method: LoadMethod, ...args: any[]): Promise<any> {
-        console.log('loadEmit', type, method);
-        
         const eventName = `load-object-${type}-${method}`;
         return this.singleEmitter.emit(eventName, ...args);
     }
