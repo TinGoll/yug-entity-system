@@ -28,7 +28,7 @@ export interface SubscriberData<K extends any = string,
     /**
      * Ключ подпискичка
      */
-    key: string;
+    key: K;
     /**
      * Список комнат комнат
      */

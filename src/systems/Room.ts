@@ -21,6 +21,11 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
         this._entity = entity || null;
     }
 
+    /** Подписка */
+    abstract subscribe(subscriber: Subscriber<T>, ...args: any[]): this;
+    /** Отписка */
+    abstract unsubscribe(subscriber: Subscriber<T>): this;
+
     // РАБОТА С СУЩНОСТЬЮ
 
     /**
@@ -152,11 +157,6 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
      * @param args аргументы
      */
     abstract sendNotificationToSubscribers(action: string, ...args: any[]): void
-
-    /** Подписка */
-    abstract subscribe(subscriber: Subscriber, ...args: any[]): this;
-    /** Отписка */
-    abstract unsubscribe(subscriber: Subscriber):this;
     /** Метод обновления комнатыю */
     abstract update (dt: number): Promise<void>
     /** метод удаления комнаты. */
