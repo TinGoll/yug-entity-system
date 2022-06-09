@@ -1,4 +1,4 @@
-import { EntityShell, PropertyValue } from "../@engine-types";
+import { EngineAction, EntityShell, PropertyValue } from "../@engine-types";
 import { Engine } from "../Engine";
 import Entity from "../Entity";
 import RoomController from "./RoomController";
@@ -60,12 +60,17 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
      */
     async deleteEntityByKey(key: string): Promise<void> {
         if (this._entity) {
+            const action: EngineAction = "delete-entity-shell";
             if (this._entity?.key === key) {
-                const allKeys = await this.engine.deleteEntityShell([key]);
                 // Полное удаление всех сущностей комнаты.
+                const allKeys = await this.engine.deleteEntityShell([key]);
+                // Уведомить об удалении сущности.
+                this.engine.events.notifyEmit("Broadcast", action, allKeys);
             } else {
                 const deletedKey = await this._entity.deleteEntityToKey(key);
                 // Уведомить об удалении сущности.
+                this.engine.events.notifyEmit("Broadcast", action, deletedKey);
+                
             }
         }
     }
