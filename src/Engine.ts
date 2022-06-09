@@ -523,11 +523,14 @@ export class Engine extends Map<string, EntityShell> {
      * @returns EntityShell[]
      */
     async findDynasty(key: string): Promise<EntityShell[]> {
+
         if (!this.has(key)) {
             const result = await this.loadEntityShell(key);
             if (!result) return [];
         }
         const ancestor = await this.findAncestor(key);
+        console.log('ancestor', ancestor);
+         
         return this.find(ancestor?.options?.key || key, "all offspring");
     }
 
