@@ -97,6 +97,8 @@ export class Engine extends Map<string, EntityShell> {
             //     .catch() // если ошибка
             //     .finally(); // в любом случае.
             await this.signEntities(AllCloneable)
+            const action: EngineAction = "create-entity-shell"
+            this._events.notifyEmit("Broadcast", action, candidate); // Попробовать оптимизировать.
             return candidate;
         } catch (e) {
             console.log(e);

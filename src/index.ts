@@ -11,6 +11,8 @@ import RoomControllerHeart from "./systems/RoomControllerHeart";
 import { Subscriber, SubscriberData } from "./systems/Subscriber";
 
 
+//import { insertEntities, insertComponents, loadingEntities, deleteEntities, updateEntities, updateComponents } from "./testing/db-function";
+
 // const engine = Engine.create().start();
 // const events = engine.events;
 
@@ -21,45 +23,51 @@ import { Subscriber, SubscriberData } from "./systems/Subscriber";
 //     .onDeletedObjects("entity", deleteEntities) // Событие удаления сущности из бд.
 //     .onUpdatableObjects("entity", updateEntities) // событие обновления в бд  сущности
 //     .onUpdatableObjects("component", updateComponents) // событие обновления в бд  компонента
-/*
-const shell =  engine.createEntityShell({
-    name: "Тест 1",
-    components: [
-        { 
-            componentName: "geo", 
-            propertyName: "h", 
-            propertyType: "number", 
-            index: 0, 
-            key: engine.keyGenerator("cmp:"), 
-            id: 0, 
-            componentDescription: "", 
-            indicators: {}, 
-            propertyDescription: "", 
-            propertyValue: 0 
-        }
-    ]
-});
 
-engine.cloneEntityShell(shell.options.key)
-    .then(entityShell => {
-        console.log("Начало", engine.size);
-        console.log(entityShell?.options.key);
-
-        if (entityShell) {
-            entityShell.options.indicators.is_changeable = true
-            entityShell.options.indicators.is_changeable_component = true
-            entityShell.options.components = entityShell.options.components.map(c => ({...c, indicators: { ...c.indicators, is_changeable: true}}))
-            const r =  engine.updateEntityShell([entityShell])
-            console.log("Моментальный результат обновления", r);
-            
-        }
-        //  engine.deleteEntityShell([entityShell!.options.key])
-        //      .then((res) => console.log("Финал", res));
+// events
+//     .onNotify("Broadcast", async (...args: any[])=>{
+//         console.log(args);
         
-    });
+//     })
+
+// const shell =  engine.createEntityShell({
+//     name: "Тест 1",
+//     components: [
+//         { 
+//             componentName: "geo", 
+//             propertyName: "h", 
+//             propertyType: "number", 
+//             index: 0, 
+//             key: engine.keyGenerator("cmp:"), 
+//             id: 0, 
+//             componentDescription: "", 
+//             indicators: {}, 
+//             propertyDescription: "", 
+//             propertyValue: 0 
+//         }
+//     ]
+// });
+
+// engine.cloneEntityShell(shell.options.key)
+//     .then(entityShell => {
+//         console.log("Начало", engine.size);
+//         console.log(entityShell?.options.key);
+
+//         if (entityShell) {
+//             entityShell.options.indicators.is_changeable = true
+//             entityShell.options.indicators.is_changeable_component = true
+//             entityShell.options.components = entityShell.options.components.map(c => ({...c, indicators: { ...c.indicators, is_changeable: true}}))
+//             const r =  engine.updateEntityShell([entityShell])
+//             console.log("Моментальный результат обновления", r);
+            
+//         }
+//         //  engine.deleteEntityShell([entityShell!.options.key])
+//         //      .then((res) => console.log("Финал", res));
+        
+//     });
 
 
-*/
+
 
 // const cmp = new Component({ componentName: "Test", componentDescription: "Тест", entityKey: "sdvdfdnh"}, engine, )
 
