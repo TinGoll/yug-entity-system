@@ -3,6 +3,7 @@ import { ApiEntity, EngineObjectType, ApiComponent } from "./@engine-types";
 import { Engine } from "./Engine";
 import MultipleEmitter from "./other/MultipleEmitter";
 import SingleEmitter from "./other/SingleEmitter";
+import { Subscriber } from "./systems/Subscriber";
 
 const engineEvensArray = [
     "Engine: create",
@@ -55,8 +56,25 @@ export default class Events extends EventEmitter {
         return this.emit(eventName, ...args);
     }
 
-
     // События, связанные с созданием, обновлением, удалением или загрузкой объектов движка.
+
+    /**
+     * Оповещение одного подписчика, первый аргумент функции listener - Subscriber
+     * @param type 'One'
+     * @param listener функция слушателя, сработает при оповещении
+     */
+    onNotify(type: 'One', listener: (subscriber: Subscriber, ...args: any[]) => Promise<void>): this;
+    /**
+     * Широковещательное оповещение.
+     * @param type 'Broadcast'
+     * @param listener  функция слушателя, сработает при оповещении
+     */
+    onNotify(type: 'Broadcast', listener: (...args: any[]) => Promise<void>): this;
+    onNotify(type: string, listener: EventListener): this {
+        const eventName = `notify-${type}`;
+        this.singleEmitter.on(eventName, listener);
+        return this;
+    }
 
     onLoad(type: 'entity', method: 'Find One', listener: (key: string) => Promise<ApiEntity[]>): this;
     onLoad(type: 'entity', method: 'Find All',
@@ -134,4 +152,24 @@ export default class Events extends EventEmitter {
         const eventName = `deleted-object-${type}`;
         return this.singleEmitter.emit(eventName, ...args);
     }
+
+
+    /**
+     * Оповестить одного подписчика
+     * @param type 'One'
+     * @param args аргументы
+    */
+    notifyEmit(type: 'One', subscriber: Subscriber, ...args: any[]): Promise<void>;
+    /**
+     * Широковещательная рассылка
+     * @param type 'Broadcast'
+     * @param args аргументы
+     */
+    notifyEmit(type: 'Broadcast', ...args: any[]): Promise<void>;
+    notifyEmit(type: string, ...args: any[]): Promise<any> {
+        const eventName = `notify-${type}`;
+        return this.singleEmitter.emit(eventName, ...args);
+    }
+
+
 }

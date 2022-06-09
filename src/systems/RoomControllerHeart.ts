@@ -20,19 +20,40 @@ export default abstract class RoomControllerHeart<T extends any = string, U exte
      * @param createRoom В случае, если необходимо создать нестандартный объект комнаты. В качестве аргументов, принимает набор для создания Room
      */
     openRoom<R extends U>(key: T, finall: (err: Error | null, room: R | null) => void, createRoom?: (...args: [key: T, engine:Engine, entity: Entity]) => R): void {
-        const loadedRoom = this.getRoomToKey(key);
-        if (!loadedRoom) {
-            this.engine.creator.open(<string>key).then((entity) => {
-                if (!entity) return finall(new Error(`Сущность с ключем "${key}" не существует.`), null);
-                if (createRoom && typeof createRoom  === "function") {
-                    return finall(null, this.add(key, createRoom(key, this.engine, entity)));
-                }else {
-                    return finall(null, this.add<R>(key, <R>(<unknown>(new DefaultRoom(<string>key, this.engine, entity)))));
-                }
-            })
-        }else{
-            finall(null, <R> loadedRoom);
+       try {
+            const loadedRoom = this.getRoomToKey(key);
+            if (!loadedRoom) {
+                this.engine.creator.open(<string>key).then((entity) => {
+                    if (!entity) return finall(new Error(`Сущность с ключем "${key}" не существует.`), null);
+                    if (createRoom && typeof createRoom  === "function") {
+                        return finall(null, this.add(key, createRoom(key, this.engine, entity)));
+                    }else {
+                        return finall(null, this.add<R>(key, <R>(<unknown>(new DefaultRoom(<string>key, this.engine, entity)))));
+                    }
+                })
+            }else{
+                finall(null, <R> loadedRoom);
+            }
+       } catch (e) {
+           throw e;
+       }
+    }
+
+    /**
+     * Поиск первой комнаты, в которой открыта сущность.
+     * @param key ключ сущности.
+     * @returns Комната или null
+     */
+    async findRoomToEntityKey(key: string): Promise<U | null> {
+        let result: U | null = null;
+        for (const room of this.rooms.values()) {
+            const findedKey = (await room.getEntityKeys()).find(k => k === key);
+            if (findedKey) {
+                result = room;
+                break;
+            }
         }
+        return result;
     }
 
     /**
