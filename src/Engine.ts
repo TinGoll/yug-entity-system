@@ -92,13 +92,15 @@ export class Engine extends Map<string, EntityShell> {
             const AllCloneable = await this.deep_cloning(childs, candidate.options.key);
             AllCloneable.unshift(candidate);
             // Отправка на сохранение.
-            // this.signEntities(AllCloneable)
-            //     .then() // Если успешно
-            //     .catch() // если ошибка
-            //     .finally(); // в любом случае.
-            await this.signEntities(AllCloneable)
-            const action: EngineAction = "create-entity-shell"
-            this._events.notifyEmit("Broadcast", action, candidate); // Общая рассылка будет раньше чем личная отправка.
+            this.signEntities(AllCloneable)
+                .then( (savedShells ) => {
+                    const action: EngineAction = "create-entity-shell"
+                    this._events.notifyEmit("Broadcast", action, savedShells); 
+                }) // Если успешно
+                .catch() // если ошибка
+                .finally(); // в любом случае.
+            //await this.signEntities(AllCloneable) // Общая рассылка будет раньше чем личная отправка.
+
             return candidate;
         } catch (e) {
             console.log(e);
