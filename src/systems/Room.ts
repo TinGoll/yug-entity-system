@@ -123,6 +123,16 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
         this._entity = entity || null;
         return this;
     }  
+    /**
+     * Существет ли ключ сущности в данной комнате
+     * @param key ключ 
+     * @returns boolean
+     */
+    async existsEntityKey (key: string): Promise<boolean> {
+        const keys = await this.getEntityKeys();
+        return Boolean(keys.find(k => k === key))
+    }
+
     /** Получить главную сущность комнаты */ 
     get entity() { return this.getEntity() }
     set entity(entity: Entity | null) { this.setEntity(entity)}
