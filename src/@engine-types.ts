@@ -82,3 +82,10 @@ export interface ComponentShell {
 export interface ISerializableShell {
     options: ISerializable;
 }
+
+/****************************************************** */
+export type EngineAction = typeof actions[number]
+/****************************************************** */
+/** Массив методов. */
+const actions = ['delete-entity-shell', 'create-entity-shell', 'update-entity-shell'] as const
+/****************************************************** */

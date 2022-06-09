@@ -1,4 +1,4 @@
-import { ApiComponent, ApiEntity, ComponentIndicators, ComponentShell, EntityDto, EntityShell, ISerializable } from "./@engine-types";
+import { ApiComponent, ApiEntity, ComponentIndicators, ComponentShell, EngineAction, EntityDto, EntityShell, ISerializable } from "./@engine-types";
 import uuid from 'uuid-random';
 import Events from "./Events";
 import Creator from "./Creator";
@@ -178,15 +178,14 @@ export class Engine extends Map<string, EntityShell> {
         this.set(shell.options.key, shell);
         this.signEntities([shell])
             .then((response: EntityShell [] ) => {
-                //console.log(JSON.stringify(response, null, 2));
-                // Уведомить о присвоении id
-                //console.log("Ответ", response[0]);
+                // Уведомление об успешной записи в хранилище.
+                const action: EngineAction = "create-entity-shell"
+                this._events.notifyEmit("Broadcast", action, response);
             })
             .catch((reject: [Error, Array<EntityShell>]) => {
                 // Уведомить о то что запись в базу не удалась
                 const [err, obj] = reject;
-                console.log("Ошибка", err.message);
-                console.log("Оболочка", obj);  
+                this.removeMarkedShells();
             })
             .finally(() => console.log("Операция создания завершена."));
         return shell;
@@ -236,6 +235,25 @@ export class Engine extends Map<string, EntityShell> {
                 sh.options.indicators.is_removable = true
             })
             return Promise.reject([err, shells]);
+        }
+    }
+
+    removeMarkedShells () {
+        try {
+            const keys: string[] = [];
+            for (const shell of this.values()) {
+                if (shell.options.indicators?.is_removable) {
+                    keys.push(shell.options.key);
+                }
+            }
+            if (keys.length) {
+                const action: EngineAction = "delete-entity-shell";
+                this.deleteEntityShell(keys).then(deletedData => {
+                    this._events.notifyEmit("Broadcast", action, deletedData);
+                });
+            }
+        } catch (e) {
+            throw e;
         }
     }
 
@@ -348,7 +366,8 @@ export class Engine extends Map<string, EntityShell> {
                 }
             });
             // Уведомление о обновлении
-            console.log("updatableShells", JSON.stringify(updatableShells, null, 2));
+            const action: EngineAction = "update-entity-shell"
+            this._events.notifyEmit("Broadcast", action, updatableShells)
         })
         .catch(( obj ) => {
             console.log("updateEntityShell Error", obj);
@@ -368,11 +387,8 @@ export class Engine extends Map<string, EntityShell> {
     async deleteEntityShell(keys: Array<string>): Promise<[string[], string[]]> {
         try {
             const deletedKeys = await this.events.deletedEmit("entity", keys);
-            console.log('deletedKeys', deletedKeys);
             const dependencyKeys: string [] = [];
             for (const key of deletedKeys) {
-                console.log('this.delete(key);', this.delete(key));
-                // this.delete(key);
                 dependencyKeys.push(...( await this.remove_dependency(key)))
             }
             return [deletedKeys, dependencyKeys];
@@ -389,12 +405,9 @@ export class Engine extends Map<string, EntityShell> {
     private async remove_dependency (key: string): Promise<string[]> {
         const keys: string [] = [];
         const childs = await this.find(key, "only children");
-
         for (const cld of childs) {
             const childKey = cld.options.key;
-            console.log("первый", this.size);
             this.delete(childKey);
-            console.log("второй", this.size);
             keys.push(childKey);
             keys.push(...(await this.remove_dependency(childKey))); 
         }
