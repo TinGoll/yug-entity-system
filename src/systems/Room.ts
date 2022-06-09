@@ -94,7 +94,8 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
     async getEntityShells(): Promise<EntityShell[]> {
         if (!this._entity || !this._entity?.key) return [];
         const shells = await this.engine.find(this._entity?.key, "all offspring");
-        return [...shells, this._entity.getShell()];
+        // this._entity.getShell()
+        return [...shells,];
     }
 
     /**
@@ -136,9 +137,9 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
     /** Получить главную сущность комнаты */ 
     get entity() { return this.getEntity() }
     set entity(entity: Entity | null) { this.setEntity(entity)}
+
     async getEntityKeys (): Promise<string[]> {
         if (!this._entity) return [];
-        //const shells = await this.engine.find(this._entity?.key, "all offspring");
         const shells = await this.engine.findDynasty(this._entity.key);
         return shells.map(sh => sh.options.key);
     }

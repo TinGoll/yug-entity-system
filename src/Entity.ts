@@ -19,7 +19,7 @@ export default class Entity {
 
     async fullBuild(): Promise<ApiEntity[]> {
         const shells = await this.engine.find(this.key, "all offspring");
-        shells.push(this.shell)
+        //shells.push(this.shell) добавляется в режиме "all offspring"
         return shells.map(shell => ({
             ...shell.options, components: [
                 ...(shell.options.components.map(cmp => ({ ...cmp })))
@@ -114,9 +114,9 @@ export default class Entity {
      */
     async getChangedEntities(): Promise<Entity[]> {
         const tempArr: Entity[] = [];
-        if (this._shell.options?.indicators.is_changeable || this._shell.options?.indicators.is_changeable_component) {
-            tempArr.push(this);
-        }
+        // if (this._shell.options?.indicators.is_changeable || this._shell.options?.indicators.is_changeable_component) {
+        //     tempArr.push(this); Присутствет в режиме "all offspring"
+        // }
         const entityShells = await this.engine.find(this.key, "all offspring");
         for (const iterator of entityShells) {
             if (iterator.options?.indicators.is_changeable || iterator.options?.indicators.is_changeable_component) {
@@ -129,8 +129,9 @@ export default class Entity {
      * Сброс отметок об изменении
      */
     unmarkСhanges (): void {
-        const { is_changeable, is_changeable_component, ...indicators } = this.shell.options.indicators;
-        this.shell.options.indicators = { ...indicators };
+        // const { is_changeable, is_changeable_component, ...indicators } = this.shell.options.indicators;
+        // this.shell.options.indicators = { ...indicators }; Присутствет в режиме "all offspring"
+
         this.engine.find(this.key, "all offspring").then(shells => {
             for (const iterator of shells) {
                 const { is_changeable, is_changeable_component, ...indic } = iterator.options.indicators;

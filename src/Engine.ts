@@ -499,14 +499,13 @@ export class Engine extends Map<string, EntityShell> {
      * @returns EntityShell[]
      */
     async find(key: string, depth?: "children and me" | "only children" | "all offspring"): Promise<EntityShell[]> {
-
         if (!this.has(key)) {
             const result = await this.loadEntityShell(key);
             if (!result) return [];
         }
         const entity = this.get(key)!;
         const apiEntities: EntityShell [] = [];
-        if (!depth || depth === "children and me") apiEntities.push(entity);
+        if (!depth || depth !== "only children") apiEntities.push(entity);
         for (const entry of this) {
             const child = entry[1];
             if (child.options.parentKey === entity.options.key) {
@@ -523,14 +522,11 @@ export class Engine extends Map<string, EntityShell> {
      * @returns EntityShell[]
      */
     async findDynasty(key: string): Promise<EntityShell[]> {
-
         if (!this.has(key)) {
             const result = await this.loadEntityShell(key);
             if (!result) return [];
         }
         const ancestor = await this.findAncestor(key);
-        console.log('ancestor', ancestor);
-         
         return this.find(ancestor?.options?.key || key, "all offspring");
     }
 
