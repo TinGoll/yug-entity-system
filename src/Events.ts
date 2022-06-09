@@ -63,13 +63,13 @@ export default class Events extends EventEmitter {
      * @param type 'One'
      * @param listener функция слушателя, сработает при оповещении
      */
-    onNotify(type: 'One', listener: (subscriber: Subscriber, ...args: any[]) => Promise<void>): this;
+    onNotify(type: 'One', listener: (engine: Engine, subscriber: Subscriber, ...args: any[]) => Promise<void>): this;
     /**
      * Широковещательное оповещение.
      * @param type 'Broadcast'
      * @param listener  функция слушателя, сработает при оповещении
      */
-    onNotify(type: 'Broadcast', listener: (action: string, ...args: any[]) => Promise<void>): this;
+    onNotify(type: 'Broadcast', listener: (engine: Engine, action: string, ...args: any[]) => Promise<void>): this;
     onNotify(type: string, listener: EventListener): this {
         const eventName = `notify-${type}`;
         this.singleEmitter.on(eventName, listener);
@@ -168,7 +168,7 @@ export default class Events extends EventEmitter {
     notifyEmit(type: 'Broadcast', action: string, ...args: any[]): Promise<void>;
     notifyEmit(type: string, ...args: any[]): Promise<any> {
         const eventName = `notify-${type}`;
-        return this.singleEmitter.emit(eventName, ...args);
+        return this.singleEmitter.emit(eventName, this.engine, ...args);
     }
 
 

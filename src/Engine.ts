@@ -98,7 +98,7 @@ export class Engine extends Map<string, EntityShell> {
             //     .finally(); // в любом случае.
             await this.signEntities(AllCloneable)
             const action: EngineAction = "create-entity-shell"
-            this._events.notifyEmit("Broadcast", action, candidate); // Попробовать оптимизировать.
+            this._events.notifyEmit("Broadcast", action, candidate); // Общая рассылка будет раньше чем личная отправка.
             return candidate;
         } catch (e) {
             console.log(e);
