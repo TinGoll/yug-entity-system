@@ -107,6 +107,7 @@ export class Engine extends Map<string, EntityShell> {
             return null;
         }
     }
+
     /**
      * приватный метод клонирования.
      * @param shell оболочка
@@ -157,8 +158,6 @@ export class Engine extends Map<string, EntityShell> {
         }
         return tempArr;
     }
-
-
 
     // ******************************** СОЗДАНИЕ СУЩНОСТЕЙ ***************************
 
@@ -302,6 +301,7 @@ export class Engine extends Map<string, EntityShell> {
             )
         });
     } 
+
     /**
      * Подпись компонентов, присвоение id
      * @param components 
@@ -314,6 +314,7 @@ export class Engine extends Map<string, EntityShell> {
             return Promise.reject([err, components]);
         }
     }
+
     /**
      * Обновление компонентов.
      * @param components 
@@ -341,7 +342,7 @@ export class Engine extends Map<string, EntityShell> {
                     .map(c => ({ ...c })))
                 return acc;
             }, []);
-
+        // Сохранение изменений в базу данных.
         const updateResult = Promise.all([
             this.events.updatedEmit("entity", updatableEntities), 
             this.events.updatedEmit("component", updatableComponents)]);
@@ -370,15 +371,14 @@ export class Engine extends Map<string, EntityShell> {
                 }
             });
             // Уведомление о обновлении
-            const action: EngineAction = "update-entity-shell"
-            this._events.notifyEmit("Broadcast", action, updatableShells)
+            const action: EngineAction = "update-entity-shell";
+            this._events.notifyEmit("Broadcast", action, updatableShells);
         })
         .catch(( obj ) => {
             console.log("updateEntityShell Error", obj);
         })
         return updatableShells;
     }
-
 
     // ******************************* УДАЛЕНИЕ СУЩНОСТЕЙ ****************************
 
@@ -417,7 +417,6 @@ export class Engine extends Map<string, EntityShell> {
         }
         return keys;
     }
-
 
     // ******************************* ЗАГРУЗКА СУЩНОСТЕЙ ****************************
 

@@ -125,6 +125,7 @@ export default class Entity {
         }
         return tempArr;
     }
+
     /**
      * Сброс отметок об изменении
      */
@@ -140,6 +141,8 @@ export default class Entity {
         })
     }
 
+
+
     /**
      * Пересчет формул, и получение всех измененных свойств.
      */
@@ -150,7 +153,7 @@ export default class Entity {
                 const val = await this.get_property_value(component);
                 if (component.indicators.is_changeable) tempArr.push(component);
             }
-        })
+        });
         const children = await this.getChildren();
         for (const iterator of children) {
             const cmps = await iterator.recalculation();
@@ -158,6 +161,15 @@ export default class Entity {
         }
         return tempArr;
     }
+
+    /**
+     * Отправка изменений в хранилище.
+     */
+    writeChanges () {
+        this.getChangedEntities()
+            .then(entities => this._engine.updateEntityShell(entities.map(e => e.shell)));
+    }
+
 
     /**
      * Получить значение компонента сущности.
@@ -213,7 +225,7 @@ export default class Entity {
      */
     setValueToKey(key: string, value: PropertyValue, manualChange: boolean = true): this {
         const cmp = this._shell.options.components?.find(c => c.key === key);
-        if (!cmp) throw new Error(`getValueToKey: <${this.name} (${this.category})> Свойство ключу <${key}> не найдено.`);
+        if (!cmp) throw new Error(`getValueToKey: <${this.name} (${this.category})> Свойство по ключу <${key}> не найдено.`);
         return this.set_property(cmp, value, manualChange)
     }
 
@@ -242,36 +254,43 @@ export default class Entity {
     private set_property(cmp: ApiComponent, value: PropertyValue, manualChange: boolean = true): this {
         try {
             if (!cmp) throw new Error("Некорректный объект компонента.");
-            const isReadonly = this.existAttribute(cmp.componentName, cmp.propertyName, "readonly");
+            const isReadonly = this.attribute_exists(cmp, "readonly");
             const previusValue: PropertyValue = cmp.propertyValue;
             const type = cmp.propertyType;
             let tempValue: PropertyValue;
             if (isReadonly && manualChange) throw new Error("Изменение свойства запрещено, так как установлен 'readonly' атрибут.");
             switch (type) {
-                case 'string':
-                    tempValue = String(value);
+                case 'string': tempValue = String(value);
                     break;
-                case 'boolean':
-                    tempValue = Boolean(value);
+                case 'boolean': tempValue = Boolean(value);
                     break;
-                case 'number':
-                    tempValue = Number(value);
+                case 'number': tempValue = Number(value);
                     break;
-                case 'date':
-                    tempValue = new Date(<string>value);
+                case 'date': tempValue = new Date(<string>value);
                     break;
-                default:
-                    tempValue = String(value);
+                default: tempValue = String(value);
             }
 
             if (tempValue !== previusValue) {
-                // this.options.isChange = true;
-                // cmp.isChange = true;
-                // cmp.changedByUser = prod;
-                // this.historyRepository
-                //     .push(`изменение свойства "${cmp.propertyDescription}": ${previusValue} => ${tempValue}`,
-                //         { entityKey: this.key, componentKey: cmp.key }, "high");
-                // cmp.propertyValue = tempValue;
+                // Устанавливаем индикаторы, о изменении компонента. 
+                cmp.indicators = { ...cmp.indicators, is_changeable: true };
+                // Устанавливам индикатор, о изменении компонента в родительской сущности
+                this._shell.options.indicators = { ...this._shell.options.indicators, is_changeable_component: true };
+
+                // Сохраняем предыдущее значение
+                cmp.previousValue = String(previusValue);
+                
+                // присваимваем новое значение
+                cmp.propertyValue = String(tempValue);
+
+                // Записать в историю.
+                // TODO
+    
+                // Отправка на сохранение данных в хранилище.
+                // ******************************************************
+                // Делегируем задачу по обновлению, на вызывающую сторону, 
+                // Для того, что бы обновлять данные массивом, после пересчета формул.
+                // ******************************************************
             }
             return this;
         } catch (e) {
@@ -335,16 +354,30 @@ export default class Entity {
     existAttribute(componentName: string, propertyName: string, attribute: PropertyAttribute): boolean {
         try {
             if (!componentName || !propertyName || !attribute) return false;
-            const findAtt = attribute?.replace(/\s+/g, '').replace(/\;/g, "");
             const cmp = (this._shell?.options?.components || [])
                 .find(c => c.componentName === componentName && c.propertyName === propertyName);
             if (!cmp) return false;
-            const attributeArr = (cmp.attributes?.replace(/\s+/g, "").split(";")) || [];
-            return !!(attributeArr.find(a => a.toUpperCase() === findAtt.toUpperCase()));
+            return this.attribute_exists(cmp, attribute);
         } catch (e) {
             throw e;
         }
     }
+    /**
+     * Приватный, технический метод, поиска атрибута
+     * @param cmp ApiComponent
+     * @param attribute PropertyAttribute
+     * @returns boolean
+     */
+    private attribute_exists(cmp: ApiComponent, attribute: PropertyAttribute): boolean {
+        try {
+            const findAtt = attribute?.replace(/\s+/g, '').replace(/\;/g, "");
+            const attributeArr = (cmp.attributes?.replace(/\s+/g, "").split(";")) || [];
+            return !!(attributeArr.find(a => a.toUpperCase() === findAtt.toUpperCase()));
+        } catch (e) {
+            console.log('attribute_exists', (e as Error).message);
+            return false;
+        }
+    } 
 
     // Гетеры
 

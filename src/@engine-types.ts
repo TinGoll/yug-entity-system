@@ -11,6 +11,7 @@ export interface ObjectIndicators {
     is_unwritten_in_storage ?: boolean;
     is_removable ?: boolean;
     is_failed_update?: boolean;
+    // is_need_an_update?: boolean;
 }
 /** Вспомогательные индикаторы для сущности, данные хранятся только в течении выполнения процедуры. */
 export interface EntityIndicators extends ObjectIndicators {
