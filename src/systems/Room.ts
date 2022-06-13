@@ -80,14 +80,20 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
      * @param key ключ сущности.
      * @param propertyKey ключ изменяемого свойства.
      * @param value новое значение.
+     * @param args дополнительно можно передать подписчика
      */
-    async editEntityToKey (key: string, propertyKey: string, value: PropertyValue): Promise<void> {
+    async editEntityToKey (key: string, propertyKey: string, value: PropertyValue, args: any[]): Promise<void> {
         const entity = await this._entity?.getEntityToKey(key);
+        const [ subscriber ] = <[subscriber: Subscriber, ...other: any[]]> args;
+
         if (this._entity && entity) {
             entity.setValueToKey(propertyKey, value);
             await this._entity?.recalculation();
             const changedEntity = await this._entity.getChangedEntities();
             const result = this.engine.updateEntityShell(changedEntity?.map(e => e.getShell()));
+            if (subscriber) {
+                this.engine.events.notifyEmit("One", subscriber, result);
+            }
             // Запись в базу данных, всех изменений и уведомление.
         }
     }
