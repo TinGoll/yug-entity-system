@@ -1,5 +1,6 @@
 import { ApiComponent, ApiEntity, EntityIndicators, EntityShell, PropertyAttribute, PropertyType, PropertyValue } from "./@engine-types";
 import { Engine } from "./Engine";
+import { formulaExecutor } from "./FormulaExecutor";
 
 export default class Entity {
     private _shell: EntityShell;
@@ -8,6 +9,15 @@ export default class Entity {
     constructor(shell: EntityShell, engine: Engine) {
         this._shell = shell;
         this._engine = engine;
+    }
+
+    /**
+     * Получение данных для редактора формул
+     */
+    getPreparationData(componentKey: string) {
+        const cmp = this.getComponents().find(c => c.key === componentKey);
+        if (!cmp) return;
+        return formulaExecutor.bind(this)(cmp, '', 'preparation');
     }
 
     async build (): Promise<ApiEntity[]> {
@@ -307,17 +317,18 @@ export default class Entity {
         try {
             if (!cmp) throw new Error("Некорректное свойство компонента.")
             const type: PropertyType = cmp.propertyType || 'string';
-            const previusValue = cmp.propertyValue;
+            const previusValue = this.convert_value_by_type(type, cmp.propertyValue);
             const formula = cmp.propertyFormula;
             let value: PropertyValue | null = null;
             if (formula && formula != '') {
-                // const result = <PropertyValue | null>(formulaExecutor.bind(this)(cmp, formula, "execution", (err) => {
-                //     this.historyRepository.push(`<${this.name}> Ошибка вычисления формулы, свойство ${cmp.propertyDescription}, комопнента ${cmp.componentDescription}: ${err.message}`,
-                //         { entityKey: this.key, componentKey: cmp.key }, "error")
-                // }));
-                // value = this.get_value(type, result === null ? previusValue : result)
-               
-                // this.setPropertyValueToKey(cmp.key, value, false)
+                const formulaResult = <PropertyValue | null>(await formulaExecutor.call(this, cmp, formula, "execution"));
+                value = formulaResult === null? null : this.convert_value_by_type(type, formulaResult) ;
+                if (value! == previusValue) {
+                    this.set_property(cmp, value, false);
+                    cmp.indicators = {...cmp.indicators, is_changeable: true};
+                    this._shell.options.indicators = { ...this._shell.options.indicators, is_changeable_component: true}
+                }
+                
             } else {
                 value = this.convert_value_by_type(type, previusValue);
             }
@@ -380,6 +391,46 @@ export default class Entity {
     } 
 
     // Гетеры
+
+    /**
+     * Получение родительской сущности
+     * @returns Promise<Entity | null>
+     */
+    async getParent (): Promise<Entity | null> {
+        // Получаем оболочку родительской сущности.
+        const shell = await this.engine.findParent(this._shell.options.key);
+        if (!shell) return null;
+        return this._engine.creator.shellToEntity(shell);
+    }
+    get parent():Promise<Entity | null > {
+        return this.getParent()
+    }
+
+    /**
+     * Получение главной сущности.
+     * @returns Promise<Entity | null> 
+     */
+    async getOverEntity (): Promise<Entity | null> {
+        const shell = await this._engine.findAncestor(this._shell.options.key)
+        if (!shell) return null;
+        return this._engine.creator.shellToEntity(shell);
+    }
+    /**
+     * Получение "братских" сущностей.
+     * @returns Promise<Entity[]>
+     */
+    async getBrothers (): Promise<Entity[]>{
+        return (await this.getParent())?.getChildren() || [];
+    }
+    /**
+     * Получение всех зависимых сущностей, для текущей сущности.
+     * начиная от высшей, до всех дочерних в том числе и сама сущность
+     * @returns 
+     */
+    async getDynasty (): Promise<Entity[]> {
+        const dynasy = await this.engine.findDynasty(this._shell.options.key);
+        return dynasy.map(sh => this.engine.creator.shellToEntity(sh));
+    }
 
     /** Получить список компонентов сущности */
     getId(): number {return this._shell.options.id || 0}

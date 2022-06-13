@@ -63,7 +63,6 @@ export default class Component {
                     is_changeable: true
                 }
             }
-            //console.log(`Свойство ${propertyName} компонента ${this.componentName}, было перезаписано новыми данными.`);
             return this;
         }
         const cmp: ApiComponent = {

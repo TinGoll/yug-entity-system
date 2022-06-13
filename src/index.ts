@@ -11,7 +11,7 @@ import RoomControllerHeart from "./systems/RoomControllerHeart";
 import { Subscriber, SubscriberData } from "./systems/Subscriber";
 
 
-//import { insertEntities, insertComponents, loadingEntities, deleteEntities, updateEntities, updateComponents } from "./testing/db-function";
+// import { insertEntities, insertComponents, loadingEntities, deleteEntities, updateEntities, updateComponents } from "./testing/db-function";
 
 // const engine = Engine.create().start();
 // const events = engine.events;
@@ -26,7 +26,7 @@ import { Subscriber, SubscriberData } from "./systems/Subscriber";
 
 // events
 //     .onNotify("Broadcast", async (...args: any[])=>{
-//         console.log(args);
+     
         
 //     })
 
@@ -43,15 +43,33 @@ import { Subscriber, SubscriberData } from "./systems/Subscriber";
 //             componentDescription: "", 
 //             indicators: {}, 
 //             propertyDescription: "", 
-//             propertyValue: 0 
+//             propertyValue: 1000
+//         },
+//         {
+//             componentName: "geo",
+//             propertyName: "w",
+//             propertyType: "number",
+//             index: 0,
+//             key: engine.keyGenerator("cmp:"),
+//             id: 0,
+//             componentDescription: "",
+//             indicators: {},
+//             propertyDescription: "",
+//             propertyValue: 333,
+//             propertyFormula: `
+//                 const res = await ME("geo", "h");
+//                RESULT = THIS;
+//             `
 //         }
 //     ]
 // });
 
+
+
+
+
 // engine.cloneEntityShell(shell.options.key)
 //     .then(entityShell => {
-//         console.log("Начало", engine.size);
-//         console.log(entityShell?.options.key);
 
 //         if (entityShell) {
 //             entityShell.options.indicators.is_changeable = true
@@ -59,7 +77,12 @@ import { Subscriber, SubscriberData } from "./systems/Subscriber";
 //             entityShell.options.components = entityShell.options.components.map(c => ({...c, indicators: { ...c.indicators, is_changeable: true}}))
 //             const r =  engine.updateEntityShell([entityShell])
 //             console.log("Моментальный результат обновления", r);
-            
+
+//             engine.creator.open(entityShell.options.key).then(entity => {
+//                 if (entity) {   
+//                     entity.getValue("geo", "w").then(r => console.log('РЕЗУЛЬТАТ ВЫПОЛЕНЕНИЯ',r))
+//                 }
+//             })
 //         }
 //         //  engine.deleteEntityShell([entityShell!.options.key])
 //         //      .then((res) => console.log("Финал", res));

@@ -604,7 +604,6 @@ export class Engine extends Map<string, EntityShell> {
      * @param dt Время прошедшее между тактами.
      */
     protected update(dt: number) {
-        //console.log(dt);
         this._timers.update(dt);
         this._roomController?.update(dt);
     }
