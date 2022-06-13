@@ -90,11 +90,11 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
             entity.setValueToKey(propertyKey, value);
             await this._entity?.recalculation();
             const changedEntity = await this._entity.getChangedEntities();
+            // Запись в базу данных, всех изменений и уведомление.
             const result = this.engine.updateEntityShell(changedEntity?.map(e => e.getShell()));
-            if (subscriber) {
+            if (subscriber && subscriber.data?.key) {
                 this.engine.events.notifyEmit("One", subscriber, result);
             }
-            // Запись в базу данных, всех изменений и уведомление.
         }
     }
 

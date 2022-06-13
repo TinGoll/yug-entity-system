@@ -432,6 +432,13 @@ export class Engine extends Map<string, EntityShell> {
         }
     }
 
+    async loadEntitiyShells({ sample, where }: { where?: { id?: Array<number>, keys?: Array<string>, categories?: Array<string>, }, sample?: boolean }): Promise<void> {
+        const loadedEntities = await this.events.loadEmit("entity", "Find All", { sample, where });
+        for (const entity of loadedEntities) {
+            this.pushEntity(entity);
+        }
+    }
+
     private pushEntity (api: ApiEntity) {
         if (this.has(api.key)) {
             this.get(api.key)!.options = { ...api }
