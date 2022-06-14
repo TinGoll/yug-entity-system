@@ -76,6 +76,7 @@ export default class Events extends EventEmitter {
         return this;
     }
 
+    onLoad(type: 'component', method: 'Find All', listener: (params: { sample?: boolean }) => Promise<ApiComponent[]>): this;
     onLoad(type: 'entity', method: 'Find One', listener: (key: string) => Promise<ApiEntity[]>): this;
     onLoad(type: 'entity', method: 'Find All',
         listener: (params: { where?: { id?: Array<number>, keys?: Array<string>, categories?: Array<string>, }, sample?: boolean }) => Promise<ApiEntity[]>): this;
@@ -124,7 +125,8 @@ export default class Events extends EventEmitter {
     // Эмиттеры - инициализаторы, которые нужно вызывать, для получения или модификации объектов.
     // *******************************************************************************
 
-    loadEmit(type: 'entity', method: 'Find One', key: string): Promise<ApiEntity[]>
+    loadEmit(type: 'component', method: 'Find All', params: { sample?: boolean }): Promise<ApiComponent[]>;
+    loadEmit(type: 'entity', method: 'Find One', key: string): Promise<ApiEntity[]>;
     loadEmit(type: 'entity', method: 'Find All',
         params: { where?: { id?: Array<number>, keys?: Array<string>, categories?: Array<string>, }, sample?: boolean }): Promise<ApiEntity[]>
     loadEmit(type: EngineObjectType, method: LoadMethod, ...args: any[]): Promise<any> {

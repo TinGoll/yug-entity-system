@@ -260,6 +260,12 @@ export class Engine extends Map<string, EntityShell> {
         }
     }
 
+
+    /**
+     * Создание компонента
+     * @param components 
+     * @returns 
+     */
     createComponentApi (...components: ApiComponent[]): ApiComponent[] {
         const newComponents = this.clone_component_api(
             this.creator.concatenateApiComponents(...this.componentList.values(),...components));
@@ -419,6 +425,25 @@ export class Engine extends Map<string, EntityShell> {
     }
 
     // ******************************* ЗАГРУЗКА СУЩНОСТЕЙ ****************************
+   
+
+    /**
+     * 
+     * @returns 
+     */
+    async loadComponents({ sample }: { sample?: boolean }): Promise<ApiComponent[]> {
+        try {
+            const loadedComponents = await this.events.loadEmit("component", "Find All", { sample: !!sample });
+            for (const cmp of this.creator.concatenateApiComponents(...this.componentList.values(), ...loadedComponents)) {
+                const { is_unwritten_in_storage, is_changeable, ...indicators } = cmp.indicators;
+                cmp.indicators = { ...indicators };
+                this.componentList.set(cmp.key, cmp)
+            }
+            return loadedComponents;
+        } catch (e) {
+            throw e;
+        }
+    }
 
     async loadEntityShell (key: string): Promise<EntityShell | null> {
         try {
