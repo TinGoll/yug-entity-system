@@ -136,6 +136,18 @@ export async function formulaExecutor(this: Entity,
                 console.log('Formula => S_CHILDS', (e as Error).message);
             }
         }
+
+        const BROTHERS = async (entityName: string, note: string | undefined = undefined, cmpName: string, probName: string): Promise<PropertyValue | null> => {
+            try {
+                const index = brothers.findIndex(b => b.name.toUpperCase() === entityName.toUpperCase()
+                    && (b.note || "").toUpperCase() === (note || '').toUpperCase());
+                if (index === -1) return null;
+                return brothers[index].getValue(cmpName, probName);
+            } catch (e) {
+                console.log('Formula => BROTHERS', (e as Error).message);
+                return null;
+            }
+        }
     
         /** ************************************** */
         /** ************* Функции **************** */
