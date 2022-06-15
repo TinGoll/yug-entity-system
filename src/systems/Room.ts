@@ -1,4 +1,4 @@
-import { EngineAction, EntityShell, PropertyValue } from "../@engine-types";
+import { ApiComponent, EngineAction, EntityShell, PropertyValue } from "../@engine-types";
 import { Engine } from "../Engine";
 import Entity from "../Entity";
 import RoomController from "./RoomController";
@@ -19,6 +19,7 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
         this.engine = engine;
         this.roomController = engine.roomController;
         this._entity = entity || null;
+        this.recalculation();
     }
 
     /** Подписка */
@@ -72,6 +73,22 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
                 this.engine.events.notifyEmit("Broadcast", action, deletedKey);
                 
             }
+        }
+    }
+
+    /**
+     * Функция персчета всех сущностей, принадлежащей комнате.
+     * Функция, так же отправляет на сохранение изменнные сущности.
+     * И возвращает массив измененных оболочек сущностей и компонентов (Кортеж) [EntityShell[], ApiComponent[]].
+     */
+    async recalculation (): Promise<[EntityShell[], ApiComponent[]]> {
+        try {
+            const changedComponent = await this._entity?.recalculation() || [];
+            const changedEntity = await this._entity?.getChangedEntities() || [];
+            const result = this.engine.updateEntityShell(changedEntity?.map(e => e.getShell()));
+            return [[...result], [...changedComponent]];
+        } catch (e) {
+            throw e;
         }
     }
 
@@ -133,6 +150,7 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
      */
     setEntity(entity: Entity | null): this {
         this._entity = entity || null;
+        this.recalculation();
         return this;
     }  
     /**
