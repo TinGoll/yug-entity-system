@@ -1,4 +1,4 @@
-import { ApiComponent, ApiEntity, ComponentIndicators, ComponentShell, EngineAction, EntityDto, EntityShell, ISerializable } from "./@engine-types";
+import { ApiComponent, ApiEntity, ComponentDto, ComponentIndicators, ComponentShell, EngineAction, EntityDto, EntityShell, ISerializable } from "./@engine-types";
 import uuid from 'uuid-random';
 import Events from "./Events";
 import Creator from "./Creator";
@@ -160,6 +160,34 @@ export class Engine extends Map<string, EntityShell> {
     }
 
     // ******************************** СОЗДАНИЕ СУЩНОСТЕЙ ***************************
+
+    /**
+     * Создание нового шаблона компонента
+     * @param dto 
+     * @param components 
+     * @returns 
+     */
+    createSampleComponent(dto: ComponentDto, ...components: ApiComponent[]):ApiComponent[] {
+       try {
+            dto.sampleKey = undefined;
+            dto.entityKey = undefined;
+            const candidate = [...this.componentList.values()].find(c => c.componentName === dto.componentName && c.propertyName === dto.propertyName);
+           if (candidate) throw new Error("Такой компонент уже существует.");
+            const component =  this.creator.create("component", dto, ...components);
+           const apiData = [...component];
+           for (const cmp of apiData) {
+               this.componentList.set(cmp.key, cmp);
+           }
+           return apiData;
+       } catch (e) {
+           throw e;
+       }
+    }
+
+    updateSampleComponent (componentKey: string, dto: ComponentDto) {
+
+    }
+
 
     /**
      * Синхронный метод, для создания сущностей. Метод подписывает сущности.
@@ -426,7 +454,7 @@ export class Engine extends Map<string, EntityShell> {
 
     // ******************************* ЗАГРУЗКА СУЩНОСТЕЙ ****************************
    
-
+  
     /**
      * 
      * @returns 
@@ -610,6 +638,10 @@ export class Engine extends Map<string, EntityShell> {
 
     get components (): ApiComponent[] {
         return [...this.componentList.values()]
+    }
+
+    getComponentList () {
+        return this.componentList;
     }
 
     // *******************************************************************************

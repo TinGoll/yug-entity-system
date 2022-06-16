@@ -1,6 +1,7 @@
 
 import { timing } from "./@decorators";
 import { ApiEntity, ApiComponent, PropertyValue, PropertyType, PropertyAttribute } from "./@engine-types";
+import Component from "./Component";
 import { Engine } from "./Engine";
 import AttributeCreator from "./other/AttributeCreator";
 import MultipleEmitter from "./other/MultipleEmitter";
@@ -226,7 +227,8 @@ export {
     MultipleEmitter,
     SingleEmitter,
     TimerController,
-    SubscriberData
+    SubscriberData,
+    Component
 };
 
 
