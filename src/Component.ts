@@ -24,6 +24,21 @@ export default class Component {
         this.entityKey = entityKey;
         this.concatenate(...properties);
     }
+
+    setPropertiesBykey (key: string, dto: ComponentDto): this {
+        const cmp = this.properties.find(p => p.key === key);
+        if (cmp) {
+            const { componentName, componentDescription, key, id, indicators, ...other } = (dto as ApiComponent);
+            cmp.attributes = other.attributes;
+            cmp.bindingToList = other.bindingToList;
+            cmp.propertyDescription = other.propertyDescription;
+            cmp.propertyName = other.propertyName;
+            cmp.previousValue = other.previousValue;
+            cmp.propertyFormula = other.propertyFormula;
+            cmp.indicators = { ...cmp.indicators, is_changeable: true }
+        }
+        return this;
+    }
     
     /**
      * Метод создает объект класса AttributeCreator, для формирования атрибутов.

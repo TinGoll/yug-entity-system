@@ -112,7 +112,11 @@ export default class Creator {
         return shells.map(shell => 
             new Entity(shell, this._engine))
     }
-
+    /**
+     * Открытие компонента, в виде инстанса класа Комопнента, по имени.
+     * @param componentName 
+     * @returns 
+     */
     async openSampleComponent (componentName: string): Promise<Component | null> {
         if (!this.engine.getComponentList().size) {
            await this.engine.loadComponents({sample: true });
