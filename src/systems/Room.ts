@@ -134,6 +134,22 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
         return this._entity?.getChildren() || [];
     }
     /**
+     * Получить сущность комнаты по ключу.
+     * @param key ключ сущгости.
+     */
+    async getEntityRoom (key: string): Promise<Entity|null> {
+        try {
+            if (!this._entity) return null;
+            const shells = await this.engine.findDynasty(this._entity.key);
+            const candidateShell = shells.find(sh => sh.options.key === key);
+            if (!candidateShell) return null;
+            return this.engine.creator.shellToEntity(candidateShell);
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
      * Получить главную сущность комнаты.
      * @returns Entity или null
      */

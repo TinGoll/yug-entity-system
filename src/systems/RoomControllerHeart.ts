@@ -12,6 +12,11 @@ export default abstract class RoomControllerHeart<T extends any = string, U exte
         this.rooms = new Map<T, U>();
     }
 
+    roomEvents () {
+        const timers = this.engine.timers;
+        timers.create("Checking for empty rooms", 60, this.сheckingRooms)
+    }
+
     /**
      * Открывает текущую или создает новую комнату.
      * приниает в качестве аргумента ключ комнаты, и две callback функции
@@ -69,7 +74,25 @@ export default abstract class RoomControllerHeart<T extends any = string, U exte
     /** Обновление такта для всех комнат. */
     async update (dt: number): Promise<void> {
         this.rooms.forEach(room => room.update(dt));
+
     }
+
+    /**
+     * Проверка комнат, на наличие подписчиков. В случае если комната пуста, она будет удалена.
+     */
+    async сheckingRooms(stop: true, currentTime: number, next: (time: number) => void) {
+        try {
+            
+            for (const room of this.rooms.values()) {
+                if (room.isEmpty()) {
+                    this.remove(<T>room.key)
+                }
+            }
+        } catch (e) {
+            throw e;
+        }
+    }
+
     /**
      * Удаление комнаты
      * @param roomKey ключ комнаты
