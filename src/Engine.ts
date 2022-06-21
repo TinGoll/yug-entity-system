@@ -268,7 +268,7 @@ export class Engine extends Map<string, EntityShell> {
             return Promise.reject([err, shells]);
         }
     }
-
+    
     removeMarkedShells () {
         try {
             const keys: string[] = [];

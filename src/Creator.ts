@@ -34,12 +34,27 @@ export default class Creator {
         const entity = new Entity(shell, this._engine);
         return entity;
     } 
-
+    /**
+     * Конвертация оболочки сущности в объект класса сущности.
+     * @param shell 
+     * @returns 
+     */
     shellToEntity (shell: EntityShell) : Entity {
         return new Entity(shell, this._engine);
     }
-
+    /**
+     * Создание сущности
+     * @param type "entity"
+     * @param dto Объект определения сущности.
+     * @param components Необязательно. Дополнительно можно задать массив компонентов.
+     */
     create(type: "entity", dto: EntityDto, ...components: ApiComponent[]): Entity;
+    /**
+     * Создание компонента.
+     * @param type "component"
+     * @param dto Объект определения компонента.
+     * @param components необязательно. Дополнительно, можно указать массив свойств.
+     */
     create(type: "component", dto: ComponentDto, ...components: ApiComponent[]): Component;
     create(type: EngineObjectType, ...args: any[]): Entity | Component | void{
         if (type === "entity") {
