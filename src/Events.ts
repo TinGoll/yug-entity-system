@@ -77,7 +77,7 @@ export default class Events extends EventEmitter {
     }
 
     onLoad(type: 'entity', method: 'Find List', listener: (params: { 
-        categories?: string[], names?: string[], notes?: string[], componentNames?: string[], sample?: boolean, infertility: boolean
+        categories?: string[], names?: string[], notes?: string[], componentNames?: string[], sample?: boolean, infertility?: boolean
     }) => Promise<ApiEntity[]>): this;
     onLoad(type: 'component', method: 'Find All', listener: (params: { sample?: boolean }) => Promise<ApiComponent[]>): this;
     onLoad(type: 'entity', method: 'Find One', listener: (key: string) => Promise<ApiEntity[]>): this;
@@ -129,7 +129,7 @@ export default class Events extends EventEmitter {
     // *******************************************************************************
 
     loadEmit(type: "entity", method: "Find List", params: {
-        categories?: string[], names?: string[], notes?: string[], componentNames?: string[], sample?: boolean, infertility: boolean
+        categories?: string[], names?: string[], notes?: string[], componentNames?: string[], sample?: boolean, infertility?: boolean
     }): Promise<ApiEntity[]>;
     loadEmit(type: 'component', method: 'Find All', params: { sample?: boolean }): Promise<ApiComponent[]>;
     loadEmit(type: 'entity', method: 'Find One', key: string): Promise<ApiEntity[]>;
