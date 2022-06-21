@@ -128,9 +128,7 @@ export default class Events extends EventEmitter {
     // Эмиттеры - инициализаторы, которые нужно вызывать, для получения или модификации объектов.
     // *******************************************************************************
 
-    loadEmit(type: "entity", method: "Find List", params: {
-        categories?: string[], names?: string[], notes?: string[], componentNames?: string[], sample?: boolean
-    }): Promise<ApiEntity[]>;
+    loadEmit(type: "entity", method: "Find List", ...params: any[]): Promise<ApiEntity[]>;
     loadEmit(type: 'component', method: 'Find All', params: { sample?: boolean }): Promise<ApiComponent[]>;
     loadEmit(type: 'entity', method: 'Find One', key: string): Promise<ApiEntity[]>;
     loadEmit(type: 'entity', method: 'Find All',
