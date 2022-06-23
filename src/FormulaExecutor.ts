@@ -249,7 +249,7 @@ export async function formulaExecutor(this: Entity,
             }
     
             executor();`;
-        console.log("baseCode", baseCode);
+        // console.log("baseCode", baseCode);
         
         if (type === 'execution') return eval(baseCode);
             
