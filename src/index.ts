@@ -12,7 +12,7 @@ import RoomControllerHeart from "./systems/RoomControllerHeart";
 import { Subscriber, SubscriberData } from "./systems/Subscriber";
 
 
-// import { insertEntities, insertComponents, loadingEntities, deleteEntities, updateEntities, updateComponents } from "./testing/db-function";
+// import { insertEntities, insertComponents, loadingEntities, deleteEntities, updateEntities, updateComponents, deleteComponents } from "./testing/db-function";
 
 // const engine = Engine.create().start();
 // const events = engine.events;
@@ -22,6 +22,7 @@ import { Subscriber, SubscriberData } from "./systems/Subscriber";
 //     .onCreatedObjects("component", insertComponents) // событие записи в бд нового компонента
 //     .onLoad("entity", "Find One", loadingEntities) // событие загрузки сущности из бд
 //     .onDeletedObjects("entity", deleteEntities) // Событие удаления сущности из бд.
+//     .onDeletedObjects("component", deleteComponents) // Событие удаления сущности из бд.
 //     .onUpdatableObjects("entity", updateEntities) // событие обновления в бд  сущности
 //     .onUpdatableObjects("component", updateComponents) // событие обновления в бд  компонента
 
@@ -64,6 +65,26 @@ import { Subscriber, SubscriberData } from "./systems/Subscriber";
 //         }
 //     ]
 // });
+
+// const entity = engine.creator.shellToEntity(shell)
+
+// const component = entity.getComponent("geo");
+// component?.rename("new name for component")
+
+// component?.add({propertyName: "depth", propertyType: "number", propertyValue: 50 })
+
+// component?.save().then(() => {
+//     component?.remove("w").then(() => {
+//         entity.setComponent(component!)
+//         console.log(entity.getComponents());
+//     })
+//     console.log("сохранили")
+// });
+
+
+// if (component)
+//     console.log('component', [...component]);
+
 
 
 

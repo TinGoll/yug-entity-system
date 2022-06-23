@@ -67,6 +67,12 @@ export const deleteEntities = (keys: string[]): Promise<string[]> => {
     return delay(keys, time);
 }
 
+export const deleteComponents = (keys: string[]): Promise<string[]> => {
+    const time = (Math.floor(Math.random() * maxTime))
+    console.log(`Время удаления сек:`, time / 1000);
+    return delay(keys, time);
+}
+
 export const updateEntities = (entities: ApiEntity[]): Promise<ApiEntity[]> => {
     try {
         const time = (Math.floor(Math.random() * maxTime))

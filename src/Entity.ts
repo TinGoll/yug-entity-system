@@ -1,4 +1,5 @@
 import { ApiComponent, ApiEntity, EntityIndicators, EntityShell, PropertyAttribute, PropertyType, PropertyValue } from "./@engine-types";
+import Component from "./Component";
 import { Engine } from "./Engine";
 import { formulaExecutor } from "./FormulaExecutor";
 
@@ -12,12 +13,95 @@ export default class Entity {
     }
 
     /**
+     * Получение интерактивного компонента.
+     * @param componentName 
+     * @returns 
+     */
+    getComponent (componentName: string): Component | null {
+        const componentsApi = this.getComponents().filter(cmp => cmp.componentName === componentName);
+        if (!componentsApi.length) return null;
+        return new Component(componentsApi[0], this.engine, ...componentsApi);
+    }
+    /**
+     * Установить новые свойства компонента.
+     * Новый компонент, полностью заменит все свойства этого компонента, и удалит те, которых нет в новом.
+     * @param components Объекты класса компонента
+     */
+    setComponent(...components: Component[]) {
+        for (const component of components) {
+            const componentName = component.prevName;
+            this._shell.options.components =  [...this._shell.options.components.filter(c => c.componentName !== componentName), ...[...component]] 
+        }
+    }
+
+    /**
      * Получение данных для редактора формул
      */
     getPreparationData(componentKey: string) {
         const cmp = this.getComponents().find(c => c.key === componentKey);
         if (!cmp) return;
         return formulaExecutor.bind(this)(cmp, '', 'preparation');
+    }
+    /**
+     * Присвоение новой формулы
+     * @param componentKey ключ компонента
+     * @param formula текст формулы или null
+     * @returns this
+     */
+    setForlmula(componentKey: string, formula: string | null): this {
+        try {
+            const cmp = this.getComponents().find(c => c.key === componentKey);
+            if (!cmp) throw new Error("Компонента с таким ключем не существует.");
+            if (!formula) {
+                cmp.propertyFormula = undefined;
+            }else{
+                cmp.propertyFormula = formula;
+            }
+            cmp.indicators = { ...cmp.indicators, is_changeable: true}
+            this.setChangeable(false, true);
+            return this;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Присвоить атрибуты
+     * @param componentKey 
+     * @param attribute 
+     * @returns 
+     */
+    setAttribute(componentKey: string, attribute: string | null) {
+        try {
+            const cmp = this.getComponents().find(c => c.key === componentKey);
+            if (!cmp) throw new Error("Компонента с таким ключем не существует.");
+            if (!attribute) {
+                cmp.attributes = undefined;
+            } else {
+                cmp.attributes = attribute;
+            }
+            cmp.indicators = { ...cmp.indicators, is_changeable: true }
+            this.setChangeable(false, true);
+            return this;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Присвоить метку об изменении.
+     * @param entity измененеи сущности.
+     * @param component изменение компонента сущности.
+     */
+    setChangeable (entity: boolean, component?: boolean) {
+        const indicators: EntityIndicators = {}
+        if (entity) {
+            indicators.is_changeable = true;
+        }
+        if (component) {
+            indicators.is_changeable_component = true;
+        }
+        this._shell.options.indicators = { ...this._shell.options.indicators, ...indicators }
     }
 
     async build (): Promise<ApiEntity[]> {

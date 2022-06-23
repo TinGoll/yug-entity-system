@@ -435,6 +435,15 @@ export class Engine extends Map<string, EntityShell> {
         }
     }
 
+    async deleteComponents(keys: string[]): Promise<string[]> {
+        try {
+            const deletedKeys = await this.events.deletedEmit("component", keys);
+            return deletedKeys || [];
+        } catch (e) {
+            return Promise.reject([e, keys]);
+        }
+    }
+
     /**
      * Удаление зависимостей сущности.
      * @param key ключ сущности, зависимости которой необходимо удалить

@@ -6,6 +6,7 @@ import AttributeCreator from "./other/AttributeCreator";
 export default class Component {
     properties: ApiComponent[];
     private componentName: string;
+    private previusName: string;
     private componentDescription?: string;
     private entityKey?: string;
     private engine: Engine;
@@ -19,10 +20,46 @@ export default class Component {
     constructor({ componentName, componentDescription, entityKey }: ComponentDto, engine: Engine, ...properties: ApiComponent []) {
         this.properties = [];
         this.componentName = componentName;
+        this.previusName = componentName;
         this.componentDescription = componentDescription;
         this.engine = engine;
         this.entityKey = entityKey;
         this.concatenate(...properties);
+    }
+    /**
+     * Сохранение всех изменений в хранилище.
+     */
+    async save (): Promise<void>{
+        const added = this.notRecordedDatabase();
+        const updated = this.changedComponents();
+        const addedResult = await this.engine.signComponentApi(...added);
+        const updatedResult = await this.engine.updateComponentApi(...updated);
+        this.concatenate(...addedResult.map(c => {
+            const { is_unwritten_in_storage, ...indicators } = c.indicators;
+            c.indicators = { ...indicators }
+            return c;
+        }), ...updatedResult);
+    }
+    /**
+     * Удаление определенного свойства комопнента.
+     * @param propertyName Название свойства или null
+     * @param propertyKey ключ комопнента (необязательно)
+     */
+    async remove (propertyName: string|null, propertyKey?: string): Promise<string|null> {
+        const keys: string[] = [];
+        if (propertyName) {
+            const candidateKey = [...this].find(c => c.propertyName === propertyName);
+            if (candidateKey) keys.push(candidateKey.key);
+        }else {
+            if (propertyKey) keys.push(propertyKey);
+        }
+        if (!keys.length) return null;
+
+        const [deletedKey] = (await this.engine.deleteComponents(keys));
+        if (deletedKey) {
+            this.properties = this.properties.filter(p => p.key !== deletedKey);
+        }
+        return deletedKey
     }
 
     setPropertiesBykey (key: string, dto: ComponentDto): this {
@@ -192,12 +229,14 @@ export default class Component {
     }
     /** Получение имени компонента */
     get name (): string {return this.componentName}
+    get prevName (): string {return this.previusName}
     /** Получение описания компонента на руссом */
     get description (): string {return this.componentDescription || ""}
     /** Установка описания на русском языке */
     set description(description: string) { this.setDescription(description)}
     /** Установка нового имени компонента */
     set name (name: string) { this.rename(name)}
+
     /** Итератор класса */
     [Symbol.iterator] () {
         function* sequence(properties: ApiComponent[]) {
