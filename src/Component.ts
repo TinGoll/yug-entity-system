@@ -65,19 +65,16 @@ export default class Component {
      * @returns this;
      */
     setPropertiesBykey (key: string, dto: ComponentDto): this {
-        const cmp = this.properties.find(p => p.key === key);
+        const index = this.properties.findIndex(p => p.key === key);
 
-        if (cmp) {
+        if (index > -1) {
             const { componentName, componentDescription, key, id, indicators, ...other } = (dto as ApiComponent);
             console.log('setPropertiesBykey', 'other', other);
-            
-            cmp.attributes = other.attributes;
-            cmp.bindingToList = other.bindingToList;
-            cmp.propertyDescription = other.propertyDescription;
-            cmp.propertyName = other.propertyName;
-            cmp.previousValue = other.previousValue;
-            cmp.propertyFormula = other.propertyFormula;
-            cmp.indicators = { ...cmp.indicators, is_changeable: true }
+            this.properties[0] = {
+                ...this.properties[0],
+                ...other,
+                indicators: { ...this.properties[0].indicators, is_changeable: true }
+            }
         }
         return this;
     }
