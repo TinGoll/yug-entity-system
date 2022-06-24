@@ -66,8 +66,11 @@ export default class Component {
      */
     setPropertiesBykey (key: string, dto: ComponentDto): this {
         const cmp = this.properties.find(p => p.key === key);
+
         if (cmp) {
             const { componentName, componentDescription, key, id, indicators, ...other } = (dto as ApiComponent);
+            console.log('setPropertiesBykey', 'other', other);
+            
             cmp.attributes = other.attributes;
             cmp.bindingToList = other.bindingToList;
             cmp.propertyDescription = other.propertyDescription;
