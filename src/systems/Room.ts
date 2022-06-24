@@ -49,12 +49,28 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
     /**
      * Добавление нового свойства в сущность, по ключу шаблона компонента.
      * @param key ключ сущности.
-     * @param samplePropertyKey ключ шаблона компонента.
+     * @param samplePropertyKeys ключ шаблона компонента.
      */
     async addPropertyToKey (key: string, samplePropertyKeys: string[]) {
         // Реализовать позже
         const cmps: ApiComponent[] = []
-        
+        for (const sKey of samplePropertyKeys) {
+            const candidate = this.engine.components.find(cmp => cmp.key === sKey);
+            if (candidate) cmps.push(candidate);
+        }
+        if (cmps.length) {
+            const entity = await this.entity?.getEntityToKey(key);
+            if (entity) {
+                entity.addApiComponents(...cmps);
+                const addedComponents = entity.getNotRecordedComponents();
+                const updatedComponents = entity.getNotUpdatedComponents();
+                const added = await this.engine.signComponentApi(...addedComponents);
+                const updated = await this.engine.updateComponentApi(...updatedComponents);
+                entity.setApiComponents(
+                    ...added.map(c => ({...c, indicators: {...c.indicators, is_not_sent_notification: true}})), 
+                    ...updated.map(c => ({ ...c, indicators: { ...c.indicators, is_not_sent_notification: true } })))
+            }
+        }
     }
 
     /**

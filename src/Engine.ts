@@ -393,7 +393,12 @@ export class Engine extends Map<string, EntityShell> {
      */
     async updateComponentApi(...components: ApiComponent[]): Promise<ApiComponent[]> {
         try {
-            return this.events.updatedEmit("component", components.filter(c => c.id));
+            const cmps = await this.events.updatedEmit("component", components.filter(c => c.id));
+            cmps.forEach(cmp => {
+                const { is_unwritten_in_storage, is_changeable, ...indicators } = cmp.indicators;
+                cmp.indicators = { ...indicators  }
+            })
+            return cmps;
         } catch (err) {
             return Promise.reject([err, components]);
         }

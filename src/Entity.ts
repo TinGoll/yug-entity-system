@@ -48,6 +48,24 @@ export default class Entity {
         ]
         return this;
     }
+    /**
+     * Установить новый набор компонентов.
+     * @param apiComponents 
+     * @returns 
+     */
+    setApiComponents(...apiComponents: ApiComponent[]): this {
+        for (const cmp of apiComponents) {
+            const index = this._shell.options.components.findIndex(c => c.componentName === cmp.componentName && c.propertyName === cmp.propertyName);
+            if (index > -1) {
+                const { id, key, entityKey, sampleKey, ...other } = cmp;
+                this._shell.options.components = [...this._shell.options.components, { ...this._shell.options.components[index], ...other }]
+            }else{
+                cmp.entityKey = this.key;
+                this._shell.options.components.push(cmp);
+            }
+        }
+        return this;
+    }
 
     /**
      * Получение данных для редактора формул
@@ -241,6 +259,10 @@ export default class Entity {
 
     getNotUpdatedComponents(): ApiComponent[] {
         return this._shell.options.components.filter(cmp => cmp.indicators.is_changeable)
+    }
+
+    getNotNotificated(): ApiComponent[]  {
+        return this._shell.options.components.filter(cmp => cmp.indicators.is_not_sent_notification)
     }
 
     /**

@@ -34,11 +34,7 @@ export default class Component {
         const updated = this.changedComponents();
         const addedResult = await this.engine.signComponentApi(...added);
         const updatedResult = await this.engine.updateComponentApi(...updated);
-        this.concatenate(...addedResult.map(c => {
-            const { is_unwritten_in_storage, ...indicators } = c.indicators;
-            c.indicators = { ...indicators }
-            return c;
-        }), ...updatedResult);
+        this.concatenate(...addedResult, ...updatedResult);
     }
     /**
      * Удаление определенного свойства комопнента.
