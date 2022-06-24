@@ -90,9 +90,25 @@ export default class Component {
     concatenate(...properties: ApiComponent[]) {
         for (const cmp of properties
             .filter(c => c.componentName === this.componentName)) {
-            this.add(cmp);
+              
+            this.set(cmp);
         }
         return this;
+    }
+
+    set(...components: ApiComponent[]) {
+        for (const cmp of components) {
+            const index = this.properties.findIndex(c => c.key === cmp.key);
+            if (index > -1) {
+                const { id, key, entityKey, ...othr} = cmp;
+                this.properties[index] = {
+                    ...this.properties[index],
+                    ...othr
+                }
+            }else{
+                this.properties.push(cmp)
+            }
+        }
     }
 
     /**

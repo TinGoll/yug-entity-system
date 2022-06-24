@@ -146,10 +146,12 @@ export default class Creator {
      * @returns 
      */
     async openSampleComponent (componentName: string): Promise<Component | null> {
+
         if (!this.engine.getComponentList().size) {
            await this.engine.loadComponents({sample: true });
         }
         const firstCmp = this.engine.components.find(c => c.componentName === componentName);
+        
         if (!firstCmp) return null;
         const cmps = this.engine.components.filter(c => c.componentName === componentName)
         const component = new Component({ ...firstCmp }, this.engine, ...cmps);
