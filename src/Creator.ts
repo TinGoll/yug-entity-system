@@ -57,17 +57,22 @@ export default class Creator {
      */
     create(type: "component", dto: ComponentDto, ...components: ApiComponent[]): Component;
     create(type: EngineObjectType, ...args: any[]): Entity | Component | void{
+
+        
         if (type === "entity") {
             const [dto, ...components] = <[EntityDto,  ...ApiComponent[]]> args;
-            if (!dto || !dto.name) throw new Error(`Некооректные данные, для создания ${type}.`);
+            if (!dto || !dto.name) throw new Error(`Некоректные данные, для создания ${type}.`);
             const shell = this.engine.createEntityShell({
                 ...dto,
                 components: [
-                    ...this.concatenateApiComponents(...components, ...(dto.components || []))
+                    ...this.concatenateApiComponents(...components, ...(dto.components || []))  
                 ]
             })
             return new Entity(shell, this._engine);
+
+
         }
+        
         if (type === "component") {
             const [dto, ...components] = <[ComponentDto, ...ApiComponent[]]>args;
             if (!dto || !dto.componentName) throw new Error(`Некооректные данные, для создания ${type}.`);
@@ -100,14 +105,18 @@ export default class Creator {
      * @returns ApiComponent[]
      */
     concatenateApiComponents(...components: ApiComponent[]): ApiComponent[] {
-        const tempArr = this.convertApiComponentsToComponents(...components);
-        const arr: ApiComponent[] = [];
-        if (tempArr.length = 1) return [...tempArr[0]]
-        for (const tempCmp of tempArr) {
-            tempCmp.concatenate(...components);
-            arr.push(...tempCmp)
+        try {
+            const tempArr = this.convertApiComponentsToComponents(...components);
+            const arr: ApiComponent[] = [];
+            if (tempArr.length === 1) return [...tempArr[0]]
+            for (const tempCmp of tempArr) {
+                tempCmp.concatenate(...components);
+                arr.push(...tempCmp)
+            }
+            return arr;
+        } catch (error) {
+            throw error;
         }
-        return arr;
     }
     /**
      * Конвертирование массива ApiComponent в массив Component
@@ -115,12 +124,16 @@ export default class Creator {
      * @returns Component []
      */
     convertApiComponentsToComponents (...apiComponents: ApiComponent[]): Component [] {
-        const cmpNames: Array<{componentName: string, componentDescription: string, entityKey: string}> = 
-            [...new Set(apiComponents.map(c => 
-                `${c.componentName}~${c.componentDescription}${c.entityKey?`~${c.entityKey}`:""}`))]
-                .map(c => [...c.split("~")])
-                .map(c => ({ componentName: c[0], componentDescription: c[1], entityKey: c[2]}))  
-        return cmpNames.map(c => new Component({ ...c }, this._engine, ...apiComponents)); 
+       try {
+           const cmpNames: Array<{ componentName: string, componentDescription: string, entityKey: string }> =
+               [...new Set(apiComponents.map(c =>
+                   `${c.componentName}~${c.componentDescription}${c.entityKey ? `~${c.entityKey}` : ""}`))]
+                   .map(c => [...c.split("~")])
+                   .map(c => ({ componentName: c[0], componentDescription: c[1], entityKey: c[2] }))
+           return cmpNames.map(c => new Component({ ...c }, this._engine, ...apiComponents)); 
+       } catch (e) {
+            throw e
+       }
     }
 
     convertShellEntitiesToEntities (...shells: EntityShell[]): Entity [] {
@@ -142,7 +155,4 @@ export default class Creator {
         const component = new Component({ ...firstCmp }, this.engine, ...cmps);
         return component;
     }
-
-    
-
 }

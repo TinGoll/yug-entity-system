@@ -32,62 +32,95 @@ import { Subscriber, SubscriberData } from "./systems/Subscriber";
         
 //     })
 
-// const shell =  engine.createEntityShell({
-//     name: "Тест 1",
-//     components: [
-//         { 
-//             componentName: "geo", 
-//             propertyName: "h", 
-//             propertyType: "number", 
-//             index: 0, 
-//             key: engine.keyGenerator("cmp:"), 
-//             id: 0, 
-//             componentDescription: "", 
-//             indicators: {}, 
-//             propertyDescription: "", 
-//             propertyValue: 1000
-//         },
-//         {
-//             componentName: "geo",
-//             propertyName: "w",
-//             propertyType: "number",
-//             index: 0,
-//             key: engine.keyGenerator("cmp:"),
-//             id: 0,
-//             componentDescription: "",
-//             indicators: {},
-//             propertyDescription: "",
-//             propertyValue: 333,
-//             propertyFormula: `
+// // const shell =  engine.createEntityShell({
+// //     name: "Тест 1", category: "выппро",
+// //     components: [
+// //         {
+// //             componentName: "geo",
+// //             propertyName: "h",
+// //             propertyType: "number",
+// //             index: 0,
+// //             key: engine.keyGenerator("cmp:"),
+// //             id: 0,
+// //             componentDescription: "",
+// //             indicators: {},
+// //             propertyDescription: "",
+// //             propertyValue: 1000
+// //         },
+// //         {
+// //             componentName: "geo",
+// //             propertyName: "w",
+// //             propertyType: "number",
+// //             index: 0,
+// //             key: engine.keyGenerator("cmp:"),
+// //             id: 0,
+// //             componentDescription: "",
+// //             indicators: {},
+// //             propertyDescription: "",
+// //             propertyValue: 333,
+// //             propertyFormula: `
+// //                 const res = await ME("geo", "h");
+// //                RESULT = THIS;
+// //             `
+// //         }
+// //     ]
+// // });
+
+// // const entity = engine.creator.shellToEntity(shell)
+
+
+
+        
+
+// const entity = engine.creator.create("entity", { name: "Тест 1", category: "выппро" }, 
+//     {
+//         componentName: "geo",
+//         propertyName: "h",
+//         propertyType: "number",
+//         index: 0,
+//         key: engine.keyGenerator("cmp:"),
+//         id: 0,
+//         componentDescription: "",
+//         indicators: {},
+//         propertyDescription: "",
+//         propertyValue: 1000
+//     },
+//     {
+//         componentName: "geo",
+//         propertyName: "w",
+//         propertyType: "number",
+//         index: 0,
+//         key: engine.keyGenerator("cmp:"),
+//         id: 0,
+//         componentDescription: "",
+//         indicators: {},
+//         propertyDescription: "",
+//         propertyValue: 333,
+//         propertyFormula: `
 //                 const res = await ME("geo", "h");
 //                RESULT = THIS;
 //             `
-//         }
-//     ]
-// });
+//     }
+// )
 
-// const entity = engine.creator.shellToEntity(shell)
 
 // const component = entity.getComponent("geo");
 // component?.rename("new name for component")
 
-// component?.add({propertyName: "depth", propertyType: "number", propertyValue: 50 })
-
 // component?.save().then(() => {
-//     component?.remove("w").then(() => {
-//         entity.setComponent(component!)
-//         console.log(entity.getComponents());
-//     })
-//     console.log("сохранили")
+//     entity.setComponent(component!)
+//     console.log('**********************************');
+//     console.log('****** В составе сущности ********');
+//     console.log('**********************************');
+//     console.log(entity.getComponents());
+//     console.log('**********************************');
+//     console.log('**********************************');
+//     console.log('**********************************');
 // });
 
 
 // if (component)
 //     console.log('component', [...component]);
-
-
-
-
 
 
 // engine.cloneEntityShell(shell.options.key)

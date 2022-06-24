@@ -62,6 +62,12 @@ export default class Component {
         return deletedKey
     }
 
+    /**
+     * Определение нового свойства компонента
+     * @param key ключ компонента
+     * @param dto объект определения
+     * @returns this;
+     */
     setPropertiesBykey (key: string, dto: ComponentDto): this {
         const cmp = this.properties.find(p => p.key === key);
         if (cmp) {
