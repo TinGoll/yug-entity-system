@@ -122,8 +122,9 @@ export class Engine extends Map<string, EntityShell> {
                 ...shell.options,
                 id: 0, key: newKey, parentKey, sampleKey,
                 components: [
-                    ...shell.options.components
-                        .map(c => ({ ...c, id: 0, entityKey: newKey, key: this.keyGenerator("cmp:") }))
+                    ...this.clone_component_api(shell.options.components, newKey),
+                    // ...shell.options.components
+                    //     .map(c => ({ ...c, id: 0, entityKey: newKey, key: this.keyGenerator("cmp:") }))
                 ],
                 indicators: {is_unwritten_in_storage: true,}
             }
@@ -131,10 +132,41 @@ export class Engine extends Map<string, EntityShell> {
         return newShell;
     }
 
+    /**
+     * Клонирование компонента
+     * @param components массив компонентов
+     * @param entityKey ключ сущности (необязательно)
+     * @returns массив сохраненных компонентов.
+     */
+    cloneApiComponent(components: ApiComponent[], entityKey?: string): ApiComponent[] {
+        try {
+            const cmps = this.clone_component_api(components, entityKey);
+            return cmps
+        } catch (e) {
+            throw e;
+        }
+    }
+    /**
+    * Клонирование коипонента, и сохранение в хранилище.
+    * @param components массив компонентов
+    * @param entityKey ключ сущности (необязательно)
+    * @returns массив сохраненных компонентов.
+    */
+    async cloneApiComponentAndSave(components: ApiComponent[], entityKey?: string): Promise<ApiComponent[]> {
+        try {
+            const cmps = this.clone_component_api(components, entityKey);
+            const singedCmps = await this.signComponentApi(...cmps);
+            return singedCmps
+        } catch (e) {
+            throw e;
+        }
+    }
+
     private clone_component_api (components: ApiComponent[], entityKey?: string): ApiComponent[] {
         return [
             ...components.map(c => ({
                 ...c,
+                indicators: { ...c.indicators, is_unwritten_in_storage: true},
                 id: 0,
                 key: this.keyGenerator("cmp:"),
                 entityKey,
@@ -343,7 +375,12 @@ export class Engine extends Map<string, EntityShell> {
      */
     async signComponentApi (...components: ApiComponent[]): Promise<ApiComponent[]> {
         try {
-            return this.events.createdEmit("component", components);
+            const cmps = await this.events.createdEmit("component", components);
+            cmps.forEach(cmp => {
+                const { is_unwritten_in_storage, ...indicators } = cmp.indicators;
+                cmp.indicators = { ...indicators, is_changeable: true}
+            })
+            return cmps
         } catch (err) {
             return Promise.reject([err, components]);
         }

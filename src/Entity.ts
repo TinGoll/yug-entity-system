@@ -27,11 +27,26 @@ export default class Entity {
      * Новый компонент, полностью заменит все свойства этого компонента, и удалит те, которых нет в новом.
      * @param components Объекты класса компонента
      */
-    setComponent(...components: Component[]) {
+    setComponent(...components: Component[]): this {
         for (const component of components) {
             const componentName = component.prevName;
             this._shell.options.components =  [...this._shell.options.components.filter(c => c.componentName !== componentName), ...[...component]] 
         }
+        return this;
+    }
+
+
+    /**
+     * Добавление компонента в сущность.
+     * @param apiComponents 
+     * @returns 
+     */
+    addApiComponents(...apiComponents: ApiComponent[]): this {
+        const cmps = this.engine.cloneApiComponent(apiComponents);
+        this.shell.options.components = [
+            ...this.engine.creator.concatenateApiComponents(...this.shell.options.components, ...cmps)
+        ]
+        return this;
     }
 
     /**
@@ -218,6 +233,14 @@ export default class Entity {
             }
         }
         return tempArr;
+    }
+
+    getNotRecordedComponents (): ApiComponent[] {
+        return this._shell.options.components.filter(cmp => cmp.indicators.is_unwritten_in_storage);
+    }
+
+    getNotUpdatedComponents(): ApiComponent[] {
+        return this._shell.options.components.filter(cmp => cmp.indicators.is_changeable)
     }
 
     /**

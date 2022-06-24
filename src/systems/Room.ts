@@ -51,8 +51,10 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
      * @param key ключ сущности.
      * @param samplePropertyKey ключ шаблона компонента.
      */
-    async addPropertyToKey (key: string, samplePropertyKey: string) {
+    async addPropertyToKey (key: string, samplePropertyKeys: string[]) {
         // Реализовать позже
+        const cmps: ApiComponent[] = []
+        
     }
 
     /**
