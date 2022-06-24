@@ -505,7 +505,7 @@ export class Engine extends Map<string, EntityShell> {
 
     // ******************************* ЗАГРУЗКА СУЩНОСТЕЙ ****************************
    
-  
+
     /**
      * 
      * @returns 
@@ -513,7 +513,8 @@ export class Engine extends Map<string, EntityShell> {
     async loadComponents({ sample }: { sample?: boolean }): Promise<ApiComponent[]> {
         try {
             const loadedComponents = await this.events.loadEmit("component", "Find All", { sample: !!sample });
-            for (const cmp of this.creator.concatenateApiComponents(...this.componentList.values(), ...loadedComponents)) {
+            this.componentList.clear();
+            for (const cmp of loadedComponents) {
                 const { is_unwritten_in_storage, is_changeable, ...indicators } = cmp.indicators;
                 cmp.indicators = { ...indicators };
                 this.componentList.set(cmp.key, cmp)
