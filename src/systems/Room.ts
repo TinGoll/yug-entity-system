@@ -70,6 +70,10 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
                     ...added.map(c => ({...c, indicators: {...c.indicators, is_not_sent_notification: true}})), 
                     ...updated.map(c => ({ ...c, indicators: { ...c.indicators, is_not_sent_notification: true } })))
             }
+
+            const [ entities, components ] = await this.recalculation();
+            const action: EngineAction = "update-entity-shell";
+            this.engine.events.notifyEmit("Broadcast", action, entities);
         }
     }
 
@@ -89,7 +93,6 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
                 const deletedKey = await this._entity.deleteEntityToKey(key);
                 // Уведомить об удалении сущности.
                 this.engine.events.notifyEmit("Broadcast", action, deletedKey);
-                
             }
         }
     }
