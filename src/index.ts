@@ -32,41 +32,63 @@ import { Subscriber, SubscriberData } from "./systems/Subscriber";
         
 //     })
 
-// // const shell =  engine.createEntityShell({
-// //     name: "Тест 1", category: "выппро",
-// //     components: [
-// //         {
-// //             componentName: "geo",
-// //             propertyName: "h",
-// //             propertyType: "number",
-// //             index: 0,
-// //             key: engine.keyGenerator("cmp:"),
-// //             id: 0,
-// //             componentDescription: "",
-// //             indicators: {},
-// //             propertyDescription: "",
-// //             propertyValue: 1000
-// //         },
-// //         {
-// //             componentName: "geo",
-// //             propertyName: "w",
-// //             propertyType: "number",
-// //             index: 0,
-// //             key: engine.keyGenerator("cmp:"),
-// //             id: 0,
-// //             componentDescription: "",
-// //             indicators: {},
-// //             propertyDescription: "",
-// //             propertyValue: 333,
-// //             propertyFormula: `
-// //                 const res = await ME("geo", "h");
-// //                RESULT = THIS;
-// //             `
-// //         }
-// //     ]
-// // });
 
-// // const entity = engine.creator.shellToEntity(shell)
+// engine.createSampleComponent({
+//     componentName: "test_component",
+//     propertyName: "test_prob",
+//     propertyDescription: "nest",
+//     propertyValue: "0"
+// }).then(() => {
+//     engine.createSampleComponent({
+//         componentName: "test_component",
+//         propertyName: "test_prob2",
+//         propertyDescription: "nest",
+//         propertyValue: "0"
+//     }).then(( ) => {
+//         console.log(engine.components);
+        
+//     })
+// })
+
+
+
+
+
+// const shell =  engine.createEntityShell({
+//     name: "Тест 1", category: "выппро",
+//     components: [
+//         {
+//             componentName: "geo",
+//             propertyName: "h",
+//             propertyType: "number",
+//             index: 0,
+//             key: engine.keyGenerator("cmp:"),
+//             id: 0,
+//             componentDescription: "",
+//             indicators: {},
+//             propertyDescription: "",
+//             propertyValue: 1000
+//         },
+//         {
+//             componentName: "geo",
+//             propertyName: "w",
+//             propertyType: "number",
+//             index: 0,
+//             key: engine.keyGenerator("cmp:"),
+//             id: 0,
+//             componentDescription: "",
+//             indicators: {},
+//             propertyDescription: "",
+//             propertyValue: 333,
+//             propertyFormula: `
+//                 const res = await ME("geo", "h");
+//                RESULT = THIS;
+//             `
+//         }
+//     ]
+// });
+
+// const entity = engine.creator.shellToEntity(shell)
 
 
 

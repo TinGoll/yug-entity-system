@@ -26,6 +26,7 @@ export default class Component {
         this.entityKey = entityKey;
         this.concatenate(...properties);
     }
+
     /**
      * Сохранение всех изменений в хранилище.
      */
@@ -90,7 +91,6 @@ export default class Component {
     concatenate(...properties: ApiComponent[]) {
         for (const cmp of properties
             .filter(c => c.componentName === this.componentName)) {
-              
             this.set(cmp);
         }
         return this;
@@ -111,16 +111,21 @@ export default class Component {
         }
     }
 
+    getProperty (): ApiComponent[] {
+        return [...this];
+    }
+
     /**
      * Добавление нового свойства для текущего компонента
      * @param dto  PropertyDto
      * @returns this
      */
-    add (dto: PropertyDto): this {
-        const { propertyName, propertyDescription = "", propertyType, 
+    add (dto: PropertyDto | ComponentDto): this {
+        const { propertyName = "name_not_set", propertyDescription = "", propertyType = "string", 
             propertyValue, propertyFormula, attributes, bindingToList } = dto;
         const componentDescription = this.componentDescription || ""  
         const candidateIndex = this.properties.findIndex(p => p.propertyName === propertyName);
+
         const defaultValue = this.get_dafault_value(propertyType, propertyValue);
         if (candidateIndex > -1) {
             this.properties[candidateIndex] = {

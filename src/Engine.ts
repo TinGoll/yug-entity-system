@@ -199,18 +199,18 @@ export class Engine extends Map<string, EntityShell> {
      * @param components 
      * @returns 
      */
-    createSampleComponent(dto: ComponentDto, ...components: ApiComponent[]):ApiComponent[] {
+    async createSampleComponent(dto: ComponentDto, ...components: ApiComponent[]):Promise<ApiComponent[]> {
        try {
             dto.sampleKey = undefined;
             dto.entityKey = undefined;
             const candidate = [...this.componentList.values()].find(c => c.componentName === dto.componentName && c.propertyName === dto.propertyName);
-           if (candidate) throw new Error("Такой компонент уже существует.");
-            const component =  this.creator.create("component", dto, ...components);
-           const apiData = [...component];
-           for (const cmp of apiData) {
-               this.componentList.set(cmp.key, cmp);
-           }
-           return apiData;
+            if (candidate) throw new Error("Такой компонент уже существует.");
+            const component = await this.creator.create("component", dto, ...components);
+            const apiData = [...component];
+            for (const cmp of apiData) {
+                this.componentList.set(cmp.key, cmp);
+            }
+            return apiData;
        } catch (e) {
            throw e;
        }
@@ -326,12 +326,10 @@ export class Engine extends Map<string, EntityShell> {
      * @param components 
      * @returns 
      */
-    createComponentApi (...components: ApiComponent[]): ApiComponent[] {
-        const newComponents = this.clone_component_api(
-            this.creator.concatenateApiComponents(...this.componentList.values(),...components));
+    async createComponentApi (...components: ApiComponent[]): Promise<ApiComponent[]> {
+        const newComponents = this.clone_component_api(components);
         const savable = newComponents.filter(c => c.indicators.is_unwritten_in_storage);
-        const updatable = newComponents.filter(c => c.indicators.is_changeable && !c.indicators.is_unwritten_in_storage);
-        this.signComponentApi(...savable)
+        await this.signComponentApi(...savable)
             .then(cmps => {
                 for (const cmp of cmps) {
                     const { is_unwritten_in_storage, is_changeable, ...indicators } = cmp.indicators;
@@ -339,30 +337,9 @@ export class Engine extends Map<string, EntityShell> {
                     this.componentList.set(cmp.key, cmp)
                 }
             })
-            .catch()
-        this.updateComponentApi(...updatable)
-            .then(cmps => {
-                for (const cmp of cmps) {
-                    const { is_unwritten_in_storage, is_changeable, ...indicators } = cmp.indicators;
-                    cmp.indicators = { ...indicators };
-                    if (this.componentList.has(cmp.key)) {
-                        const currenCmp = this.componentList.get(cmp.key)
-                        if (currenCmp) {
-                             this.componentList.set(cmp.key, {
-                                ...cmp,
-                                id: currenCmp.id,
-                                key: currenCmp.key
-                            })
-                        }else{
-                            this.componentList.set(cmp.key, cmp)
-                        }
-                    }
-                }
-            })
-            .catch()
-
-        return newComponents.filter(cmp => {
-            return components.find(c => c.componentName === cmp.componentName 
+            .catch();
+        return [...this.componentList.values()].filter(cmp => {
+            return components.find(c => c.componentName === cmp.componentName
                 && c.propertyName === cmp.propertyName
             )
         });
