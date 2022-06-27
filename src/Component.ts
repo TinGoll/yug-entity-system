@@ -70,7 +70,6 @@ export default class Component {
 
         if (index > -1) {
             const { componentName, componentDescription, key, id, indicators, ...other } = (dto as ApiComponent);
-            console.log('setPropertiesBykey', 'other', other);
             this.properties[0] = {
                 ...this.properties[0],
                 ...other,

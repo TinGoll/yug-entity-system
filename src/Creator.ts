@@ -83,13 +83,11 @@ export default class Creator {
         const [dto, ...components] = <[ComponentDto, ...ApiComponent[]]>args;
         if (!dto || !dto.componentName)
           throw new Error(`Некоректные данные, для создания ${type}.`);
-
         components.forEach((c) => {
           c.componentName = dto.componentName;
           c.componentDescription = dto.componentDescription || "";
           c.entityKey = dto.entityKey;
         });
-
         const component = new Component(dto, this._engine, ...components);
         component.add(dto);
         const savable = component.notRecordedDatabase();

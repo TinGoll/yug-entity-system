@@ -203,17 +203,10 @@ export class Engine extends Map<string, EntityShell> {
         try {
             dto.sampleKey = undefined;
             dto.entityKey = undefined;
-
             const candidate = [...this.componentList.values()].find(c => c.componentName === dto.componentName && c.propertyName === dto.propertyName);
-            console.log(dto);
-            console.log([...this.componentList.values()].map(c => `${c.componentName}: ${c.propertyName}`));
             if (candidate) throw new Error("Такой компонент уже существует.");
             const component = await this.creator.create("component", dto, ...components);
-
             const apiData = [...component];
-
-            console.log("engine apiData", apiData);
-            
             // for (const cmp of apiData) {
             //     this.componentList.set(cmp.key, cmp);
             // }
@@ -341,6 +334,7 @@ export class Engine extends Map<string, EntityShell> {
                 for (const cmp of cmps) {
                     const { is_unwritten_in_storage, is_changeable, ...indicators } = cmp.indicators;
                     cmp.indicators = {...indicators};
+
                     this.componentList.set(cmp.key, cmp)
                 }
             })
