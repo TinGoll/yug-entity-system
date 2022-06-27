@@ -62,6 +62,7 @@ export default class Creator {
   ): Promise<Component>;
   async create(type: EngineObjectType, ...args: any[]): Promise<Entity | Component | void> {
     try {
+      // Создание сущности
       if (type === "entity") {
         const [dto, ...components] = <[EntityDto, ...ApiComponent[]]>args;
         if (!dto || !dto.name)
@@ -77,6 +78,7 @@ export default class Creator {
         });
         return new Entity(shell, this._engine);
       }
+      // Создание компонента.
       if (type === "component") {
         const [dto, ...components] = <[ComponentDto, ...ApiComponent[]]>args;
         if (!dto || !dto.componentName)
@@ -87,10 +89,12 @@ export default class Creator {
           c.componentDescription = dto.componentDescription || "";
           c.entityKey = dto.entityKey;
         });
+
         const component = new Component(dto, this._engine, ...components);
+
         component.add(dto);
+
         const savable = component.notRecordedDatabase();
-        
         const cmp = await this.engine.createComponentApi(...savable);
         return new Component(dto, this._engine, ...cmp);
       }
