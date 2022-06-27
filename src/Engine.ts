@@ -208,9 +208,12 @@ export class Engine extends Map<string, EntityShell> {
             console.log(dto);
             console.log([...this.componentList.values()].map(c => `${c.componentName}: ${c.propertyName}`));
             if (candidate) throw new Error("Такой компонент уже существует.");
-            
             const component = await this.creator.create("component", dto, ...components);
+
             const apiData = [...component];
+
+            console.log("engine apiData", apiData);
+            
             // for (const cmp of apiData) {
             //     this.componentList.set(cmp.key, cmp);
             // }

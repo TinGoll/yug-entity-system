@@ -91,14 +91,9 @@ export default class Creator {
         });
 
         const component = new Component(dto, this._engine, ...components);
-        console.log("engine dto", dto);
-        
         component.add(dto);
-
         const savable = component.notRecordedDatabase();
         const cmp = await this.engine.createComponentApi(...savable);
-        console.log("engine cmp", cmp);
-        
         return new Component(dto, this._engine, ...cmp);
       }
       throw new Error(`Тип объекта ""${type}" не поддерживается.`);
