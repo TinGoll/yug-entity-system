@@ -4,6 +4,9 @@ import Room from "./Room";
 import { Subscriber } from "./Subscriber";
 
 export default class DefaultRoom extends Room<string, Subscriber<string, {}>> {
+    applyChanges(): Promise<Entity[]> {
+        throw new Error("Method not implemented.");
+    }
     build(): Promise<any[]> {
         throw new Error("Method not implemented.");
     }
