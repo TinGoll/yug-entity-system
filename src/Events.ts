@@ -110,7 +110,7 @@ export default class Events extends EventEmitter {
     }
 
     onUpdatableObjects(type: 'entity', listener: (objects: ApiEntity[]) => Promise<ApiEntity[]>): this;
-    onUpdatableObjects(type: 'component', listener: (objects: ApiComponent[]) => Promise<ApiComponent[]>): this;
+    onUpdatableObjects(type: 'component', listener: (objects: ApiComponent[], caller: string) => Promise<ApiComponent[]>): this;
     onUpdatableObjects(type: EngineObjectType, listener: EventListener): this {
         const eventName = `updatable-object-${type}`;
         this.singleEmitter.on(eventName, listener);
@@ -146,7 +146,7 @@ export default class Events extends EventEmitter {
     }
 
     updatedEmit(type: 'entity', objects: ApiEntity[]): Promise<ApiEntity[]>;
-    updatedEmit(type: 'component', objects: ApiComponent[]): Promise<ApiComponent[]>;
+    updatedEmit(type: 'component', objects: ApiComponent[], caller: string): Promise<ApiComponent[]>;
     updatedEmit(type: EngineObjectType, ...args: any[]): Promise<any> {
         const eventName = `updatable-object-${type}`;
         return this.singleEmitter.emit(eventName, ...args);

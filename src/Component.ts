@@ -67,7 +67,6 @@ export default class Component {
      */
     setPropertiesBykey (key: string, dto: ComponentDto): this {
         const index = this.properties.findIndex(p => p.key === key);
-
         if (index > -1) {
             const { componentName, componentDescription, key, id, indicators, ...other } = (dto as ApiComponent);
             this.properties[0] = {

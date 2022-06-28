@@ -371,7 +371,7 @@ export class Engine extends Map<string, EntityShell> {
      */
     async updateComponentApi(...components: ApiComponent[]): Promise<ApiComponent[]> {
         try {
-            const cmps = await this.events.updatedEmit("component", components.filter(c => c.id));
+            const cmps = await this.events.updatedEmit("component", components.filter(c => c.id), "updateComponentApi");
             cmps.forEach(cmp => {
                 const { is_unwritten_in_storage, is_changeable, ...indicators } = cmp.indicators;
                 cmp.indicators = { ...indicators  }
@@ -399,7 +399,7 @@ export class Engine extends Map<string, EntityShell> {
         // Сохранение изменений в базу данных.
         const updateResult = Promise.all([
             this.events.updatedEmit("entity", updatableEntities), 
-            this.events.updatedEmit("component", updatableComponents)]);
+            this.events.updatedEmit("component", updatableComponents, "updateEntityShell")]);
 
         updateResult.then(([ entityResult, componentResult ]) => {
             entityResult.forEach(e => {
