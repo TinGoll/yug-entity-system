@@ -274,6 +274,7 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
      */
     abstract sendNotificationToSubscribers(action: string, ...args: any[]): void
     abstract sendToOneSubscriber(action: string, subscriber: Subscriber<T>, ...args: any[]):void;
+    abstract build(): Promise<any[]>;
 
     /** Итератор, итерируемый объект Subscriber */
     [Symbol.iterator] = (): IterableIterator<U> => {
