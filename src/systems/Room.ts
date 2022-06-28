@@ -52,6 +52,9 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
      * @param samplePropertyKeys ключ шаблона компонента.
      */
     async addPropertyToKey (key: string, samplePropertyKeys: string[]) {
+
+        console.log('addPropertyToKey', ...samplePropertyKeys);
+        
         // Реализовать позже
         const cmps: ApiComponent[] = []
         for (const sKey of samplePropertyKeys) {
@@ -61,17 +64,25 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
         if (cmps.length) {
             const entity = await this.entity?.getEntityToKey(key);
             if (entity) {
+
                 entity.addApiComponents(...cmps);
+
                 const addedComponents = entity.getNotRecordedComponents();
                 const updatedComponents = entity.getNotUpdatedComponents();
+
                 const added = await this.engine.signComponentApi(...addedComponents);
                 const updated = await this.engine.updateComponentApi(...updatedComponents);
+
+                console.log('added', added);
+                console.log('updated', updated);
+                
                 entity.setApiComponents(
                     ...added.map(c => ({...c, indicators: {...c.indicators, is_not_sent_notification: true}})), 
                     ...updated.map(c => ({ ...c, indicators: { ...c.indicators, is_not_sent_notification: true } })))
             }
 
             const [ entities, components ] = await this.recalculation();
+
             const action: EngineAction = "update-entity-shell";
 
             this.applyChanges(); // Применить все изменения.
