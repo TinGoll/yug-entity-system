@@ -399,7 +399,7 @@ export class Engine extends Map<string, EntityShell> {
         // Сохранение изменений в базу данных.
         const updateResult = Promise.all([
             this.events.updatedEmit("entity", updatableEntities), 
-            this.events.updatedEmit("component", updatableComponents, "updateEntityShell")]);
+            this.events.updatedEmit("component", updatableComponents, `${caller} >>> updateEntityShell`)]);
 
         updateResult.then(([ entityResult, componentResult ]) => {
             entityResult.forEach(e => {
