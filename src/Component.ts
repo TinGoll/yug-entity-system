@@ -85,7 +85,11 @@ export default class Component {
     createAttributes(...attributes: PropertyAttribute[]): AttributeCreator {
         return new AttributeCreator(...attributes);
     }
-
+    /**
+     * Соединение свойств (усекновение дублей :) )
+     * @param properties ApiComponent
+     * @returns this;
+     */
     concatenate(...properties: ApiComponent[]) {
         for (const cmp of properties
             .filter(c => c.componentName === this.componentName)) {
@@ -96,7 +100,7 @@ export default class Component {
 
     set(...components: ApiComponent[]) {
         for (const cmp of components) {
-            const index = this.properties.findIndex(c => c.key === cmp.key);
+            const index = this.properties.findIndex(c => c.componentName === cmp.componentName && c.propertyName === cmp.propertyName);
             if (index > -1) {
                 const { id, key, entityKey, ...othr} = cmp;
                 this.properties[index] = {

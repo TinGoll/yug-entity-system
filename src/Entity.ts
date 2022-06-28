@@ -36,7 +36,6 @@ export default class Entity {
         return this;
     }
 
-
     /**
      * Добавление компонента в сущность.
      * @param apiComponents 
