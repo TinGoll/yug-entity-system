@@ -74,6 +74,7 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
             const [ entities, components ] = await this.recalculation();
             const action: EngineAction = "update-entity-shell";
             this.engine.events.notifyEmit("Broadcast", action, entities);
+
         }
     }
 
@@ -106,11 +107,22 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
         try {
             const changedComponent = await this._entity?.recalculation() || [];
             const changedEntity = await this._entity?.getChangedEntities() || [];
-            const result = this.engine.updateEntityShell(changedEntity?.map(e => e.getShell()), 'recalculation');
+            // Отключено автосохранение, после пересчета
+            // const result = this.engine.updateEntityShell(changedEntity?.map(e => e.getShell()), 'recalculation');
+            const result = changedEntity.map(c => c.getShell());
+
             return [[...result], [...changedComponent]];
         } catch (e) {
             throw e;
         }
+    }
+
+    async applyChanges (): Promise<Entity[]>  {
+        if (!this.entity) return [];
+       return this.entity?.getChangedEntities().then(chEntities => {
+           this.engine.updateEntityShell(chEntities?.map(e => e.getShell()), 'applyChanges');
+           return chEntities;
+       });
     }
 
     /**

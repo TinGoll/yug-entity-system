@@ -47,6 +47,7 @@ export default class Entity {
         this.shell.options.components = [
             ...this.engine.creator.concatenateApiComponents(...this.shell.options.components, ...cmps)
         ]
+        this.setChangeable(false, true);
         return this;
     }
     /**
