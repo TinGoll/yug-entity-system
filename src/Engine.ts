@@ -384,7 +384,7 @@ export class Engine extends Map<string, EntityShell> {
 
     // ****************************** ОБНОВЛЕНИЕ СУЩНОСТЕЙ ***************************
 
-    updateEntityShell( shells: EntityShell[] ): EntityShell[] {
+    updateEntityShell( shells: EntityShell[], caller: string ): EntityShell[] {
         const updatableShells = shells.filter(sh => !!sh.options.id);
         const updatableEntities = updatableShells // Получение измененных сущностей.
             .filter(sh => sh.options.indicators?.is_changeable)

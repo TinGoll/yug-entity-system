@@ -307,7 +307,7 @@ export default class Entity {
      */
     writeChanges () {
         this.getChangedEntities()
-            .then(entities => this._engine.updateEntityShell(entities.map(e => e.shell)));
+            .then(entities => this._engine.updateEntityShell(entities.map(e => e.shell), 'writeChanges'));
     }
 
 

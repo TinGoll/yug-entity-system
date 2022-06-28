@@ -106,7 +106,7 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
         try {
             const changedComponent = await this._entity?.recalculation() || [];
             const changedEntity = await this._entity?.getChangedEntities() || [];
-            const result = this.engine.updateEntityShell(changedEntity?.map(e => e.getShell()));
+            const result = this.engine.updateEntityShell(changedEntity?.map(e => e.getShell()), 'recalculation');
             return [[...result], [...changedComponent]];
         } catch (e) {
             throw e;
@@ -129,7 +129,7 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
             await this._entity?.recalculation();
             const changedEntity = await this._entity.getChangedEntities();
             // Запись в базу данных, всех изменений и уведомление.
-            const result = this.engine.updateEntityShell(changedEntity?.map(e => e.getShell()));
+            const result = this.engine.updateEntityShell(changedEntity?.map(e => e.getShell()), 'editEntityToKey');
             if (subscriber && subscriber.data?.key) {
                 this.engine.events.notifyEmit("One", subscriber, result);
             }
