@@ -12,50 +12,50 @@ import RoomControllerHeart from "./systems/RoomControllerHeart";
 import { Subscriber, SubscriberData } from "./systems/Subscriber";
 
 
-import { insertEntities, insertComponents, loadingEntities, deleteEntities, updateEntities, updateComponents, deleteComponents } from "./testing/db-function";
+// import { insertEntities, insertComponents, loadingEntities, deleteEntities, updateEntities, updateComponents, deleteComponents } from "./testing/db-function";
 
-const engine = Engine.create().start();
-const events = engine.events;
+// const engine = Engine.create().start();
+// const events = engine.events;
 
-events
-    .onCreatedObjects("entity", insertEntities) // Событие записи в бд новой сущности 
-    .onCreatedObjects("component", insertComponents) // событие записи в бд нового компонента
-    .onLoad("entity", "Find One", loadingEntities) // событие загрузки сущности из бд
-    .onDeletedObjects("entity", deleteEntities) // Событие удаления сущности из бд.
-    .onDeletedObjects("component", deleteComponents) // Событие удаления сущности из бд.
-    .onUpdatableObjects("entity", updateEntities) // событие обновления в бд  сущности
-    .onUpdatableObjects("component", updateComponents) // событие обновления в бд  компонента
+// events
+//     .onCreatedObjects("entity", insertEntities) // Событие записи в бд новой сущности 
+//     .onCreatedObjects("component", insertComponents) // событие записи в бд нового компонента
+//     .onLoad("entity", "Find One", loadingEntities) // событие загрузки сущности из бд
+//     .onDeletedObjects("entity", deleteEntities) // Событие удаления сущности из бд.
+//     .onDeletedObjects("component", deleteComponents) // Событие удаления сущности из бд.
+//     .onUpdatableObjects("entity", updateEntities) // событие обновления в бд  сущности
+//     .onUpdatableObjects("component", updateComponents) // событие обновления в бд  компонента
 
-events
-    .onNotify("Broadcast", async (...args: any[])=>{
+// events
+//     .onNotify("Broadcast", async (...args: any[])=>{
      
-    })
+//     })
 
 
-engine.createSampleComponent({
-    componentName: "test_component",
-    propertyName: "test_prob",
-    propertyDescription: "nest",
-    propertyValue: "0"
-}).then(() => {
-    engine.createSampleComponent({
-        componentName: "test_component",
-        propertyName: "test_prob2",
-        propertyDescription: "nest",
-        propertyValue: "0"
-    }).then(( ) => {
-        //console.log(engine.components);
+// engine.createSampleComponent({
+//     componentName: "test_component",
+//     propertyName: "test_prob",
+//     propertyDescription: "nest",
+//     propertyValue: "0"
+// }).then(() => {
+//     engine.createSampleComponent({
+//         componentName: "test_component",
+//         propertyName: "test_prob2",
+//         propertyDescription: "nest",
+//         propertyValue: "0"
+//     }).then(( ) => {
+//         //console.log(engine.components);
 
-        const shell = engine.createEntityShell({
-            name: "Тест 1", category: "Тест",
-        });
+//         const shell = engine.createEntityShell({
+//             name: "Тест 1", category: "Тест",
+//         });
 
-        const entity = engine.creator.shellToEntity(shell)
-        entity.addApiComponents(engine.components[0])
-        entity.addApiComponents(engine.components[0])
+//         const entity = engine.creator.shellToEntity(shell)
+//         entity.addApiComponents(engine.components[0])
+//         entity.addApiComponents(engine.components[0])
         
-    })
-})
+//     })
+// })
 
 
 
