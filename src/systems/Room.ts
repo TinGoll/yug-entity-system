@@ -53,9 +53,6 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
      */
     async addPropertyToKey (key: string, samplePropertyKeys: string[]) {
 
-        console.log('addPropertyToKey', ...samplePropertyKeys);
-        
-        // Реализовать позже
         const cmps: ApiComponent[] = []
         for (const sKey of samplePropertyKeys) {
             const candidate = this.engine.components.find(cmp => cmp.key === sKey);
@@ -73,9 +70,6 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
                 const added = await this.engine.signComponentApi(...addedComponents);
                 const updated = await this.engine.updateComponentApi(...updatedComponents);
 
-                console.log('added', added);
-                console.log('updated', updated);
-                
                 entity.setApiComponents(
                     ...added.map(c => ({...c, indicators: {...c.indicators, is_not_sent_notification: true}})), 
                     ...updated.map(c => ({ ...c, indicators: { ...c.indicators, is_not_sent_notification: true } })))
@@ -131,13 +125,6 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
         }
     }
 
-    async applyChanges (): Promise<Entity[]>  {
-        if (!this.entity) return [];
-       return this.entity?.getChangedEntities().then(chEntities => {
-           this.engine.updateEntityShell(chEntities?.map(e => e.getShell()), 'applyChanges');
-           return chEntities;
-       });
-    }
 
     /**
      * Изменение свойств сущности, по ключу.
@@ -286,6 +273,7 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
     abstract sendNotificationToSubscribers(action: string, ...args: any[]): void
     abstract sendToOneSubscriber(action: string, subscriber: Subscriber<T>, ...args: any[]):void;
     abstract build(): Promise<any[]>;
+    abstract applyChanges(): Promise<Entity[]>;
     /** Итератор, итерируемый объект Subscriber */
     [Symbol.iterator] = (): IterableIterator<U> => {
         return this.subscribers.values();
