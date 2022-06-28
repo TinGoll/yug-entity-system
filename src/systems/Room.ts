@@ -73,7 +73,10 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
 
             const [ entities, components ] = await this.recalculation();
             const action: EngineAction = "update-entity-shell";
-            this.engine.events.notifyEmit("Broadcast", action, entities);
+
+            this.applyChanges(); // Применить все изменения.
+            // Изменение метода сохранения.
+            //this.engine.events.notifyEmit("Broadcast", action, entities);
 
         }
     }
@@ -138,10 +141,13 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
 
         if (this._entity && entity) {
             entity.setValueToKey(propertyKey, value);
-            await this._entity?.recalculation();
-            const changedEntity = await this._entity.getChangedEntities();
-            // Запись в базу данных, всех изменений и уведомление.
-            const result = this.engine.updateEntityShell(changedEntity?.map(e => e.getShell()), 'editEntityToKey');
+            const result = await this._entity?.recalculation();
+            this.applyChanges();
+
+            // const changedEntity = await this._entity.getChangedEntities();
+            // // Запись в базу данных, всех изменений и уведомление.
+            // const result = this.engine.updateEntityShell(changedEntity?.map(e => e.getShell()), 'editEntityToKey');
+
             if (subscriber && subscriber.data?.key) {
                 this.engine.events.notifyEmit("One", subscriber, result);
             }
@@ -200,6 +206,7 @@ export default abstract class Room<T extends any = string, U extends Subscriber<
     setEntity(entity: Entity | null): this {
         this._entity = entity || null;
         this.recalculation();
+        this.applyChanges();
         return this;
     }  
     /**
