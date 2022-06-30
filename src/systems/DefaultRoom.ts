@@ -24,13 +24,13 @@ export default class DefaultRoom extends Room<string, Subscriber<string, {}>> {
     addPropertyToKey(key: string, propertyKeys: string[], ...args: any[]): Promise<any> {
         throw new Error("Method not implemented.");
     }
-    deleteEntityByKey(keys: string[], ...args: any[]): Promise<any> {
+    deleteEntityByKey<D extends unknown = any, K extends unknown = string[]>(keys: K, ...args: any[]): Promise<D> {
         throw new Error("Method not implemented.");
     }
     editEntityToKey(key: string, propertyKey: string, value: PropertyValue, ...args: any[]): Promise<any> {
         throw new Error("Method not implemented.");
     }
-    build(...args: any[]): Promise<any> {
+    build<D extends unknown = any>(...args: any[]): Promise<D> {
         throw new Error("Method not implemented.");
     }
     notifyRooms(...args: any[]): Promise<any> {
@@ -45,6 +45,7 @@ export default class DefaultRoom extends Room<string, Subscriber<string, {}>> {
     errorLoger(...args: any[]) {
         throw new Error("Method not implemented.");
     }
+   
     constructor(key: string, engine: Engine, entity?: Entity) {
         super(key, engine, entity);
     }
