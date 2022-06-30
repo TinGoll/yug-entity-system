@@ -73,7 +73,7 @@ export default abstract class Room<
    * @param keys ключ удаляемой сущности.
    * @param args дополнительно можно любые аргументы.
    */
-  abstract deleteEntityByKey(keys: string[], ...args: any[]): Promise<any>;
+  abstract deleteEntityByKey<D extends any = any, K extends any = string[]>(keys: K, ...args: any[]): Promise<D>;
 
   /**
    * Изменение свойств сущности, по ключу.
@@ -93,7 +93,7 @@ export default abstract class Room<
    * Метод сборки данных комнаты. Собирает в нужном формате сущности, по нужному фильтру. Для отправки клиенту.
    * @param args Можно передать любые аргументы.
    */
-  abstract build(...args: any[]): Promise<any>;
+  abstract build<D extends any = any>(...args: any[]): Promise<D>;
 
   /**
    * Уведомление других комнат, если в текущей были какие - то глобальные изменения.
