@@ -1,281 +1,288 @@
-import { ApiComponent, EngineAction, EntityShell, PropertyValue } from "../@engine-types";
+import { EntityShell, PropertyValue } from "../@engine-types";
 import { Engine } from "../Engine";
 import Entity from "../Entity";
 import RoomController from "./RoomController";
 import { Subscriber } from "./Subscriber";
 
+/**
+ * Абстрактный Класс комнаты, требует реализации.
+ */
+export default abstract class Room<
+  T extends any = string,
+  U extends Subscriber<T> = Subscriber<T>
+> {
+  protected roomController: RoomController;
+  protected subscribers: Map<T, U>;
+  protected engine: Engine;
+  protected _entity: Entity | null;
+  protected _key: T;
 
-export default abstract class Room<T extends any = string, U extends Subscriber<T> = Subscriber<T>> {
-    protected roomController: RoomController;
-    protected subscribers: Map<T, U>;
-    protected engine: Engine;
-    protected _entity: Entity | null;
+  protected _currentLvl: number = 0;
 
-    protected _key: T; 
+  constructor(key: T, engine: Engine, entity?: Entity) {
+    this._key = key;
+    this.subscribers = new Map<T, U>();
+    this.engine = engine;
+    this.roomController = engine.roomController;
+    this._entity = entity || null;
+  }
 
-    constructor(key: T, engine: Engine, entity?: Entity) {
-        this._key = key;
-        this.subscribers = new Map<T, U>();
-        this.engine = engine;
-        this.roomController = engine.roomController;
-        this._entity = entity || null;
-        this.recalculation();
-    }
+  /****************************************************************** */
+  /****************************************************************** */
+  /****************************************************************** */
 
-    /** Подписка */
-    abstract subscribe(subscriber: Subscriber<T>, ...args: any[]): this;
-    /** Отписка */
-    abstract unsubscribe(subscriber: Subscriber<T>): this;
+  // Абстрактные методы команты.
 
-    // РАБОТА С СУЩНОСТЬЮ
+  /** Подписка */
+  abstract subscribe(subscriber: Subscriber<T>, ...args: any[]): this;
+  /** Отписка */
+  abstract unsubscribe(subscriber: Subscriber<T>): this;
+  /** Пересчет сущности / сущностей комнаты. */
+  abstract recalculation(): Promise<any>;
+  /** Сохранение изменений. */
+  abstract applyChanges(): Promise<any>;
 
-    /**
-     * Добавление новой сущности в существующую по ключу.
-     * @param key ключ сущности, в которую надо вложить новую. (должен принадлежать данной комнате.)
-     * @param addedKey ключ добавляемой сущности.
-     */
-    async addEntityByKey(key: string, addedKey: string): Promise<void> {
-        const entity = await this._entity?.getEntityToKey(key);
-        if (entity) {
-            const addedEntity = await entity.addChildToKey(addedKey);
-            if (addedEntity) {
-                // Удачно, уведомить.
-            } else {
-                // Неудачно, уведомить.
+  // Методы для работы с сущностями.
+
+  /**
+   * Добавление сущности (вложение), в указанную, по ключу.
+   * @param key Ключ сущности, в которую необходимо вложить новую сущность
+   * @param addedKey Ключ шаблона (должен существовать).
+   * @param args дополнительно можно любые аргументы.
+   */
+  abstract addEntityByKey(
+    key: string,
+    addedKey: string,
+    ...args: any[]
+  ): Promise<any>;
+
+  /**
+   * Добавление нового свойства в сущность, по ключу шаблона компонента.
+   * @param key Ключ сущности, в которую необходимо вложить новые компоненты.
+   * @param propertyKeys ключи шаблонов компонентов.
+   * @param args дополнительно можно любые аргументы.
+   */
+  abstract addPropertyToKey(
+    key: string,
+    propertyKeys: string[],
+    ...args: any[]
+  ): Promise<any>;
+
+  /**
+   * Удаление сущности по ключу, если сущность является главной, то после удаления комната будет уничтожена.
+   * @param keys ключ удаляемой сущности.
+   * @param args дополнительно можно любые аргументы.
+   */
+  abstract deleteEntityByKey(keys: string[], ...args: any[]): Promise<any>;
+
+  /**
+   * Изменение свойств сущности, по ключу.
+   * @param key ключ сущности.
+   * @param propertyKey ключ изменяемого свойства.
+   * @param value новое значение.
+   * @param args дополнительно можно любые аргументы.
+   */
+  abstract editEntityToKey(
+    key: string,
+    propertyKey: string,
+    value: PropertyValue,
+    ...args: any[]
+  ): Promise<any>;
+
+  /**
+   * Метод сборки данных комнаты. Собирает в нужном формате сущности, по нужному фильтру. Для отправки клиенту.
+   * @param args Можно передать любые аргументы.
+   */
+  abstract build(...args: any[]): Promise<any>;
+
+  /**
+   * Уведомление других комнат, если в текущей были какие - то глобальные изменения.
+   */
+  abstract notifyRooms(...args: any[]): Promise<any>;
+
+  /**
+   * Отправка сообщений для подписчиков текущей комнаты.
+   * @param args
+   */
+  abstract sendNotificationToSubscribers(...args: any[]): void;
+
+  /**
+   * Отправка сообщения одному подписчику.
+   * @param subscriber Подписчик. (Должен быть подписан на данную комнату.)
+   * @param args Можно передать любые аргументы.
+   */
+  abstract sendToOneSubscriber(subscriber: Subscriber, ...args: any[]): void;
+
+  /**
+   * Метод логирования ошибок.
+   * @param args Можно передать любые аргументы.
+   */
+  abstract errorLoger(...args: any[]): any;
+
+  /****************************************************************** */
+  /****************************************************************** */
+  /****************************************************************** */
+
+  /**
+   * Удаление сущностей, принадлежащих текущей комнате.
+   * @param keys Массив ключей.
+   * @returns массив, массивов. Кортеж, первым элементом являеться массив ключей удаляемых сущностей, вторым массив ключей, зависимых сущностей
+   * которые так жу бедут удалены.
+   */
+  async deleteEntity(keys?: string[]): Promise<[string[], string[]]> {
+    try {
+      if (this._entity) {
+        if (!keys) {
+          // Полное удаление всех сущностей комнаты.
+          const allKeys = await this.engine.deleteEntityShell([
+            this._entity.key,
+          ]);
+          return allKeys;
+        } else {
+          const deletedCandidates: string[] = [];
+          for (const key of keys) {
+            if (await this.existsEntityKey(key)) {
+              deletedCandidates.push(key);
             }
+          }
+          if (!deletedCandidates.length) return [[], []];
+          const deletedKey = await this.engine.deleteEntityShell(
+            deletedCandidates
+          );
+          return deletedKey;
         }
+      }
+      return [[], []];
+    } catch (e) {
+      throw e;
     }
+  }
 
-    /**
-     * Добавление нового свойства в сущность, по ключу шаблона компонента.
-     * @param key ключ сущности.
-     * @param samplePropertyKeys ключ шаблона компонента.
-     */
-    async addPropertyToKey (key: string, samplePropertyKeys: string[]) {
+  /**
+   * Получаем список оболочек сущностей в комнате.
+   * @returns EntityShell[].
+   */
+  async getEntityShells(): Promise<EntityShell[]> {
+    if (!this._entity || !this._entity?.key) return [];
+    const shells = await this.engine.find(this._entity?.key, "all offspring");
+    // this._entity.getShell()
+    return [...shells];
+  }
 
-        const cmps: ApiComponent[] = []
-        for (const sKey of samplePropertyKeys) {
-            const candidate = this.engine.components.find(cmp => cmp.key === sKey);
-            if (candidate) cmps.push(candidate);
-        }
-        if (cmps.length) {
-            const entity = await this.entity?.getEntityToKey(key);
-            if (entity) {
-
-                entity.addApiComponents(...cmps);
-
-                const addedComponents = entity.getNotRecordedComponents();
-                const updatedComponents = entity.getNotUpdatedComponents();
-
-                const added = await this.engine.signComponentApi(...addedComponents);
-                const updated = await this.engine.updateComponentApi(...updatedComponents);
-
-                entity.setApiComponents(
-                    ...added.map(c => ({...c, indicators: {...c.indicators, is_not_sent_notification: true}})), 
-                    ...updated.map(c => ({ ...c, indicators: { ...c.indicators, is_not_sent_notification: true } })))
-            }
-
-            const [ entities, components ] = await this.recalculation();
-
-            const action: EngineAction = "update-entity-shell";
-
-            this.applyChanges(); // Применить все изменения.
-            // Изменение метода сохранения.
-            //this.engine.events.notifyEmit("Broadcast", action, entities);
-
-        }
+  /**
+   * Поиск и получение сущности в виде instance класса Entity.
+   * @param key ключ сущности..
+   */
+  async getRoomEntity(key: string): Promise<Entity | null> {
+    try {
+      if (!this._entity) return null;
+      const shells = await this.engine.findDynasty(this._entity.key);
+      const candidateShell = shells.find((sh) => sh.options.key === key);
+      if (!candidateShell) return null;
+      return this.engine.creator.shellToEntity(candidateShell);
+    } catch (e) {
+      throw e;
     }
+  }
 
-    /**
-     * Удаление сущности по ключу, если сущность является главной, то после удаления комната будет уничтожена.
-     * @param key ключ удаляемой сущности.
-     */
-    async deleteEntityByKey(key: string): Promise<void> {
-        if (this._entity) {
-            const action: EngineAction = "delete-entity-shell";
-            if (this._entity?.key === key) {
-                // Полное удаление всех сущностей комнаты.
-                const allKeys = await this.engine.deleteEntityShell([key]);
-                // Уведомить об удалении сущности.
-                this.engine.events.notifyEmit("Broadcast", action, allKeys);
-            } else {
-                const deletedKey = await this._entity.deleteEntityToKey(key);
-                // Уведомить об удалении сущности.
-                this.engine.events.notifyEmit("Broadcast", action, deletedKey);
-            }
-        }
+  /**
+   * Получить главную сущность комнаты.
+   * @returns Entity или null
+   */
+  getEntity(): Entity | null {
+    return this._entity;
+  }
+  /**
+   * Присвоить новую главную сущность комнаты.
+   * @param entity
+   * @returns
+   */
+  /**
+   * Установка новой сущности в качестве главной.
+   * @param entity главная сущность комнаты.
+   * @returns this.
+   */
+  setEntity(entity: Entity | null): this {
+    this._entity = entity || null;
+    this.recalculation();
+    this.applyChanges();
+    return this;
+  }
+  /**
+   * Существет ли ключ сущности в данной комнате
+   * @param key ключ
+   * @returns boolean
+   */
+  async existsEntityKey(key: string): Promise<boolean> {
+    const keys = await this.getEntityKeys();
+    return Boolean(keys.find((k) => k === key));
+  }
+
+  /** Получить главную сущность комнаты */
+  get entity() {
+    return this.getEntity();
+  }
+  /**
+   * Присвоение новой главной сущности.
+   */
+  set entity(entity: Entity | null) {
+    this.setEntity(entity);
+  }
+
+  /**
+   * Получение ключей сущностей, находящихся в текущей комнате.
+   * @returns массив ключей.
+   */
+  async getEntityKeys(): Promise<string[]> {
+    if (!this._entity) return [];
+    const shells = await this.engine.findDynasty(this._entity.key);
+    return shells.map((sh) => sh.options.key);
+  }
+
+  /**
+   * Находится ли в комнате один или более подписчиков.
+   * @returns
+   */
+  isEmpty(): boolean {
+    return !this.subscribers.size;
+  }
+
+  /** метод удаления комнаты. */
+  destroy(): void {
+    for (const iterator of this.subscribers.values()) {
+      iterator.data.rooms = [
+        ...iterator.data.rooms.filter((r) => r !== this.key),
+      ];
     }
-
-    /**
-     * Функция персчета всех сущностей, принадлежащей комнате.
-     * Функция, так же отправляет на сохранение изменнные сущности.
-     * И возвращает массив измененных оболочек сущностей и компонентов (Кортеж) [EntityShell[], ApiComponent[]].
-     */
-    async recalculation (): Promise<[EntityShell[], ApiComponent[]]> {
-        try {
-            const changedComponent = await this._entity?.recalculation() || [];
-            const changedEntity = await this._entity?.getChangedEntities() || [];
-            // Отключено автосохранение, после пересчета
-            // const result = this.engine.updateEntityShell(changedEntity?.map(e => e.getShell()), 'recalculation');
-            const result = changedEntity.map(c => c.getShell());
-
-            return [[...result], [...changedComponent]];
-        } catch (e) {
-            throw e;
-        }
+    if (this._entity) {
+      this.roomController
+        .isEntityOpen(this._entity?.key, <any>this.key)
+        .then((flag) => {
+          if (!flag) {
+            this.engine.unloadToKey(this._entity!.key);
+          }
+        });
     }
+    this.subscribers.clear();
+  }
 
+  /** Получить ключ комнаты */
+  getKey(): T {
+    return this._key;
+  }
 
-    /**
-     * Изменение свойств сущности, по ключу.
-     * @param key ключ сущности.
-     * @param propertyKey ключ изменяемого свойства.
-     * @param value новое значение.
-     * @param args дополнительно можно передать подписчика
-     */
-    async editEntityToKey (key: string, propertyKey: string, value: PropertyValue, ...args: any[]): Promise<void> {
-        const entity = await this._entity?.getEntityToKey(key);
-        const [ subscriber ] = <[subscriber: Subscriber, ...other: any[]]> args;
+  /** Получить ключ комнаты */
+  get key(): T {
+    return this.getKey();
+  }
 
-        if (this._entity && entity) {
-            entity.setValueToKey(propertyKey, value);
-            const result = await this._entity?.recalculation();
-            this.applyChanges();
+  /** Метод обновления комнатыю */
+  async update(dt: number): Promise<void> {
+    // Обновление комнаты
+  }
 
-            // const changedEntity = await this._entity.getChangedEntities();
-            // // Запись в базу данных, всех изменений и уведомление.
-            // const result = this.engine.updateEntityShell(changedEntity?.map(e => e.getShell()), 'editEntityToKey');
-
-            if (subscriber && subscriber.data?.key) {
-                this.engine.events.notifyEmit("One", subscriber, result);
-            }
-        }
-    }
-
-    /**
-     * Получаем список оболочек сущностей в комнате.
-     * @returns EntityShell[].
-     */
-    async getEntityShells(): Promise<EntityShell[]> {
-        if (!this._entity || !this._entity?.key) return [];
-        const shells = await this.engine.find(this._entity?.key, "all offspring");
-        // this._entity.getShell()
-        return [...shells,];
-    }
-
-    /**
-     * Получение второго уровня сущностей
-     * @returns  Promise<Entity[]>
-     */
-    async getSecondLevelEntities (): Promise<Entity[]> {
-        return this._entity?.getChildren() || [];
-    }
-    /**
-     * Получить сущность комнаты по ключу.
-     * @param key ключ сущгости.
-     */
-    async getEntityRoom (key: string): Promise<Entity|null> {
-        try {
-            if (!this._entity) return null;
-            const shells = await this.engine.findDynasty(this._entity.key);
-            const candidateShell = shells.find(sh => sh.options.key === key);
-            if (!candidateShell) return null;
-            return this.engine.creator.shellToEntity(candidateShell);
-        } catch (e) {
-            throw e;
-        }
-    }
-
-    /**
-     * Получить главную сущность комнаты.
-     * @returns Entity или null
-     */
-    getEntity (): Entity | null {return this._entity}
-    /**
-     * Присвоить новую главную сущность комнаты.
-     * @param entity 
-     * @returns 
-     */
-    /**
-     * Установка новой сущности в качестве главной.
-     * @param entity главная сущность комнаты.
-     * @returns this.
-     */
-    setEntity(entity: Entity | null): this {
-        this._entity = entity || null;
-        this.recalculation();
-        this.applyChanges();
-        return this;
-    }  
-    /**
-     * Существет ли ключ сущности в данной комнате
-     * @param key ключ 
-     * @returns boolean
-     */
-    async existsEntityKey (key: string): Promise<boolean> {
-        const keys = await this.getEntityKeys();
-        return Boolean(keys.find(k => k === key))
-    }
-
-    /** Получить главную сущность комнаты */ 
-    get entity() { return this.getEntity() }
-    set entity(entity: Entity | null) { this.setEntity(entity)}
-
-    async getEntityKeys (): Promise<string[]> {
-        if (!this._entity) return [];
-        const shells = await this.engine.findDynasty(this._entity.key);
-        return shells.map(sh => sh.options.key);
-    }
-    isEmpty (): boolean {
-        return !this.subscribers.size;
-    }
-
-    /** Получить ключ комнаты */
-    getKey(): T { return this._key }
-    /** Получить ключ комнаты */
-    get key(): T { return this.getKey() }
-
-    // УВЕДОМЛЕНИЯ
-
-    /**
-     * Уведомление все комнат, в которых открыты затронутые сущности.
-     * @param args аргументы ответа.
-     */
-    notifyAllRooms(action: string, entityKey: string, ...args: any[]): void {
-        this.roomController.notify(action, entityKey, ...args!);
-    }
-
-    /** метод удаления комнаты. */
-    destroy(): void {
-        for (const iterator of this.subscribers.values()) {
-            iterator.data.rooms = [...iterator.data.rooms.filter(r => r !== this.key)]
-        }
-        if (this._entity) {
-            this.roomController.isEntityOpen(this._entity?.key, <any> this.key).then((flag) => {
-                if (!flag) {
-                    this.engine.unloadToKey(this._entity!.key)
-                }
-            })
-        }
-        this.subscribers.clear()
-    }
-
-    /** Метод обновления комнатыю */
-    async update(dt: number): Promise<void> {
-        // Обновление комнаты
-    }
-
-    /**
-     * Отправка всем подписчикам в комнате, метод, так же может вызывать roomController
-     * @param action Экшен 
-     * @param args аргументы
-     */
-    abstract sendNotificationToSubscribers(action: string, ...args: any[]): void
-    abstract sendToOneSubscriber(action: string, subscriber: Subscriber<T>, ...args: any[]):void;
-    abstract build(): Promise<any[]>;
-    abstract applyChanges(): Promise<Entity[]>;
-    /** Итератор, итерируемый объект Subscriber */
-    [Symbol.iterator] = (): IterableIterator<U> => {
-        return this.subscribers.values();
-    }
+  /** Итератор, итерируемый объект Subscriber */
+  [Symbol.iterator] = (): IterableIterator<U> => {
+    return this.subscribers.values();
+  };
 }

@@ -1,5 +1,12 @@
 import { timing } from "./@decorators";
-import { ApiComponent, ApiEntity, ComponentDto, EngineObjectType, EntityDto, EntityShell } from "./@engine-types";
+import {
+  ApiComponent,
+  ApiEntity,
+  ComponentDto,
+  EngineObjectType,
+  EntityDto,
+  EntityShell,
+} from "./@engine-types";
 import Component from "./Component";
 import { Engine } from "./Engine";
 import Entity from "./Entity";
@@ -48,7 +55,13 @@ export default class Creator {
    * @param dto Объект определения сущности.
    * @param components Необязательно. Дополнительно можно задать массив компонентов.
    */
-  create(type: "entity", dto: EntityDto, ...components: ApiComponent[]): Promise<Entity>;
+  create(
+    type: "entity",
+    dto: EntityDto,
+    response?: (...args: any[]) => void,
+    reject?: (...args: any[]) => void,
+    ...components: ApiComponent[]
+  ): Promise<Entity>;
   /**
    * Создание компонента.
    * @param type "component"
@@ -58,29 +71,52 @@ export default class Creator {
   create(
     type: "component",
     dto: ComponentDto,
+    response?: (...args: any[]) => void,
+    reject?: (...args: any[]) => void,
     ...components: ApiComponent[]
   ): Promise<Component>;
-  async create(type: EngineObjectType, ...args: any[]): Promise<Entity | Component | void> {
+  async create(
+    type: EngineObjectType,
+    ...args: any[]
+  ): Promise<Entity | Component | void> {
     try {
       // Создание сущности
       if (type === "entity") {
-        const [dto, ...components] = <[EntityDto, ...ApiComponent[]]>args;
+        const [dto, response, reject, ...components] = <
+          [
+            EntityDto,
+            (...args: any[]) => void,
+            (...args: any[]) => void,
+            ...ApiComponent[]
+          ]
+        >args;
         if (!dto || !dto.name)
           throw new Error(`Некоректные данные, для создания ${type}.`);
-        const shell = this.engine.createEntityShell({
-          ...dto,
-          components: [
-            ...this.concatenateApiComponents(
-              ...components,
-              ...(dto.components || [])
-            ),
-          ],
-        });
+        const shell = this.engine.createEntityShell(
+          {
+            ...dto,
+            components: [
+              ...this.concatenateApiComponents(
+                ...components,
+                ...(dto.components || [])
+              ),
+            ],
+          },
+          response,
+          reject
+        );
         return new Entity(shell, this._engine);
       }
       // Создание компонента.
       if (type === "component") {
-        const [dto, ...components] = <[ComponentDto, ...ApiComponent[]]>args;
+        const [dto, response, reject, ...components] = <
+          [
+            ComponentDto,
+            (...args: any[]) => void,
+            (...args: any[]) => void,
+            ...ApiComponent[]
+          ]
+        >args;
         if (!dto || !dto.componentName)
           throw new Error(`Некоректные данные, для создания ${type}.`);
         components.forEach((c) => {
@@ -91,7 +127,11 @@ export default class Creator {
         const component = new Component(dto, this._engine, ...components);
         component.add(dto);
         const savable = component.notRecordedDatabase();
-        const cmp = await this.engine.createComponentApi(...savable);
+        const cmp = await this.engine.createComponentApi(
+          response,
+          reject,
+          ...savable
+        );
         return new Component(dto, this._engine, ...cmp);
       }
       throw new Error(`Тип объекта ""${type}" не поддерживается.`);
@@ -105,8 +145,17 @@ export default class Creator {
    * @param key ключ шаблона
    * @returns Сущность или null
    */
-  async CreateFromTemplateKey(key: string): Promise<Entity | null> {
-    const shell = await this._engine.cloneEntityShell(key);
+  async CreateFromTemplateKey(
+    key: string,
+    response?: (...args: any[]) => void,
+    reject?: (...args: any[]) => void
+  ): Promise<Entity | null> {
+    const shell = await this._engine.cloneEntityShell(
+      key,
+      undefined,
+      response,
+      reject
+    );
     if (!shell) return null;
     return this.shellToEntity(shell);
   }
