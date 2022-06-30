@@ -252,6 +252,7 @@ export class Engine extends Map<string, EntityShell> {
         id: 0,
         key: this.keyGenerator("cmp:"),
         entityKey,
+        sampleKey: c.key,
       })),
     ];
   }
