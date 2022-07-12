@@ -52,12 +52,37 @@ export default class Entity {
   }
 
   /**
+   * Добавление компонентов в сущность по ключу шаблонов (должны быть загружены заранее)
+   * @param keys Массив ключей компонентов.
+   * @returns this
+   */
+  addComponentToKeys(...keys: string[]): this {
+    try {
+      const cmps: ApiComponent[] = [];
+      for (const key of keys) {
+        if (this.engine.getComponentList()?.has(key)) {
+          const cmp = this.engine.getComponentList().get(key)!;
+          cmps.push(cmp);
+        } else {
+          throw new Error(
+            "Компонент с стаким ключем не существует либо не загружен в хранилище."
+          );
+        }
+      }
+      this.addApiComponents(...cmps);
+      return this;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
    * Добавление компонента в сущность.
    * @param apiComponents
    * @returns
    */
   addApiComponents(...apiComponents: ApiComponent[]): this {
-    const cmps = this.engine.cloneApiComponent(apiComponents);
+    const cmps = this.engine.cloneApiComponent(apiComponents, this.getKey());
     this.shell.options.components = [
       ...this.engine.creator.concatenateApiComponents(
         ...this.shell.options.components,
@@ -74,20 +99,37 @@ export default class Entity {
    */
   setApiComponents(...apiComponents: ApiComponent[]): this {
     for (const cmp of apiComponents) {
+      if (
+        cmp.indicators.is_changeable ||
+        cmp.indicators.is_unwritten_in_storage
+      ) {
+        this.setChangeable(false, true);
+      }
       const index = this._shell.options.components.findIndex(
-        (c) =>
-          c.componentName === cmp.componentName &&
-          c.propertyName === cmp.propertyName
+        (c) => c.key === cmp.key
       );
       if (index > -1) {
         const { id, key, entityKey, sampleKey, ...other } = cmp;
-        this._shell.options.components = [
-          ...this._shell.options.components,
-          { ...this._shell.options.components[index], ...other },
-        ];
+        this._shell.options.components[index] = {
+          ...this._shell.options.components[index],
+          ...other,
+        };
       } else {
-        cmp.entityKey = this.key;
-        this._shell.options.components.push(cmp);
+        const candidateIndex = this._shell.options.components.findIndex(
+          (c) =>
+            c.componentName === cmp.componentName &&
+            c.propertyName === cmp.propertyName
+        );
+        if (candidateIndex > -1) {
+          const { id, key, entityKey, sampleKey, ...other } = cmp;
+          this._shell.options.components[candidateIndex] = {
+            ...this._shell.options.components[candidateIndex],
+            ...other,
+          };
+        } else {
+          cmp.entityKey = this.key;
+          this._shell.options.components.push(cmp);
+        }
       }
     }
     return this;
@@ -262,6 +304,18 @@ export default class Entity {
   }
 
   /**
+   * Получение списка всех сущностей принадлежащих данной, в том числе и самой сущности.
+   */
+  async getEntities(): Promise<Entity[]> {
+    try {
+      const entityShells = await this.engine.find(this.key, "all offspring");
+      return entityShells.map((sh) => this.engine.creator.shellToEntity(sh));
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
    * Получить сущность по ключу. (в том числе и текущую)
    * @param key ключ искомой сущности
    * @returns Promise<Entity | null>
@@ -355,13 +409,15 @@ export default class Entity {
   /**
    * Отправка изменений в хранилище.
    */
-    writeChanges(
-        response?: (...args: any[]) => void,
-        reject?: (...args: any[]) => void,) {
+  writeChanges(
+    response?: (...args: any[]) => void,
+    reject?: (...args: any[]) => void
+  ) {
     this.getChangedEntities().then((entities) =>
       this._engine.updateEntityShell(
         entities.map((e) => e.shell),
-          response, reject
+        response,
+        reject
       )
     );
   }
@@ -687,6 +743,78 @@ export default class Entity {
     const dynasy = await this.engine.findDynasty(this._shell.options.key);
     return dynasy.map((sh) => this.engine.creator.shellToEntity(sh));
   }
+
+  /************************************************************************ */
+  /**
+   * Сохранение измененных свойств сущности, в том числе и самой сущности.
+   */
+  async save(): Promise<Entity[]> {
+    try {
+      const tempArraySavable: Entity[] = [];
+      const tempArrayUnwritable: Entity[] = [];
+      const entities = await this.getEntities();
+      for (const entity of entities) {
+        if (
+          (entity.getShell().options.indicators.is_changeable ||
+            entity.getShell().options.indicators.is_changeable_component) &&
+          !entity.getShell().options.indicators.is_unwritten_in_storage
+        ) {
+          tempArraySavable.push(entity);
+        }
+        if (entity.getShell().options.indicators.is_unwritten_in_storage) {
+          tempArrayUnwritable.push(entity);
+        }
+      }
+
+      const unwritablePromise = new Promise<EntityShell[]>((res, rej) => {
+        if (tempArrayUnwritable.length) {
+          this.engine
+            .signEntities(tempArrayUnwritable.map((e) => e.getShell()))
+            .then((shels) => res(shels))
+            .catch((reason) => rej(reason));
+        } else {
+          res([]);
+        }
+      });
+
+      const savablePromise = new Promise<EntityShell[]>((res, rej) => {
+        if (tempArraySavable.length) {
+          this.engine.updateEntityShell(
+            tempArraySavable.map((e) => e.getShell()),
+            (...args) => {
+              res(args);
+            },
+            (...args) => {
+              rej(args);
+            }
+          );
+        } else {
+          res([]);
+        }
+      });
+
+      const promiseData = await Promise.all([
+        unwritablePromise,
+        savablePromise,
+      ]);
+      const resultArray: EntityShell[] = [];
+      for (const data of promiseData) {
+        for (const shell of data) {
+          if (this.engine.has(shell.options.key)) {
+            this.engine.get(shell.options.key)!.options = { ...shell.options };
+          } else {
+            this.engine.set(shell.options.key, shell);
+          }
+          resultArray.push(shell);
+        }
+      }
+      return resultArray.map((sh) => this.engine.creator.shellToEntity(sh));
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /************************************************************************ */
 
   /** Получить список компонентов сущности */
   getId(): number {

@@ -10,6 +10,79 @@ const delay = async <T extends any = any>(object: T, time: number): Promise<T> =
     });
 }
 
+export const loadComponent = async (): Promise<ApiComponent[]> => {
+    const time = (Math.floor(Math.random() * maxTime))
+    console.log(`Время загрузки шаблонов компонентов в сек: `, time / 1000);
+
+    return delay([
+        {
+            id: 1,
+            key: 'cmp:e9771810-e10a-4703-8534-7dc936b0f32a',
+            index: 1,
+            componentName: 'geometry',
+            componentDescription: 'Геометрия',
+            propertyName: 'name_not_set',
+            propertyDescription: '',
+            propertyValue: '',
+            propertyType: 'string',
+            indicators: { is_not_sent_notification: true },
+            bindingToList: undefined,
+            attributes: undefined,
+            propertyFormula: undefined,
+            entityKey: undefined,
+            sampleKey: undefined
+        },
+        {
+            id: 2,
+            key: 'cmp:e15ff655-cdf1-4884-a570-a6864599227f',
+            index: 2,
+            componentName: 'geometry',
+            componentDescription: 'Геометрия',
+            propertyName: 'height',
+            propertyDescription: 'Высота',
+            propertyValue: 0,
+            propertyType: 'number',
+            indicators: { is_changeable: true },
+            bindingToList: undefined,
+            attributes: undefined,
+            propertyFormula: undefined,
+            entityKey: undefined
+        },
+        {
+            id: 3,
+            key: 'cmp:0613cf3b-380f-46d5-97e5-0e1f6f960107',
+            index: 3,
+            componentName: 'geometry',
+            componentDescription: 'Геометрия',
+            propertyName: 'width',
+            propertyDescription: 'Ширина',
+            propertyValue: 0,
+            propertyType: 'number',
+            indicators: { is_changeable: true },
+            bindingToList: undefined,
+            attributes: undefined,
+            propertyFormula: undefined,
+            entityKey: undefined
+        },
+        {
+            id: 4,
+            key: 'cmp:26799a43-05c4-4747-9e23-ed04e2636170',
+            index: 4,
+            componentName: 'geometry',
+            componentDescription: 'Геометрия',
+            propertyName: 'amount',
+            propertyDescription: 'Количество',
+            propertyValue: 0,
+            propertyType: 'number',
+            indicators: { is_changeable: true },
+            bindingToList: undefined,
+            attributes: undefined,
+            propertyFormula: undefined,
+            entityKey: undefined
+        }
+    ], (Math.floor(Math.random() * maxTime)));
+}
+
 export const insertEntities = (entities: ApiEntity[]): Promise<ApiEntity[]> => {
     try {
         const time = (Math.floor(Math.random() * maxTime))
@@ -88,7 +161,7 @@ export const updateComponents = (components: ApiComponent[]): Promise<ApiCompone
         const time = (Math.floor(Math.random() * maxTime))
         console.log(`Время обновления ${components.length} сек:`, time / 1000);
        // throw new Error("Тест ошибки обновления")
-        return delay(components.map(c => ({...c, propertyValue: 100500})), time);
+        return delay(components.map(c => ({...c})), time);
     } catch (error) {
         throw error;
     }

@@ -79,7 +79,7 @@ export default class Component {
    * @param dto объект определения
    * @returns this;
    */
-  setPropertiesBykey(key: string, dto: ComponentDto): this {
+  setPropertiesBykey(key: string, dto: Partial<ComponentDto>): this {
     const index = this.properties.findIndex((p) => p.key === key);
     if (index > -1) {
       const {
@@ -90,10 +90,10 @@ export default class Component {
         indicators,
         ...other
       } = dto as ApiComponent;
-      this.properties[0] = {
-        ...this.properties[0],
+      this.properties[index] = {
+        ...this.properties[index],
         ...other,
-        indicators: { ...this.properties[0].indicators, is_changeable: true },
+        indicators: { ...this.properties[index].indicators, is_changeable: true },
       };
     }
     return this;
@@ -150,20 +150,21 @@ export default class Component {
    */
   add(dto: PropertyDto | ComponentDto): this {
     const {
-      propertyName = "name_not_set",
-      propertyDescription = "",
+      propertyName = `name_not_set_${Date.now().toString(16)}`,
+      propertyDescription = `description_not_set_${Date.now().toString(16)}`,
       propertyType = "string",
       propertyValue,
       propertyFormula,
       attributes,
       bindingToList,
     } = dto;
+
     const componentDescription = this.componentDescription || "";
     const candidateIndex = this.properties.findIndex(
-      (p) => p.propertyName === propertyName
+      (p) => p.componentName === this.componentName && p.propertyName === propertyName 
     );
-
     const defaultValue = this.get_dafault_value(propertyType, propertyValue);
+
     if (candidateIndex > -1) {
       this.properties[candidateIndex] = {
         ...this.properties[candidateIndex],
@@ -179,6 +180,7 @@ export default class Component {
       };
       return this;
     }
+    
     const cmp: ApiComponent = {
       id: 0,
       key: this.engine.keyGenerator("cmp:"),
@@ -195,6 +197,7 @@ export default class Component {
       propertyFormula,
       entityKey: this.entityKey,
     };
+
     this.properties.push(cmp);
     return this;
   }

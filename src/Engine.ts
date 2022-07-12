@@ -239,7 +239,8 @@ export class Engine extends Map<string, EntityShell> {
 
   private clone_component_api(
     components: ApiComponent[],
-    entityKey?: string
+    entityKey?: string,
+    isSample = false
   ): ApiComponent[] {
     return [
       ...components.map((c) => ({
@@ -252,7 +253,7 @@ export class Engine extends Map<string, EntityShell> {
         id: 0,
         key: this.keyGenerator("cmp:"),
         entityKey,
-        sampleKey: c.key,
+        sampleKey: isSample ? undefined : c.key,
       })),
     ];
   }
@@ -449,7 +450,7 @@ export class Engine extends Map<string, EntityShell> {
     reject?: (...args: any[]) => void,
     ...components: ApiComponent[]
   ): Promise<ApiComponent[]> {
-    const newComponents = this.clone_component_api(components);
+    const newComponents = this.clone_component_api(components, undefined, true);
     const savable = newComponents.filter(
       (c) => c.indicators.is_unwritten_in_storage
     );
@@ -613,6 +614,7 @@ export class Engine extends Map<string, EntityShell> {
       const deletedKeys = await this.events.deletedEmit("entity", keys);
       const dependencyKeys: string[] = [];
       for (const key of deletedKeys) {
+        this.delete(key);
         dependencyKeys.push(...(await this.remove_dependency(key)));
       }
       return [deletedKeys, dependencyKeys];

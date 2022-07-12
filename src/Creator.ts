@@ -107,6 +107,7 @@ export default class Creator {
         );
         return new Entity(shell, this._engine);
       }
+
       // Создание компонента.
       if (type === "component") {
         const [dto, response, reject, ...components] = <
@@ -125,7 +126,8 @@ export default class Creator {
           c.entityKey = dto.entityKey;
         });
         const component = new Component(dto, this._engine, ...components);
-        component.add(dto);
+        if ((dto.propertyName && dto.propertyType)) component.add(dto);
+        
         const savable = component.notRecordedDatabase();
         const cmp = await this.engine.createComponentApi(
           response,
