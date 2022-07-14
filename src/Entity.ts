@@ -1,6 +1,7 @@
 import {
   ApiComponent,
   ApiEntity,
+  ApiTree,
   EntityIndicators,
   EntityShell,
   PropertyAttribute,
@@ -223,6 +224,22 @@ export default class Entity {
       ...shell.options,
       components: [...shell.options.components.map((cmp) => ({ ...cmp }))],
     }));
+  }
+
+  /**
+   * Сбор обекта, с вложенностями, для демонтрации
+   */
+  async assembleTree (): Promise<ApiTree> {
+    const head: ApiTree = {
+      ...this.shell.options,
+      children: []
+    }
+    const chlds = await this.getChildren();
+    for (const chld of chlds) {
+      const treeChld = await chld.assembleTree();
+      head.children.push(treeChld);
+    }
+    return head;
   }
 
   // ДОБАВЛЕНИЕ / УДАЛЕНИЕ СУЩНОСТЕЙ

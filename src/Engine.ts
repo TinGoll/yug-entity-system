@@ -29,6 +29,8 @@ export class Engine extends Map<string, EntityShell> {
 
   private componentList: Map<string, ApiComponent>;
 
+  public сounter = 0;
+
   /**
    * Создание instance движка, по патерну singleton.
    * @returns singletone Engine.
@@ -267,15 +269,21 @@ export class Engine extends Map<string, EntityShell> {
     childs: EntityShell[],
     parentKey: string
   ): Promise<EntityShell[]> {
-    const tempArr: EntityShell[] = [];
-    for (const cld of childs) {
-      const subChild = await this.find(cld.options.key, "only children");
-      const clone = this.clone_entity_shell(cld, parentKey);
-      this.set(clone.options.key, clone);
-      tempArr.push(clone);
-      tempArr.push(...(await this.deep_cloning(subChild, clone.options.key)));
+    try {
+      const tempArr: EntityShell[] = [];
+      for (const cld of childs) {
+        const subChild = await this.find(cld.options.key, "only children");
+        const clone = this.clone_entity_shell(cld, parentKey);
+        tempArr.push(clone);
+        const d = await this.deep_cloning(subChild, clone.options.key)
+        tempArr.push(...d);
+        // Добавление в хранилище движка
+        this.set(clone.options.key, clone);
+      }
+      return tempArr;
+    } catch (e) {
+       throw e;
     }
-    return tempArr;
   }
 
   // ******************************** СОЗДАНИЕ СУЩНОСТЕЙ ***************************
@@ -301,7 +309,13 @@ export class Engine extends Map<string, EntityShell> {
           c.propertyName === dto.propertyName
       );
       if (candidate) throw new Error("Такой компонент уже существует.");
-        components = components.filter(c => !(c.componentName === dto.componentName && c.propertyName === dto.propertyName));
+      components = components.filter(
+        (c) =>
+          !(
+            c.componentName === dto.componentName &&
+            c.propertyName === dto.propertyName
+          )
+      );
       const component = await this.creator.create(
         "component",
         dto,
@@ -523,19 +537,28 @@ export class Engine extends Map<string, EntityShell> {
 
   // ****************************** ОБНОВЛЕНИЕ СУЩНОСТЕЙ ***************************
 
-    updateEntityShell(shells: EntityShell[], 
-        response?: (...args: any[]) => void,
-        reject?: (...args: any[]) => void,
-    ): EntityShell[] {
+  updateEntityShell(
+    shells: EntityShell[],
+    response?: (...args: any[]) => void,
+    reject?: (...args: any[]) => void
+  ): EntityShell[] {
     const updatableShells = shells.filter((sh) => !!sh.options.id);
     const updatableEntities = updatableShells // Получение измененных сущностей.
-      .filter((sh) => sh.options.indicators?.is_changeable && !sh.options.indicators?.is_unwritten_in_storage)
+      .filter(
+        (sh) =>
+          sh.options.indicators?.is_changeable &&
+          !sh.options.indicators?.is_unwritten_in_storage
+      )
       .map((sh) => ({ ...sh.options }));
     const updatableComponents = updatableShells // получение изменнных компонентов.
       .reduce<ApiComponent[]>((acc, item) => {
         acc.push(
           ...item.options.components
-            .filter((c) => c.indicators?.is_changeable && !c.indicators?.is_unwritten_in_storage)
+            .filter(
+              (c) =>
+                c.indicators?.is_changeable &&
+                !c.indicators?.is_unwritten_in_storage
+            )
             .map((c) => ({ ...c }))
         );
         return acc;
@@ -581,21 +604,22 @@ export class Engine extends Map<string, EntityShell> {
         });
 
         for (const shell of updatableShells) {
-            if (this.has(shell.options.key)) {
-                this.get(shell.options.key)!.options = {
-                    ...shell.options
-                }
-            }
+          if (this.has(shell.options.key)) {
+            this.get(shell.options.key)!.options = {
+              ...shell.options,
+            };
+          }
         }
-          
-        if (response && typeof response === "function") response(updatableShells)
+
+        if (response && typeof response === "function")
+          response(updatableShells);
         // Автоуведомление отключено, в место этого будет вызван response()
         // // Уведомление о обновлении
         // const action: EngineAction = "update-entity-shell";
         // this._events.notifyEmit("Broadcast", action, updatableShells);
       })
       .catch((obj) => {
-          if (reject && typeof reject === "function") reject(obj, shells)
+        if (reject && typeof reject === "function") reject(obj, shells);
         console.log("updateEntityShell Error", obj);
       });
     return updatableShells;
@@ -626,9 +650,10 @@ export class Engine extends Map<string, EntityShell> {
   /**
    * Удаление сущностей, помеченых маркером "Удалить"
    */
-    removeMarkedShells(
-        response?: (...args: any[]) => void,
-        reject?: (...args: any[]) => void,) {
+  removeMarkedShells(
+    response?: (...args: any[]) => void,
+    reject?: (...args: any[]) => void
+  ) {
     try {
       const keys: string[] = [];
       for (const shell of this.values()) {
@@ -639,12 +664,12 @@ export class Engine extends Map<string, EntityShell> {
       if (keys.length) {
         //const action: EngineAction = "delete-entity-shell";
         this.deleteEntityShell(keys).then((deletedData) => {
-            if (response && typeof response === "function") response(deletedData);
-         // this._events.notifyEmit("Broadcast", action, deletedData);
+          if (response && typeof response === "function") response(deletedData);
+          // this._events.notifyEmit("Broadcast", action, deletedData);
         });
       }
     } catch (e) {
-        if (reject && typeof reject === "function") reject(e);
+      if (reject && typeof reject === "function") reject(e);
       throw e;
     }
   }
@@ -823,6 +848,7 @@ export class Engine extends Map<string, EntityShell> {
     key: string,
     depth?: "children and me" | "only children" | "all offspring"
   ): Promise<EntityShell[]> {
+    
     if (!this.has(key)) {
       const result = await this.loadEntityShell(key);
       if (!result) return [];

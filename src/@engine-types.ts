@@ -24,6 +24,13 @@ export interface ISerializable {
   key: string;
 }
 
+/**
+ * Создание дерева
+ */
+export interface ApiTree extends ApiEntity {
+  children: ApiTree[];
+}
+
 /** Модель сущность */
 export interface ApiEntity extends ISerializable {
   id: number;
