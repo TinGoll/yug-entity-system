@@ -837,13 +837,25 @@ export default class Entity {
         unwritablePromise,
         savablePromise,
       ]);
+
+
       const resultArray: EntityShell[] = [];
+
       for (const data of promiseData) {
         for (const shell of data) {
+
+          console.log("\x1b[42m\x1b[30m%s\x1b[0m", shell?.options?.name, shell);
+          
+
+
+
           if (this.engine.has(shell.options?.key)) {
+
             this.engine.get(shell.options.key)!.options = { ...shell.options };
           } else {
+
             this.engine.set(shell.options?.key, shell);
+
           }
           resultArray.push(shell);
         }
