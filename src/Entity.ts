@@ -840,10 +840,10 @@ export default class Entity {
       const resultArray: EntityShell[] = [];
       for (const data of promiseData) {
         for (const shell of data) {
-          if (this.engine.has(shell.options.key)) {
+          if (this.engine.has(shell.options?.key)) {
             this.engine.get(shell.options.key)!.options = { ...shell.options };
           } else {
-            this.engine.set(shell.options.key, shell);
+            this.engine.set(shell.options?.key, shell);
           }
           resultArray.push(shell);
         }
