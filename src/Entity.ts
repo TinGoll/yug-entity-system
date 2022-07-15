@@ -561,6 +561,11 @@ export default class Entity {
     }
   }
 
+  removeSampleKey (): this {
+    this._shell.options.sampleKey = undefined;
+    return this;
+  }
+
   /**
    * Приватный метод, для изменения свойств сущности.
    * @param cmp Свойство
