@@ -2,6 +2,7 @@ import {
   ApiComponent,
   ApiEntity,
   ApiTree,
+  EntityDto,
   EntityIndicators,
   EntityShell,
   PropertyAttribute,
@@ -541,6 +542,23 @@ export default class Entity {
         `setValue: <${this.name} (${this.category})> Свойство  <${propertyName}> комопнента <${componentName}> не найдено.`
       );
     return this.set_property(cmp, value, manualChange);
+  }
+  /**
+   * Узменение свойств сущности с помощью dto.
+   * @param dto 
+   * @returns this;
+   */
+  setDto (dto: Partial<EntityDto>): this {
+    try {
+      this._shell.options = {
+        ...this._shell.options,
+        ...dto
+      };
+      this.setChangeable(true)
+      return this;
+    } catch (e) {
+      throw e;
+    }
   }
 
   /**
