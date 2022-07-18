@@ -54,6 +54,29 @@ export default class Entity {
   }
 
   /**
+   * Удаление компонентов из сущности
+   */
+  async removeComponentsToKeys (keys: string[]): Promise<string[]> {
+    try {
+      const tempArray: string[] = [];
+      for (const key of keys) {
+        const candidate = this.components.find(c => c.key === key);
+        if (candidate) tempArray.push(key);
+      }
+      const deletedKeys = await this.engine.events.deletedEmit(
+        "component",
+        tempArray
+      );
+      this._shell.options.components = [...this._shell.options.components.filter((cmp) => {
+        return !(deletedKeys.includes(cmp.key));
+      })];
+      return deletedKeys;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
    * Добавление компонентов в сущность по ключу шаблонов (должны быть загружены заранее)
    * @param keys Массив ключей компонентов.
    * @returns this
@@ -792,8 +815,10 @@ export default class Entity {
     try {
       const tempArraySavable: Entity[] = [];
       const tempArrayUnwritable: Entity[] = [];
+
       const entities = await this.getEntities();
       for (const entity of entities) {
+
         if (
           (entity.getShell().options.indicators.is_changeable ||
             entity.getShell().options.indicators.is_changeable_component) &&
@@ -801,6 +826,7 @@ export default class Entity {
         ) {
           tempArraySavable.push(entity);
         }
+
         if (entity.getShell().options.indicators.is_unwritten_in_storage) {
           tempArrayUnwritable.push(entity);
         }
@@ -837,25 +863,13 @@ export default class Entity {
         unwritablePromise,
         savablePromise,
       ]);
-
-
       const resultArray: EntityShell[] = [];
-
       for (const data of promiseData) {
         for (const shell of data) {
-
-          console.log("\x1b[42m\x1b[30m%s\x1b[0m", shell?.options?.name, shell);
-          
-
-
-
           if (this.engine.has(shell.options?.key)) {
-
             this.engine.get(shell.options.key)!.options = { ...shell.options };
           } else {
-
             this.engine.set(shell.options?.key, shell);
-
           }
           resultArray.push(shell);
         }

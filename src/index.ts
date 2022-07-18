@@ -8,6 +8,7 @@ import {
   ComponentDto,
   EntityDto,
 } from "./@engine-types";
+
 import Component from "./Component";
 import { Engine } from "./Engine";
 import AttributeCreator from "./other/AttributeCreator";
@@ -20,7 +21,7 @@ import Room from "./systems/Room";
 import RoomControllerHeart from "./systems/RoomControllerHeart";
 import { Subscriber, SubscriberData } from "./systems/Subscriber";
 
-// Тестовые функции.
+//Тестовые функции.
 // import {
 //   insertEntities,
 //   insertComponents,
@@ -74,6 +75,8 @@ import { Subscriber, SubscriberData } from "./systems/Subscriber";
 //         });
 //       });
 //     });
+
+//     entity.save();
 
 //     // console.log(entity.getComponents());
 //   } catch (e) {
