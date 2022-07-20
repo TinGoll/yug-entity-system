@@ -698,8 +698,6 @@ export class Engine extends Map<string, EntityShell> {
    */
   private async remove_dependency(key: string): Promise<string[]> {
     const keys: string[] = [];
-    console.log("remove_dependency key", key);
-    
     const childs = await this.find(key, "only children");
     for (const cld of childs) {
       const childKey = cld.options.key;
