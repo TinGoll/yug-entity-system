@@ -636,10 +636,13 @@ export class Engine extends Map<string, EntityShell> {
   async deleteEntityShell(keys: Array<string>): Promise<[string[], string[]]> {
     try {
       const deletedKeys = await this.events.deletedEmit("entity", keys);
+
       const dependencyKeys: string[] = [];
+
       for (const key of deletedKeys) {
+        const tempArr = await this.remove_dependency(key);
+        dependencyKeys.push(...tempArr);
         this.delete(key);
-        dependencyKeys.push(...(await this.remove_dependency(key)));
       }
       return [deletedKeys, dependencyKeys];
     } catch (e) {
@@ -695,12 +698,15 @@ export class Engine extends Map<string, EntityShell> {
    */
   private async remove_dependency(key: string): Promise<string[]> {
     const keys: string[] = [];
+    console.log("remove_dependency key", key);
+    
     const childs = await this.find(key, "only children");
     for (const cld of childs) {
       const childKey = cld.options.key;
-      this.delete(childKey);
       keys.push(childKey);
-      keys.push(...(await this.remove_dependency(childKey)));
+      const tempArr = await this.remove_dependency(childKey);
+      keys.push(...tempArr);
+      this.delete(childKey);
     }
     return keys;
   }
@@ -848,7 +854,6 @@ export class Engine extends Map<string, EntityShell> {
     key: string,
     depth?: "children and me" | "only children" | "all offspring"
   ): Promise<EntityShell[]> {
-    
     if (!this.has(key)) {
       const result = await this.loadEntityShell(key);
       if (!result) return [];
@@ -859,11 +864,14 @@ export class Engine extends Map<string, EntityShell> {
     for (const entry of this) {
       const child = entry[1];
       if (child.options.parentKey === entity.options.key) {
-        if (!depth || depth === "all offspring")
+        if (!depth || depth === "all offspring") {
           apiEntities.push(
             ...(await this.find(child.options.key, "all offspring"))
           );
-        if (depth === "only children") apiEntities.push(child);
+        }
+        if (depth === "only children") {
+          apiEntities.push(child);
+        }
       }
     }
     return apiEntities;

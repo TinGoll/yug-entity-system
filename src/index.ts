@@ -21,7 +21,7 @@ import Room from "./systems/Room";
 import RoomControllerHeart from "./systems/RoomControllerHeart";
 import { Subscriber, SubscriberData } from "./systems/Subscriber";
 
-//Тестовые функции.
+
 // import {
 //   insertEntities,
 //   insertComponents,
@@ -71,7 +71,11 @@ import { Subscriber, SubscriberData } from "./systems/Subscriber";
 //         const ent2 = engine.creator.shellToEntity(ent_2);
 //         ent2.addChildToKey(entity.key, async ([ent_3]) => {
 //           const tree = await entity.assembleTree();
-//           console.log(JSON.stringify(tree, null, 2));
+//           console.log("Удаляем: ", entity.key);
+//           const dKeys = await engine.deleteEntityShell([entity.key]);
+
+//           console.log("dKeys", dKeys);
+//           //console.log(JSON.stringify(tree, null, 2));
 //         });
 //       });
 //     });
