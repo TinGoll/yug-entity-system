@@ -38,8 +38,8 @@ export default class Creator {
   async open(key: string): Promise<Entity | null> {
     const shell = await this._engine.findOne(key);
     if (!shell) return null;
-    const entity = new Entity(shell, this._engine);
-    return entity;
+    // const entity = new Entity(shell, this._engine);
+    return this.engine.creator.shellToEntity(shell);
   }
   /**
    * Конвертация оболочки сущности в объект класса сущности.
