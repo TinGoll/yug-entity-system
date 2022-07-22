@@ -41,8 +41,6 @@ export default abstract class RoomControllerHeart<
               new Error(`Сущность с ключем "${key}" не существует.`),
               null
             );
-            console.log("ДВИЖОК, openRoom", entity.getShell());
-            
           if (createRoom && typeof createRoom === "function") {
             return finall(
               null,

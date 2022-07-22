@@ -436,6 +436,8 @@ export default class Entity {
     this._shell.options.components.forEach(async (component) => {
       if (component.propertyFormula) {
         const val = await this.get_property_value(component);
+        console.log(`recalculation: ${this.name}: ${component.componentName}:: ${component.propertyName}`, val);
+        
         if (component.indicators.is_changeable) tempArr.push(component);
       }
     });
