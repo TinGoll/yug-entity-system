@@ -42,11 +42,12 @@ export default class Entity {
   setComponent(...components: Component[]): this {
     for (const component of components) {
       const componentName = component.prevName;
+      
       this._shell.options.components = [
         ...this._shell.options.components.filter(
           (c) => c.componentName !== componentName
         ),
-        ...[...component],
+        ...component.getProperty(),
       ];
     }
     this.setChangeable(false, true);
