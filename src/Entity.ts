@@ -50,6 +50,8 @@ export default class Entity {
         ...component.getProperty(),
       ];
     }
+    console.log(this.name, "Comp", this.components);
+    
     this.setChangeable(false, true);
     return this;
   }
