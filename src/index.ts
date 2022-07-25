@@ -58,36 +58,21 @@ import { Subscriber, SubscriberData } from "./systems/Subscriber";
 //       category: "Фасад",
 //     });
 
-//     // entity.addComponentToKeys(
-//     //   'cmp:e15ff655-cdf1-4884-a570-a6864599227f',
-//     //   'cmp:0613cf3b-380f-46d5-97e5-0e1f6f960107',
-//     //   'cmp:26799a43-05c4-4747-9e23-ed04e2636170'
-//     // );
-//     // await entity.save()
+//     const cmp = await engine.creator.create("component", { componentName: "test", componentDescription: "Тест" });
+//     cmp.add({
+//       propertyName: "F",
+//       propertyDescription: "Ф",
+//       propertyType: "number",
+//       propertyValue: 0,
+//       propertyFormula: `
+//         RESULT =  Math.floor(Math.random() * 1000)
+//       `
+//     })
 
-//     entity.addChildToKey(entity.key, async ([ent_1]) => {
-//       const ent1 = engine.creator.shellToEntity(ent_1);
-//       ent1.addChildToKey(entity.key, async ([ent_2]) => {
-//         const ent2 = engine.creator.shellToEntity(ent_2);
-//         ent2.addChildToKey(entity.key, async ([ent_3]) => {
-//           const tree = await entity.assembleTree();
-//           //console.log(JSON.stringify(tree, null, 2));
+//     entity.addApiComponents(...cmp)
+//     await entity.save()
+//     await entity.recalculation();
 
-
-//           const clone = await engine.creator.CreateFromTemplateKey(entity.key, (data) => {
-//             //console.log(data);
-//              console.log(engine.get(clone!.key));
-//           });
-
-//         });
-//       });
-//     });
-
- 
- 
-    
-
-//     // console.log(entity.getComponents());
 //   } catch (e) {
 //     console.log("\x1b[31m%s\x1b[0m", (e as Error).message);
 //   }

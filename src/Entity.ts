@@ -42,7 +42,7 @@ export default class Entity {
   setComponent(...components: Component[]): this {
     for (const component of components) {
       const componentName = component.prevName;
-      
+
       this._shell.options.components = [
         ...this._shell.options.components.filter(
           (c) => c.componentName !== componentName
@@ -52,7 +52,7 @@ export default class Entity {
     }
 
     console.log(this.name, "Comp", this.components);
-    
+
     this.setChangeable(false, true);
     return this;
   }
@@ -60,7 +60,7 @@ export default class Entity {
   /**
    * Удаление компонентов из сущности
    */
-  async removeComponentsToKeys (keys: string[]): Promise<string[]> {
+  async removeComponentsToKeys(keys: string[]): Promise<string[]> {
     try {
       const tempArray: string[] = [];
       for (const key of keys) {
@@ -257,7 +257,7 @@ export default class Entity {
   /**
    * Сбор обекта, с вложенностями, для демонтрации
    */
-  async assembleTree (): Promise<ApiTree> {
+  async assembleTree(): Promise<ApiTree> {
     const head: ApiTree = {
       ...this.shell.options,
       children: []
@@ -437,15 +437,15 @@ export default class Entity {
    */
   async recalculation(): Promise<ApiComponent[]> {
     const tempArr: ApiComponent[] = [];
-    this._shell.options.components.forEach(async (component) => {
+
+    for (const component of this._shell.options.components) {
       if (component.propertyFormula) {
         const val = await this.get_property_value(component);
-        
         console.log(`recalculation: ${this.name}: ${component.componentName}:: ${component.propertyName}`, val);
-        
         if (component.indicators.is_changeable) tempArr.push(component);
       }
-    });
+    }
+
     const children = await this.getChildren();
     for (const iterator of children) {
       const cmps = await iterator.recalculation();
@@ -578,7 +578,7 @@ export default class Entity {
    * @param dto 
    * @returns this;
    */
-  setDto (dto: Partial<EntityDto>): this {
+  setDto(dto: Partial<EntityDto>): this {
     try {
       this._shell.options = {
         ...this._shell.options,
@@ -591,7 +591,7 @@ export default class Entity {
     }
   }
 
-  removeSampleKey (): this {
+  removeSampleKey(): this {
     this._shell.options.sampleKey = undefined;
     return this;
   }
@@ -605,7 +605,7 @@ export default class Entity {
    */
   private set_property(
     cmp: ApiComponent,
-    value: PropertyValue,
+    value: PropertyValue | null,
     manualChange: boolean = true
   ): this {
     try {
@@ -680,14 +680,12 @@ export default class Entity {
       const formula = cmp.propertyFormula;
       let value: PropertyValue | null = null;
       if (formula && formula != "") {
-        const formulaResult = <PropertyValue | null>(
-          await formulaExecutor.call(this, cmp, formula, "execution")
-        );
+        const formulaResult = await formulaExecutor.call(this, cmp, formula, "execution");
         value =
           formulaResult === null
             ? null
             : this.convert_value_by_type(type, formulaResult);
-        if (value! == previusValue) {
+        if (value != previusValue) {
           this.set_property(cmp, value, false);
           cmp.indicators = { ...cmp.indicators, is_changeable: true };
           this._shell.options.indicators = {

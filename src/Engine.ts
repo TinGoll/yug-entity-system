@@ -113,7 +113,12 @@ export class Engine extends Map<string, EntityShell> {
   ): Promise<EntityShell | null> {
     try {
       // Находим оболочку по ключу.
+
+
+
       const cloneable = await this.findOne(key);
+
+
       if (!cloneable) throw new Error("Клонируемая сущность не найдена."); // Если такой оболочки не найдено, ошибка.
       // Находим дочерние сущности, по тому же ключу.
       const childs = await this.find(key, "only children");
@@ -282,7 +287,7 @@ export class Engine extends Map<string, EntityShell> {
       }
       return tempArr;
     } catch (e) {
-       throw e;
+      throw e;
     }
   }
 
@@ -333,7 +338,7 @@ export class Engine extends Map<string, EntityShell> {
     }
   }
 
-  updateSampleComponent(componentKey: string, dto: ComponentDto) {}
+  updateSampleComponent(componentKey: string, dto: ComponentDto) { }
 
   /**
    * Синхронный метод, для создания сущностей. Метод подписывает сущности. +++
