@@ -91,6 +91,7 @@ export async function formulaExecutor(
   onError?: (err: Error) => void
 ) {
   try {
+    if (!this) return null;
     const me = this;
     const father = await me.getParent(); // Родительская сущность
     const childs = await me.getChildren(); // Дочерние сущности

@@ -11,6 +11,7 @@ import {
 
 import Component from "./Component";
 import { Engine } from "./Engine";
+import Entity from "./Entity";
 import AttributeCreator from "./other/AttributeCreator";
 import MultipleEmitter from "./other/MultipleEmitter";
 
@@ -20,7 +21,6 @@ import Room from "./systems/Room";
 
 import RoomControllerHeart from "./systems/RoomControllerHeart";
 import { Subscriber, SubscriberData } from "./systems/Subscriber";
-
 
 // import {
 //   insertEntities,
@@ -37,6 +37,7 @@ import { Subscriber, SubscriberData } from "./systems/Subscriber";
 //   try {
 //     const engine = Engine.create();
 //     const events = engine.events;
+//     const creator = engine.creator;
 //     events
 //       .onCreatedObjects("entity", insertEntities) // Событие записи в бд новой сущности
 //       .onCreatedObjects("component", insertComponents) // событие записи в бд нового компонента
@@ -53,26 +54,46 @@ import { Subscriber, SubscriberData } from "./systems/Subscriber";
 //       sample: true,
 //     });
 
-//     const entity = await engine.creator.create("entity", {
-//       name: "Тестовая сущность 1",
-//       category: "Фасад",
+//     const geometry = await creator.create("component", {
+//       componentName: "Geometry",
+//       componentDescription: "Геометрия",
 //     });
 
-//     const cmp = await engine.creator.create("component", { componentName: "test", componentDescription: "Тест" });
-//     cmp.add({
-//       propertyName: "F",
-//       propertyDescription: "Ф",
-//       propertyType: "number",
-//       propertyValue: 0,
-//       propertyFormula: `
-//         RESULT =  Math.floor(Math.random() * 1000)
-//       `
-//     })
+//     geometry
+//       .add({
+//         propertyName: "height",
+//         propertyDescription: "Высота",
+//         propertyType: "number",
+//         previousValue: 0,
+//       })
+//       .add({
+//         propertyName: "width",
+//         propertyDescription: "Ширина",
+//         propertyType: "number",
+//         previousValue: 0,
+//       })
+//       .add({
+//         propertyName: "depth",
+//         propertyDescription: "Глубина",
+//         propertyType: "number",
+//         previousValue: 0,
+//       })
+//       .add({
+//         propertyName: "amount",
+//         propertyDescription: "Кол-во",
+//         propertyType: "number",
+//         previousValue: 0,
+//       });
 
-//     entity.addApiComponents(...cmp)
-//     await entity.save()
-//     await entity.recalculation();
+//     const fasad = await engine.creator.create("entity", { name: "Фасад" });
+//     fasad.addApiComponents(...geometry);
 
+//     const filenka = await engine.creator.create("entity", { name: "Филёнка" });
+//     filenka.addApiComponents(...geometry);
+
+//     await fasad.addChildToKey(filenka.key);
+
+//     console.log(...engine);
 //   } catch (e) {
 //     console.log("\x1b[31m%s\x1b[0m", (e as Error).message);
 //   }
@@ -98,4 +119,5 @@ export {
   Component,
   ComponentDto,
   EntityDto,
+  Entity,
 };

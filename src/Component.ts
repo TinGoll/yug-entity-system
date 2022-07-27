@@ -93,7 +93,10 @@ export default class Component {
       this.properties[index] = {
         ...this.properties[index],
         ...other,
-        indicators: { ...this.properties[index].indicators, is_changeable: true },
+        indicators: {
+          ...this.properties[index].indicators,
+          is_changeable: true,
+        },
       };
     }
     return this;
@@ -157,11 +160,14 @@ export default class Component {
       propertyFormula,
       attributes,
       bindingToList,
+      componentCategory = "",
     } = dto;
 
     const componentDescription = this.componentDescription || "";
     const candidateIndex = this.properties.findIndex(
-      (p) => p.componentName === this.componentName && p.propertyName === propertyName 
+      (p) =>
+        p.componentName === this.componentName &&
+        p.propertyName === propertyName
     );
     const defaultValue = this.get_dafault_value(propertyType, propertyValue);
 
@@ -180,7 +186,7 @@ export default class Component {
       };
       return this;
     }
-    
+
     const cmp: ApiComponent = {
       id: 0,
       key: this.engine.keyGenerator("cmp:"),
@@ -196,6 +202,7 @@ export default class Component {
       attributes,
       propertyFormula,
       entityKey: this.entityKey,
+      componentCategory,
     };
 
     this.properties.push(cmp);

@@ -64,6 +64,7 @@ export interface ApiComponent extends ISerializable {
   attributes?: string;
   bindingToList?: boolean;
   indicators: ComponentIndicators;
+  componentCategory: string;
 }
 
 export interface EntityDto

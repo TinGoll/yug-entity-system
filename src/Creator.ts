@@ -126,8 +126,8 @@ export default class Creator {
           c.entityKey = dto.entityKey;
         });
         const component = new Component(dto, this._engine, ...components);
-        if ((dto.propertyName && dto.propertyType)) component.add(dto);
-        
+        if (dto.propertyName && dto.propertyType) component.add(dto);
+
         const savable = component.notRecordedDatabase();
         const cmp = await this.engine.createComponentApi(
           response,
