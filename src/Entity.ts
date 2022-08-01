@@ -64,16 +64,18 @@ export default class Entity {
     try {
       const tempArray: string[] = [];
       for (const key of keys) {
-        const candidate = this.components.find(c => c.key === key);
+        const candidate = this.components.find((c) => c.key === key);
         if (candidate) tempArray.push(key);
       }
       const deletedKeys = await this.engine.events.deletedEmit(
         "component",
         tempArray
       );
-      this._shell.options.components = [...this._shell.options.components.filter((cmp) => {
-        return !(deletedKeys.includes(cmp.key));
-      })];
+      this._shell.options.components = [
+        ...this._shell.options.components.filter((cmp) => {
+          return !deletedKeys.includes(cmp.key);
+        }),
+      ];
       return deletedKeys;
     } catch (e) {
       throw e;
@@ -260,8 +262,8 @@ export default class Entity {
   async assembleTree(): Promise<ApiTree> {
     const head: ApiTree = {
       ...this.shell.options,
-      children: []
-    }
+      children: [],
+    };
     const chlds = await this.getChildren();
     for (const chld of chlds) {
       const treeChld = await chld.assembleTree();
@@ -425,8 +427,11 @@ export default class Entity {
 
     this.engine.find(this.key, "all offspring").then((shells) => {
       for (const iterator of shells) {
-        const { is_changeable, is_changeable_component, ...indic } =
-          iterator.options.indicators;
+        const {
+          is_changeable,
+          is_changeable_component,
+          ...indic
+        } = iterator.options.indicators;
         iterator.options.indicators = { ...indic };
       }
     });
@@ -441,7 +446,10 @@ export default class Entity {
     for (const component of this._shell.options.components) {
       if (component.propertyFormula) {
         const val = await this.get_property_value(component);
-        console.log(`recalculation: ${this.name}: ${component.componentName}:: ${component.propertyName}`, val);
+        console.log(
+          `recalculation: ${this.name}: ${component.componentName}:: ${component.propertyName}`,
+          val
+        );
         if (component.indicators.is_changeable) tempArr.push(component);
       }
     }
@@ -575,16 +583,16 @@ export default class Entity {
   }
   /**
    * Узменение свойств сущности с помощью dto.
-   * @param dto 
+   * @param dto
    * @returns this;
    */
   setDto(dto: Partial<EntityDto>): this {
     try {
       this._shell.options = {
         ...this._shell.options,
-        ...dto
+        ...dto,
       };
-      this.setChangeable(true)
+      this.setChangeable(true);
       return this;
     } catch (e) {
       throw e;
@@ -680,7 +688,12 @@ export default class Entity {
       const formula = cmp.propertyFormula;
       let value: PropertyValue | null = null;
       if (formula && formula != "") {
-        const formulaResult = await formulaExecutor.call(this, cmp, formula, "execution");
+        const formulaResult = await formulaExecutor.call(
+          this,
+          cmp,
+          formula,
+          "execution"
+        );
         value =
           formulaResult === null
             ? null
@@ -823,7 +836,6 @@ export default class Entity {
 
       const entities = await this.getEntities();
       for (const entity of entities) {
-
         if (
           (entity.getShell().options.indicators.is_changeable ||
             entity.getShell().options.indicators.is_changeable_component) &&

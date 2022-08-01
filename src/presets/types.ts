@@ -11,6 +11,9 @@ declare interface Geometry {
 declare interface Work {
   name: string;
   price: number;
+  cost: number;
+  weight: number;
+  sector: string;
 }
 
 declare type PresetComponentList = Geometry | Work;

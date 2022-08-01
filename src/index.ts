@@ -1,4 +1,3 @@
-import { timing } from "./@decorators";
 import {
   ApiEntity,
   ApiComponent,
@@ -17,89 +16,61 @@ import MultipleEmitter from "./other/MultipleEmitter";
 
 import SingleEmitter from "./other/SingleEmitter";
 import TimerController from "./other/TimerController";
+import { Preset } from "./presets/Preset";
 import Room from "./systems/Room";
 
 import RoomControllerHeart from "./systems/RoomControllerHeart";
 import { Subscriber, SubscriberData } from "./systems/Subscriber";
 
-// import {
-//   insertEntities,
-//   insertComponents,
-//   loadingEntities,
-//   deleteEntities,
-//   updateEntities,
-//   updateComponents,
-//   deleteComponents,
-//   loadComponent,
-// } from "./testing/db-function";
+import {
+  insertEntities,
+  insertComponents,
+  loadingEntities,
+  deleteEntities,
+  updateEntities,
+  updateComponents,
+  deleteComponents,
+  loadComponent,
+} from "./testing/db-function";
 
-// const start = async () => {
-//   try {
-//     const engine = Engine.create();
-//     const events = engine.events;
-//     const creator = engine.creator;
-//     events
-//       .onCreatedObjects("entity", insertEntities) // Событие записи в бд новой сущности
-//       .onCreatedObjects("component", insertComponents) // событие записи в бд нового компонента
-//       .onLoad("entity", "Find One", loadingEntities) // событие загрузки сущности из бд
-//       .onDeletedObjects("entity", deleteEntities) // Событие удаления сущности из бд.
-//       .onDeletedObjects("component", deleteComponents) // Событие удаления сущности из бд.
-//       .onUpdatableObjects("entity", updateEntities) // событие обновления в бд  сущности
-//       .onUpdatableObjects("component", updateComponents) // событие обновления в бд  компонента
-//       .onLoad("component", "Find All", loadComponent); //
+const start = async () => {
+  try {
+    const engine = Engine.create();
+    const events = engine.events;
+    const creator = engine.creator;
+    events
+      .onCreatedObjects("entity", insertEntities) // Событие записи в бд новой сущности
+      .onCreatedObjects("component", insertComponents) // событие записи в бд нового компонента
+      .onLoad("entity", "Find One", loadingEntities) // событие загрузки сущности из бд
+      .onDeletedObjects("entity", deleteEntities) // Событие удаления сущности из бд.
+      .onDeletedObjects("component", deleteComponents) // Событие удаления сущности из бд.
+      .onUpdatableObjects("entity", updateEntities) // событие обновления в бд  сущности
+      .onUpdatableObjects("component", updateComponents) // событие обновления в бд  компонента
+      .onLoad("component", "Find All", loadComponent); //
 
-//     //************************************************************************************************ */
+    //************************************************************************************************ */
 
-//     await engine.loadComponents({
-//       sample: true,
-//     });
+    const preset = new Preset();
 
-//     const geometry = await creator.create("component", {
-//       componentName: "Geometry",
-//       componentDescription: "Геометрия",
-//     });
+    const presetCmp = preset.get("work");
 
-//     geometry
-//       .add({
-//         propertyName: "height",
-//         propertyDescription: "Высота",
-//         propertyType: "number",
-//         previousValue: 0,
-//       })
-//       .add({
-//         propertyName: "width",
-//         propertyDescription: "Ширина",
-//         propertyType: "number",
-//         previousValue: 0,
-//       })
-//       .add({
-//         propertyName: "depth",
-//         propertyDescription: "Глубина",
-//         propertyType: "number",
-//         previousValue: 0,
-//       })
-//       .add({
-//         propertyName: "amount",
-//         propertyDescription: "Кол-во",
-//         propertyType: "number",
-//         previousValue: 0,
-//       });
+    const apiCmp = await engine.createComponentApi(
+      undefined,
+      undefined,
+      ...presetCmp!
+    );
 
-//     const fasad = await engine.creator.create("entity", { name: "Фасад" });
-//     fasad.addApiComponents(...geometry);
+    console.log(apiCmp);
 
-//     const filenka = await engine.creator.create("entity", { name: "Филёнка" });
-//     filenka.addApiComponents(...geometry);
+    // await engine.loadComponents({
+    //   sample: true,
+    // });
+  } catch (e) {
+    console.log("\x1b[31m%s\x1b[0m", (e as Error).message);
+  }
+};
 
-//     await fasad.addChildToKey(filenka.key);
-
-//     console.log(...engine);
-//   } catch (e) {
-//     console.log("\x1b[31m%s\x1b[0m", (e as Error).message);
-//   }
-// };
-
-// start().then(() => console.log("\x1b[35m%s\x1b[0m", "Тестирование завершено."));
+start().then(() => console.log("\x1b[35m%s\x1b[0m", "Тестирование завершено."));
 
 export default Engine;
 export {

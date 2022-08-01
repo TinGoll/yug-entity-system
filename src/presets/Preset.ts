@@ -4,7 +4,6 @@ import { PresetRoot } from "./types";
 
 export class Preset {
   private map: Map<keyof PresetRoot, string>;
-
   constructor() {
     this.map = new Map([["work", work_json]]);
   }
