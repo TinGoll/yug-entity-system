@@ -218,6 +218,13 @@ export default class Creator {
     }
   }
 
+  convertComponentsToApiComponents(...components: Component[]): ApiComponent[] {
+    return components.reduce<ApiComponent[]>((acc, item) => {
+      acc.push(...item);
+      return acc;
+    }, [])
+  };
+
   convertShellEntitiesToEntities(...shells: EntityShell[]): Entity[] {
     return shells.map((shell) => new Entity(shell, this._engine));
   }
