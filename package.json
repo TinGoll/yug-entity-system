@@ -1,6 +1,6 @@
 {
   "name": "yug-entity-system-async",
-  "version": "2.0.95",
+  "version": "2.0.96",
   "description": "Entity System",
   "main": "dist/index.js",
   "scripts": {
