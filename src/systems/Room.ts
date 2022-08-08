@@ -1,6 +1,7 @@
 import { EntityShell, PropertyValue } from "../@engine-types";
 import { Engine } from "../Engine";
 import Entity from "../Entity";
+import { EntitySysyem } from "./EntitySysyem";
 import RoomController from "./RoomController";
 import { Subscriber } from "./Subscriber";
 
@@ -17,6 +18,8 @@ export default abstract class Room<
   protected _entity: Entity | null;
   protected _key: T;
 
+  protected systems: EntitySysyem[] = [];
+
   protected _currentLvl: number = 0;
 
   constructor(key: T, engine: Engine, entity?: Entity) {
@@ -28,6 +31,47 @@ export default abstract class Room<
   }
 
   /****************************************************************** */
+  /****************************************************************** */
+
+  /**
+   * Добавить систему обработки.
+   * @param entitySystem система обработки. Наследкнтся от EntitySystem
+   * @returns this
+   */
+  addSystem(entitySystem: EntitySysyem): this {
+    this.systems.push(entitySystem);
+    entitySystem.setRoom(<Room>this);
+    entitySystem.addedToEngine(this.engine);
+    return this;
+  }
+
+  /**
+   * Запуск систем обработки.
+   * @returns void
+   */
+  systemsProcessing(): void {
+    this.runSystems(0);
+  }
+
+  /**
+   * Приватный метод запуска систем, поочередно.
+   * При необходимости, можно пропустить обработку определенной системы
+   * присвоив флаг setProcessing(false).
+   * @param index Индекс системы.
+   */
+  private runSystems(index: number): void {
+    const count = this.systems.length;
+    if (index < count) {
+      if (this.systems[index].checkProcessing()) {
+        this.systems[index].processing(() =>
+          this.runSystems(index + 1)
+        );
+      } else {
+        this.runSystems(index + 1);
+      }
+    }
+  }
+
   /****************************************************************** */
   /****************************************************************** */
 
@@ -73,7 +117,10 @@ export default abstract class Room<
    * @param keys ключ удаляемой сущности.
    * @param args дополнительно можно любые аргументы.
    */
-  abstract deleteEntityByKey<D extends any = any, K extends any = string[]>(keys: K, ...args: any[]): Promise<D>;
+  abstract deleteEntityByKey<D extends any = any, K extends any = string[]>(
+    keys: K,
+    ...args: any[]
+  ): Promise<D>;
 
   /**
    * Изменение свойств сущности, по ключу.
@@ -263,6 +310,8 @@ export default abstract class Room<
           }
         });
     }
+    this.systems.forEach(sys => sys.removedFromEngine(this.engine));
+    this.systems = [];
     this.subscribers.clear();
   }
 
@@ -278,7 +327,15 @@ export default abstract class Room<
 
   /** Метод обновления комнатыю */
   async update(dt: number): Promise<void> {
-    // Обновление комнаты
+    this.systems.forEach(sys => sys.update(dt));
+  }
+
+  /**
+   * Получить инстанс engine.
+   * @returns
+   */
+  public getEngine() {
+    return this.engine;
   }
 
   /** Итератор, итерируемый объект Subscriber */

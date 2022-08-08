@@ -107,6 +107,7 @@ export default abstract class RoomControllerHeart<
     try {
       for (const room of this.rooms.values()) {
         if (room.isEmpty()) {
+          console.log("УДАЛЕНИЕ КОМНАТЫ", <T>room.key);
           this.remove(<T>room.key);
         }
       }
