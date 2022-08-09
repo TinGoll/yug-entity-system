@@ -17,24 +17,21 @@ import MultipleEmitter from "./other/MultipleEmitter";
 import SingleEmitter from "./other/SingleEmitter";
 import TimerController from "./other/TimerController";
 import { Preset } from "./presets/Preset";
-import DefaultRoom from "./systems/DefaultRoom";
-import { FormulaSystem } from "./systems/FormulaSystem";
-import { GeometrySystem } from "./systems/GeometrySystem";
 import Room from "./systems/Room";
 
 import RoomControllerHeart from "./systems/RoomControllerHeart";
 import { Subscriber, SubscriberData } from "./systems/Subscriber";
 
-import {
-  insertEntities,
-  insertComponents,
-  loadingEntities,
-  deleteEntities,
-  updateEntities,
-  updateComponents,
-  deleteComponents,
-  loadComponent,
-} from "./testing/db-function";
+// import {
+//   insertEntities,
+//   insertComponents,
+//   loadingEntities,
+//   deleteEntities,
+//   updateEntities,
+//   updateComponents,
+//   deleteComponents,
+//   loadComponent,
+// } from "./testing/db-function";
 
 // const start = async () => {
 //   try {
@@ -114,9 +111,6 @@ import {
 
 //     const roomController = engine.roomController;
 //     const room = new DefaultRoom(order.key, engine, order);
-
-//     room.addSystem(new FormulaSystem());
-//     room.addSystem(new GeometrySystem());
 
 //     roomController.add(room.key, room);
 

@@ -1,6 +1,6 @@
 import Engine, { Entity, Room } from "..";
 
-type SystemNext = () => void;
+export type SystemNext = (...args: any[]) => void;
 
 export abstract class EntitySysyem {
   public index: number = 0;
@@ -45,8 +45,9 @@ export abstract class EntitySysyem {
    * Функция processing вызывается автомастически, после запуска систем.
    * Для продолжения, необходимо использовать функцию next (calback)
    * @param next - calback функция.
+   * @param args - Любые параметры, передаются по средствам функции next
    */
-  public abstract processing(next: SystemNext): Promise<void>;
+  public abstract processing(next: SystemNext, ...args: any[]): Promise<void>;
   /**
    * Получить инстанс двигателя.
    */

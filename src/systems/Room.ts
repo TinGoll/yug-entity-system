@@ -16,6 +16,7 @@ export default abstract class Room<
   protected subscribers: Map<T, U>;
   protected engine: Engine;
   protected _entity: Entity | null;
+
   protected _key: T;
 
   protected systems: EntitySysyem[] = [];
@@ -59,15 +60,16 @@ export default abstract class Room<
    * присвоив флаг setProcessing(false).
    * @param index Индекс системы.
    */
-  private runSystems(index: number): void {
+  private runSystems(index: number, ...args: any[]): void {
     const count = this.systems.length;
     if (index < count) {
       if (this.systems[index].checkProcessing()) {
-        this.systems[index].processing(() =>
-          this.runSystems(index + 1)
+        this.systems[index].processing(
+          (...params: any[]) => this.runSystems(index + 1, ...params),
+          ...args
         );
       } else {
-        this.runSystems(index + 1);
+        this.runSystems(index + 1, ...args);
       }
     }
   }
@@ -233,6 +235,15 @@ export default abstract class Room<
   }
 
   /**
+   * Полчение списка весх сущностей находящихся в комнате.
+   * @returns  Promise<Entity[]
+   */
+  async getEntities(): Promise<Entity[]> {
+    const shels = await this.getEntityShells();
+    return this.engine.creator.convertShellEntitiesToEntities(...shels);
+  }
+
+  /**
    * Получить главную сущность комнаты.
    * @returns Entity или null
    */
@@ -310,7 +321,7 @@ export default abstract class Room<
           }
         });
     }
-    this.systems.forEach(sys => sys.removedFromEngine(this.engine));
+    this.systems.forEach((sys) => sys.removedFromEngine(this.engine));
     this.systems = [];
     this.subscribers.clear();
   }
@@ -327,7 +338,7 @@ export default abstract class Room<
 
   /** Метод обновления комнатыю */
   async update(dt: number): Promise<void> {
-    this.systems.forEach(sys => sys.update(dt));
+    this.systems.forEach((sys) => sys.update(dt));
   }
 
   /**
